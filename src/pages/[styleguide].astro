@@ -4,6 +4,7 @@
  * component state. Values shown are computed live, so they reflect the current breakpoint
  * (resize the window) and theme (OS setting, or DevTools › Rendering › prefers-color-scheme).
  */
+import NavItem from "@/components/NavItem.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { Button } from "@/ui/button";
 import { Badge } from "@/ui/badge";
@@ -321,6 +322,46 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
           ))}
         </ul>
       </div>
+    </section>
+
+    <section class="flex flex-col gap-6">
+      <h2 class="text-headline-lg">Navbar / NavItem</h2>
+      <p class="max-w-2xl text-body-sm text-fg-secondary">
+        Figma "Navbar / NavItem" (node 704:3403). The Navbar itself (node 5005:6313) renders on
+        every page through PageLayout: see{" "}
+        <a href="/" class="underline">
+          the home page
+        </a>{" "}
+        at 375 / 768 / 1440. Hover and Focus are shown with their classes applied; hover and tab to
+        the Default item to see them live.
+      </p>
+      <ul class="flex flex-wrap items-end gap-6">
+        <li class="flex flex-col gap-2">
+          <NavItem href="#">Menu Item</NavItem>
+          <span class="text-caption-sm text-fg-tertiary">Default</span>
+        </li>
+        <li class="flex flex-col gap-2">
+          <NavItem href="#" class="bg-bg-translucent">
+            Menu Item
+          </NavItem>
+          <span class="text-caption-sm text-fg-tertiary">Hovered</span>
+        </li>
+        <li class="flex flex-col gap-2">
+          <NavItem
+            href="#"
+            class="bg-bg-translucent ring-2 ring-interactive-focus-ring ring-offset-2 ring-offset-bg-primary"
+          >
+            Menu Item
+          </NavItem>
+          <span class="text-caption-sm text-fg-tertiary">Focus</span>
+        </li>
+        <li class="flex flex-col gap-2">
+          <NavItem href="#" active>
+            Menu Item
+          </NavItem>
+          <span class="text-caption-sm text-fg-tertiary">Active (current page)</span>
+        </li>
+      </ul>
     </section>
 
     <section class="flex flex-col gap-6">

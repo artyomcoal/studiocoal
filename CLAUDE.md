@@ -107,7 +107,7 @@ Token values live **only** in `src/styles/tokens.css` (neutral palette, semantic
 - Add components with `pnpm dlx bejamas@latest add <name>`. They land in `src/ui/` and are **ours** from then on.
 - **Edit copied files directly** to match Figma. Don't wrap them in extra layers. At the top of the file, record what you changed from upstream (upstream updates won't apply automatically).
 - Use bejamas for: **Button, Accordion, Dialog** (Get in touch modal), **Input** (footer email form), **Badge**.
-- Build by hand: **Navbar** (with mobile menu), **Footer**, **cards** (WorkListCard, WorkArchiveCard, BlogListCard).
+- Build by hand: **Navbar** (no hamburger menu: every link stays visible at every breakpoint, like standard-projects.com), **Footer**, **cards** (WorkListCard, WorkArchiveCard, BlogListCard).
 - **Don't make a component for something one utility class covers.** Divider → `<hr class="border-border-subtle">` (vertical: `<div role="separator" aria-orientation="vertical" class="w-px self-stretch bg-border-subtle">`); aspect ratio → `aspect-4/5` and similar. Text styles are utilities (`text-headline-*` etc.), never components.
 - The Figma **"Tag"** component is our **`Badge`** (`variant`: secondary | tertiary, `size`: sm | default).
 - **Accordion trigger size** follows the Figma text style: `<AccordionTrigger size="xs">` (Headline XS, default) or `size="md"` (Headline MD, About page).
