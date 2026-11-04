@@ -34,7 +34,9 @@ test.describe("get in touch dialog", () => {
     expect(panel.width).toBeLessThanOrEqual(384);
     if (viewport.width < 768) {
       expect(Math.round(button.y - (panel.y + panel.height))).toBe(16);
-      expect(Math.abs(panel.x + panel.width / 2 - viewport.width / 2)).toBeLessThan(1);
+      // Centred in the visible width (excludes a reserved classic-scrollbar gutter).
+      const width = await page.evaluate(() => document.documentElement.clientWidth);
+      expect(Math.abs(panel.x + panel.width / 2 - width / 2)).toBeLessThan(1);
     } else {
       expect(panel.width).toBe(384);
       expect(Math.round(panel.y - (button.y + button.height))).toBe(16);
