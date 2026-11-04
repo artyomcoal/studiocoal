@@ -4,11 +4,13 @@
  * component state. Values shown are computed live, so they reflect the current breakpoint
  * (resize the window) and theme (OS setting, or DevTools › Rendering › prefers-color-scheme).
  */
+import Footer from "@/components/Footer.astro";
 import GetInTouchModal from "@/components/GetInTouchModal.astro";
 import NavItem from "@/components/NavItem.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { Button } from "@/ui/button";
 import { Badge } from "@/ui/badge";
+import { Input } from "@/ui/input";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/ui/accordion";
 
 // Dynamic route with a single path in dev and none in production, so /styleguide
@@ -64,7 +66,7 @@ const layout: [string, string, string][] = [
   ["--grid-gutter", "layout/grid-gutter", "gap-gutter"],
   ["--container-max-width", "layout/container-max-width", "max-w-container"],
   ["--container-padding-x", "layout/container-padding-x", "px-container"],
-  ["--section-padding-y", "layout/section-padding-y", "py-section"],
+  ["--section-padding-y", "layout/section-padding-y", "py-section, pt-section"],
   ["--hero-padding-top", "layout/hero-padding-top", "pt-hero"],
 ];
 
@@ -419,6 +421,29 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
     </section>
 
     <section class="flex flex-col gap-6">
+      <h2 class="text-headline-lg">Input</h2>
+      <p class="max-w-2xl text-body-sm text-fg-secondary">
+        Figma "Field" (Footer newsletter). Tab to check the focus ring. Invalid input is reported by
+        the browser's native validation bubble: type "hello@" and press Enter.
+      </p>
+      <!-- method="dialog" outside a dialog: validates natively, then does nothing. -->
+      <form method="dialog" class="flex max-w-96 flex-col gap-4">
+        <label for="sg-input" class="sr-only">
+          Email address
+        </label>
+        <Input id="sg-input" type="email" required placeholder="Email address" />
+        <label for="sg-input-filled" class="sr-only">
+          Email address (filled)
+        </label>
+        <Input id="sg-input-filled" type="email" value="hello@studiocoal.com" />
+        <label for="sg-input-disabled" class="sr-only">
+          Email address (disabled)
+        </label>
+        <Input id="sg-input-disabled" type="email" placeholder="Disabled" disabled />
+      </form>
+    </section>
+
+    <section class="flex flex-col gap-6">
       <h2 class="text-headline-lg">Badge</h2>
       <div class="flex flex-wrap items-center gap-2">
         <Badge>Small secondary</Badge>
@@ -493,6 +518,9 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
       </div>
     </section>
   </main>
+  <!-- Footer (Figma node 53333:8956): the page one, full width. Hover the links, Tab through,
+       and submit the newsletter form (success only after a 2xx from PUBLIC_NEWSLETTER_ENDPOINT). -->
+  <Footer />
 </BaseLayout>
 
 <script>

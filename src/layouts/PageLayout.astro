@@ -6,8 +6,9 @@
  *   during page transitions (src/styles/motion.css).
  * - default slot: the page sections. Each top-level child of <main> plays the staggered
  *   entrance after an in-site navigation, so pass sections directly, not one wrapper.
- * - `footer` slot: the Footer. Not animated.
+ * - Footer: rendered on every page, after <main>. Not animated.
  */
+import Footer from "@/components/Footer.astro";
 import Navbar from "@/components/Navbar.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 
@@ -19,5 +20,5 @@ type Props = Parameters<typeof BaseLayout>[0];
   <main class="animate-enter-stagger">
     <slot />
   </main>
-  <slot name="footer" />
+  <Footer />
 </BaseLayout>
