@@ -99,7 +99,7 @@ Token values live **only** in `src/styles/tokens.css` (neutral palette, semantic
 - Graphik for headline, body and label; Geist Mono for eyebrow. All styles use weight Medium (500) unless Figma says otherwise.
 - Letter-spacing is in percent in Figma. Convert to `em`: -4% → `-0.04em` (headlines), -3% → `-0.03em` (body), +2% → `0.02em` (eyebrow).
 - **New type utility?** Add it to `typography.css` *and* to the `font-size` list in `src/lib/utils.ts`, otherwise `cn()` (tailwind-merge) drops it when a text color class is present.
-- Graphik is self-hosted WOFF2 (`public/fonts/graphik/Graphik-Medium.woff2`, git-ignored until the licence is bought). Its `@font-face` is declared inline in `BaseLayout.astro` so Vite doesn't try to resolve the missing file. Geist Mono comes from Astro's fonts API (`astro.config.mjs`). The "Graphik Fallback" face still needs metric tuning (`size-adjust`, `ascent-override`) once the real files exist.
+- Both fonts are self-hosted WOFF2 in `public/fonts/` and preloaded in `BaseLayout.astro`. **No Google Fonts or other font CDN.** Geist Mono (`public/fonts/geist/GeistMono-Medium.woff2`, OFL, committed) is declared in `typography.css`. Graphik (`public/fonts/graphik/Graphik_Medium.woff2`) is git-ignored until the licence is bought; its `@font-face` is inline in `BaseLayout.astro` so Vite doesn't try to resolve the file when it is missing. The "Graphik Fallback" face still needs metric tuning (`size-adjust`, `ascent-override`).
 
 ## bejamas/ui
 

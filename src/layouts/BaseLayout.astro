@@ -1,6 +1,5 @@
 ---
 import "@/styles/globals.css";
-import { Font } from "astro:assets";
 
 interface Props {
   title: string;
@@ -13,18 +12,18 @@ const { title, description } = Astro.props;
 <!doctype html>
 <html lang="en">
   <head>
-    <!-- bejamas:astro-fonts:start -->
-<Font cssVariable="--font-geist-mono" />
-<!-- bejamas:astro-fonts:end -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
-    <!-- Graphik is licensed: drop Graphik-Medium.woff2 into public/fonts/graphik/ (git-ignored). -->
+    <!-- Self-hosted fonts (public/fonts/). Both are used above the fold, so preload them. -->
+    <link rel="preload" href="/fonts/graphik/Graphik_Medium.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/geist/GeistMono-Medium.woff2" as="font" type="font/woff2" crossorigin />
+    <!-- Graphik is licensed: public/fonts/graphik/ is git-ignored until the licence is bought. -->
     <style is:inline>
       @font-face {
         font-family: "Graphik";
-        src: url("/fonts/graphik/Graphik-Medium.woff2") format("woff2");
+        src: url("/fonts/graphik/Graphik_Medium.woff2") format("woff2");
         font-weight: 500;
         font-style: normal;
         font-display: swap;

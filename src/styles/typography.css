@@ -18,11 +18,19 @@
   src: local("Arial");
 }
 
+/* Geist Mono (OFL), self-hosted from public/fonts/geist/ and committed. */
+@font-face {
+  font-family: "Geist Mono";
+  src: url("/fonts/geist/GeistMono-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Figma Theme › font family/* */
 @theme {
   --font-graphik: "Graphik", "Graphik Fallback", system-ui, sans-serif;
-  /* Geist Mono is registered by Astro's fonts API (astro.config.mjs) as --font-geist-mono */
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
 }
 
 /* ---------- Text-style variables (Figma Custom › text styles/*) ---------- */
