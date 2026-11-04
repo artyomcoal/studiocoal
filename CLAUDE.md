@@ -76,7 +76,7 @@ Token values live **only** in `src/styles/tokens.css` (colors, layout, radius) a
 ### Colors and themes
 - The Figma semantic names are the source of truth: `bg-primary`, `bg-secondary`, `bg-tertiary`, `bg-translucent`, `fg-primary`, `fg-secondary`, `fg-tertiary`, `fg-on-primary`, `border-subtle`, `interactive-primary`, `interactive-secondary`. In classes they read as `bg-bg-primary` and `text-fg-secondary`. That is intended.
 - shadcn token names (`background`, `foreground`, `primary`, `muted`, `border`, `ring`, …) exist **only as aliases** that point to the Figma tokens, so that bejamas components work unchanged. Use the Figma names in our own code.
-- **Light and dark themes both ship** (light is pending: the Figma light values must be added to `tokens.css`; until then only dark exists), following the OS setting (`prefers-color-scheme`). There is no toggle. Dark is the default: `:root` holds dark values, `@media (prefers-color-scheme: light)` overrides the semantic variables, and `color-scheme: light dark` is set. Primitives never change between themes; only the semantic mapping does (Figma `Theme` collection, Light/Dark modes).
+- **Light and dark themes both ship**, following the OS setting (`prefers-color-scheme`). There is no toggle. Dark is the default: `:root` holds dark values, `@media (prefers-color-scheme: light)` overrides the semantic variables, and `color-scheme: light dark` is set. Primitives never change between themes; only the semantic mapping does (Figma `Theme` collection, Light/Dark modes).
 - Check every component in both themes.
 
 ### Breakpoints

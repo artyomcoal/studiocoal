@@ -4,7 +4,8 @@
 @import "./tokens.css";
 @import "./typography.css";
 
-/* Dark is the default theme and the only one defined until the Figma light values are added. */
+/* Dark is the default theme; light follows prefers-color-scheme. Tokens switch by themselves,
+ * so `dark:` should rarely be needed. */
 @custom-variant dark (@media (prefers-color-scheme: dark));
 
 /*

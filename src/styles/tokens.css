@@ -15,19 +15,16 @@
   --breakpoint-xl: 64rem;
 }
 
-/* ---------- Semantic colors (Figma: Theme collection) ----------
- * Dark values live on :root and are the default.
- * TODO(light theme): the Figma Light-mode values for this collection are not
- * available to the build agent yet. Add them in the light block below once
- * they are provided, then switch color-scheme to `light dark`.
+/* ---------- Semantic colors (Figma: Theme collection, Light / Dark modes) ----------
+ * Dark is the default (:root). Light applies when the OS prefers light.
  */
 :root {
-  color-scheme: dark;
+  color-scheme: light dark;
 
   --bg-primary: #0f0f10;
   --bg-secondary: #1d1e20;
   --bg-tertiary: #2e2f32;
-  --bg-translucent: #f9f9f91a;
+  --bg-translucent: #f9f9f91a; /* neutral/100 @ 10% */
 
   --fg-primary: #f2f2f2;
   --fg-secondary: #a7a9ad;
@@ -47,14 +44,31 @@
   --interactive-focus-ring: #ffffff;
 }
 
-/*
 @media (prefers-color-scheme: light) {
   :root {
-    color-scheme: light;
-    --bg-primary: ...;
+    --bg-primary: #ffffff;
+    --bg-secondary: #f9f9f9;
+    --bg-tertiary: #f2f2f2;
+    --bg-translucent: #7172760d; /* neutral/500 @ 5% */
+
+    --fg-primary: #0f0f10;
+    --fg-secondary: #a7a9ad;
+    --fg-tertiary: #d1d1d1;
+    --fg-faded: #ededed;
+    --fg-on-primary: #ffffff;
+    --fg-on-secondary: #0f0f10;
+
+    --border-subtle: #ededed;
+
+    --interactive-primary: #2e2f32;
+    --interactive-primary-hover: #3b3c3f;
+    --interactive-primary-active: #3b3c3f;
+    --interactive-secondary: #f9f9f9;
+    --interactive-secondary-hover: #f2f2f2;
+    --interactive-secondary-active: #ededed;
+    --interactive-focus-ring: #0f0f10;
   }
 }
-*/
 
 @theme inline {
   --color-bg-primary: var(--bg-primary);
