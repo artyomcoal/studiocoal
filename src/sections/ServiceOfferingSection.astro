@@ -1,0 +1,65 @@
+---
+/**
+ * Service Offering Section
+ * One service on /services: name, intro, an accordion of capabilities and up to two related
+ * projects. Anchored by the service (#brand, #website, #product) for the home page and Footer.
+ * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=53474-6264
+ *
+ * xl: content in columns 1–4, projects in 7–12. md / base: stacked, 48px apart; projects in
+ * 2 columns at md, 1 at base.
+ */
+import WorkListCard from "@/components/WorkListCard.astro";
+import { OFFERINGS, SERVICES } from "@/lib/services";
+import { cn } from "@/lib/utils";
+import type { WORK_BY_SERVICE_QUERY_RESULT } from "@/sanity/types";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/ui/accordion";
+
+interface Props {
+  service: (typeof SERVICES)[number];
+  /** Related projects (WORK_BY_SERVICE_QUERY, max 2). */
+  works: WORK_BY_SERVICE_QUERY_RESULT;
+  class?: string;
+}
+
+const { service, works, class: className } = Astro.props;
+const offering = OFFERINGS[service.value];
+const headingId = `service-${service.anchor}`;
+---
+
+<section
+  id={service.anchor}
+  aria-labelledby={headingId}
+  class={cn("scroll-mt-24 px-container pb-section", className)}
+>
+  <p class="border-t border-border-subtle py-6 text-eyebrow text-fg-primary uppercase">
+    Service offering
+  </p>
+  <div class="grid-cols-layout gap-y-12 pt-20">
+    <div class="col-span-full flex flex-col gap-12 text-fg-primary xl:col-span-4">
+      <h2 id={headingId} class="text-headline-xl text-balance">
+        {offering.title}
+      </h2>
+      <p class="text-headline-md text-pretty">{offering.intro}</p>
+      <Accordion>
+        {offering.capabilities.map((capability) => (
+          <AccordionItem value={capability.name}>
+            <AccordionTrigger>{capability.name}</AccordionTrigger>
+            <AccordionContent>{capability.detail}</AccordionContent>
+          </AccordionItem>
+        ))}
+      </Accordion>
+    </div>
+    {works.length > 0 && (
+      <ul class="col-span-full grid animate-enter-stagger gap-x-2 gap-y-12 self-start md:grid-cols-2 xl:col-span-6 xl:col-start-7">
+        {works.map((work) => (
+          <li>
+            <WorkListCard
+              work={work}
+              sizes="(min-width: 64rem) 24vw, (min-width: 48rem) 49vw, 100vw"
+            />
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+</section>

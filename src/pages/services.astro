@@ -1,0 +1,30 @@
+---
+/**
+ * Services page: hero and one Service Offering section per service.
+ * Figma: Services / breakpoint=xl|md|base (frames 5039:8547, 53350:11745, 53350:12293)
+ */
+import { sanityClient } from "sanity:client";
+import PageLayout from "@/layouts/PageLayout.astro";
+import { SERVICES } from "@/lib/services";
+import { WORK_BY_SERVICE_QUERY } from "@/sanity/queries";
+import ServiceOfferingSection from "@/sections/ServiceOfferingSection.astro";
+
+const related = await Promise.all(
+  SERVICES.map((service) => sanityClient.fetch(WORK_BY_SERVICE_QUERY, { service: service.value })),
+);
+---
+
+<PageLayout
+  title="Services"
+  description="Brand, web and product, shaped by one design-led studio to tell one unmistakable story."
+>
+  <section class="px-container pt-hero pb-12">
+    <h1 class="text-headline-xxl text-fg-primary">
+      <span class="text-fg-tertiary">Services.</span> Brand, web and product, shaped by one
+      design-led studio to tell one unmistakable story.
+    </h1>
+  </section>
+  {SERVICES.map((service, index) => (
+    <ServiceOfferingSection service={service} works={related[index] ?? []} />
+  ))}
+</PageLayout>
