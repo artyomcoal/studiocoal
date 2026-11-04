@@ -1,0 +1,25 @@
+---
+/**
+ * Work Archive page.
+ * Figma: Work Collection / breakpoint=xl|md|base (frames 5448:8053, 53336:9544, 53342:10176)
+ */
+import { sanityClient } from "sanity:client";
+import PageLayout from "@/layouts/PageLayout.astro";
+import { WORK_ARCHIVE_QUERY } from "@/sanity/queries";
+import WorkArchiveSection from "@/sections/WorkArchiveSection.astro";
+
+const works = await sanityClient.fetch(WORK_ARCHIVE_QUERY);
+---
+
+<PageLayout
+  title="Work"
+  description="A selection of brands, websites and products Studio Coal has made with founders and their teams."
+>
+  <section class="px-container pt-hero pb-12">
+    <h1 class="text-headline-xxl text-fg-primary">
+      <span class="text-fg-tertiary">Our work.</span> A selection of brands, websites and products
+      we've made with founders and their teams.
+    </h1>
+  </section>
+  <WorkArchiveSection works={works} />
+</PageLayout>

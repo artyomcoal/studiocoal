@@ -61,7 +61,7 @@ export const SITE_SETTINGS_QUERY = defineQuery(
 
 /** FeaturedWorkSection on the home page: featured projects first, then the newest. */
 export const FEATURED_WORK_QUERY = defineQuery(
-  `*[_type == "work" && defined(slug.current)] | order(featured desc, year desc, _createdAt desc) [0...$limit] ${workCard}`,
+  `*[_type == "work" && defined(slug.current)] | order(coalesce(featured, false) desc, year desc, _createdAt desc) [0...$limit] ${workCard}`,
 );
 
 /** FeaturedWorkSection on a project page: the newest other projects. */

@@ -1,0 +1,31 @@
+---
+/**
+ * Work Archive Section
+ * Every project as a WorkArchiveCard, newest first. The /work page.
+ * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=5448-8061
+ */
+import WorkArchiveCard from "@/components/WorkArchiveCard.astro";
+import { cn } from "@/lib/utils";
+import type { WORK_ARCHIVE_QUERY_RESULT } from "@/sanity/types";
+
+interface Props {
+  works: WORK_ARCHIVE_QUERY_RESULT;
+  class?: string;
+}
+
+const { works, class: className } = Astro.props;
+---
+
+<section aria-label="All work" class={cn("px-container py-section", className)}>
+  {works.length > 0 ? (
+    <ul class="flex animate-enter-stagger flex-col gap-20">
+      {works.map((work) => (
+        <li>
+          <WorkArchiveCard work={work} />
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <p class="text-body-md text-fg-secondary">New work is on its way.</p>
+  )}
+</section>

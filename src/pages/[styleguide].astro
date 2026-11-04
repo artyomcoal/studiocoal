@@ -10,6 +10,8 @@ import Media from "@/components/Media.astro";
 import NavItem from "@/components/NavItem.astro";
 import WorkArchiveCard from "@/components/WorkArchiveCard.astro";
 import WorkListCard from "@/components/WorkListCard.astro";
+import FeaturedWorkSection from "@/sections/FeaturedWorkSection.astro";
+import WorkArchiveSection from "@/sections/WorkArchiveSection.astro";
 import type { MediaData } from "@/sanity/media";
 import type { FEATURED_WORK_QUERY_RESULT, WORK_ARCHIVE_QUERY_RESULT } from "@/sanity/types";
 import BaseLayout from "@/layouts/BaseLayout.astro";
@@ -190,6 +192,15 @@ const demoArchiveWork: WORK_ARCHIVE_QUERY_RESULT[number] = {
   ...demoWork,
   archiveMedia: [emptyMedia, demoVideo("ambient"), emptyMedia],
 };
+
+// Section fixtures: n copies with unique ids.
+const listWorks = (n: number) =>
+  Array.from({ length: n }, (_, i) => ({ ...demoListWork, _id: `list-${i}` }));
+const archiveWorks = Array.from({ length: 3 }, (_, i) => ({
+  ...demoArchiveWork,
+  _id: `archive-${i}`,
+  archiveMedia: [emptyMedia, emptyMedia, emptyMedia],
+}));
 
 const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
 ---
@@ -621,6 +632,19 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
       </div>
     </section>
   </main>
+  <!-- Sections are full width with their own px-container, so they sit outside <main>. -->
+  <div class="flex flex-col">
+    <h2 class="px-container pb-6 text-headline-lg">FeaturedWorkSection, columns="3" (3 items)</h2>
+    <FeaturedWorkSection works={listWorks(3)} />
+    <h2 class="px-container pb-6 text-headline-lg">
+      FeaturedWorkSection, columns="2" (home, 6 items)
+    </h2>
+    <FeaturedWorkSection works={listWorks(6)} columns="2" heading="Recent work (home)" />
+    <h2 class="px-container text-headline-lg">WorkArchiveSection</h2>
+    <WorkArchiveSection works={archiveWorks} />
+    <h2 class="px-container text-headline-lg">WorkArchiveSection, empty</h2>
+    <WorkArchiveSection works={[]} />
+  </div>
   <!-- Footer (Figma node 53333:8956): the page one, full width. Hover the links, Tab through,
        and submit the newsletter form (success only after a 2xx from PUBLIC_NEWSLETTER_ENDPOINT). -->
   <Footer />
