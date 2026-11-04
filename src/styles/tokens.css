@@ -2,10 +2,18 @@
  * Design tokens — source of truth is the Figma file xqG6nM7oVW4iev0PrbuqWt.
  * Do not add, rename or change a token without asking (see CLAUDE.md).
  *
+ * What lives here (Figma collection → code):
+ *   TailwindCSS  → NOT imported: it mirrors Tailwind's own utilities (spacing, sizes, radius,
+ *                  opacity, font weights…). Only the custom neutral palette is imported,
+ *                  because it differs from Tailwind's and the Theme colors point to it.
+ *   Theme        → semantic colors, Light + Dark (below). Its breakpoint / container / text /
+ *                  font-weight / radius variables equal Tailwind defaults and are not repeated.
+ *   Custom       → layout tokens (below) and text-style tokens (typography.css), per breakpoint.
+ *
  * Breakpoints (mobile-first):
- *   base  < 768px   (designed at 375)
- *   md    >= 768px  (designed at 768)
- *   xl    >= 1024px (designed at 1440)
+ *   base  < 768px   (designed at 375)   Figma mode: base
+ *   md    >= 768px  (designed at 768)   Figma mode: md
+ *   xl    >= 1024px (designed at 1440)  Figma mode: xl
  */
 
 /* ---------- Breakpoints ---------- */
@@ -15,75 +23,122 @@
   --breakpoint-xl: 64rem;
 }
 
-/* ---------- Semantic colors (Figma: Theme collection, Light / Dark modes) ----------
+/* ---------- Primitives: neutral palette (Figma TailwindCSS › colors/neutral) ----------
+ * Replaces Tailwind's default neutral palette, so `bg-neutral-500` etc. match Figma.
+ * Use semantic tokens in components; primitives are for the theme mapping below.
+ */
+@theme {
+  --color-neutral-*: initial;
+  --color-neutral-50: #ffffff;
+  --color-neutral-100: #f9f9f9;
+  --color-neutral-200: #f2f2f2;
+  --color-neutral-300: #ededed;
+  --color-neutral-400: #d1d1d1;
+  --color-neutral-450: #a7a9ad;
+  --color-neutral-500: #717276;
+  --color-neutral-600: #3b3c3f;
+  --color-neutral-700: #2e2f32;
+  --color-neutral-800: #1d1e20;
+  --color-neutral-900: #0f0f10;
+}
+
+/* ---------- Semantic colors (Figma Theme › colors/*, Light / Dark modes) ----------
  * Dark is the default (:root). Light applies when the OS prefers light.
+ * Names drop Figma's "color-" prefix: colors/background/color-bg-primary → --bg-primary.
  */
 :root {
   color-scheme: light dark;
 
-  --bg-primary: #0f0f10;
-  --bg-secondary: #1d1e20;
-  --bg-tertiary: #2e2f32;
-  --bg-translucent: #f9f9f91a; /* neutral/100 @ 10% */
+  /* background */
+  --bg-primary: var(--color-neutral-900);
+  --bg-secondary: var(--color-neutral-800);
+  --bg-tertiary: var(--color-neutral-700);
+  --bg-elevated: var(--color-neutral-700);
+  --bg-overlay: color-mix(in srgb, var(--color-neutral-900) 30%, transparent);
+  --bg-translucent: color-mix(in srgb, var(--color-neutral-100) 10%, transparent);
 
-  --fg-primary: #f2f2f2;
-  --fg-secondary: #a7a9ad;
-  --fg-tertiary: #717276;
-  --fg-faded: #2e2f32;
-  --fg-on-primary: #1d1e20;
-  --fg-on-secondary: #f2f2f2;
+  /* foreground */
+  --fg-primary: var(--color-neutral-200);
+  --fg-secondary: var(--color-neutral-450);
+  --fg-tertiary: var(--color-neutral-500);
+  --fg-faded: var(--color-neutral-700);
+  --fg-link: var(--color-neutral-200);
+  --fg-link-hover: var(--color-neutral-400);
+  --fg-link-active: var(--color-neutral-500);
+  --fg-on-primary: var(--color-neutral-800);
+  --fg-on-secondary: var(--color-neutral-200);
+  --fg-inverse: var(--color-neutral-900);
 
-  --border-subtle: #2e2f32;
+  /* interactive */
+  --interactive-primary: var(--color-neutral-50);
+  --interactive-primary-hover: var(--color-neutral-200);
+  --interactive-primary-active: var(--color-neutral-400);
+  --interactive-secondary: var(--color-neutral-800);
+  --interactive-secondary-hover: var(--color-neutral-700);
+  --interactive-secondary-active: var(--color-neutral-700);
+  --interactive-focus-ring: var(--color-neutral-50);
+  --interactive-focus-inner: transparent; /* bg-primary @ 0% */
 
-  --interactive-primary: #ffffff;
-  --interactive-primary-hover: #f2f2f2;
-  --interactive-primary-active: #d1d1d1;
-  --interactive-secondary: #1d1e20;
-  --interactive-secondary-hover: #2e2f32;
-  --interactive-secondary-active: #2e2f32;
-  --interactive-focus-ring: #ffffff;
+  /* border */
+  --border-strong: var(--color-neutral-300);
+  --border-medium: var(--color-neutral-500);
+  --border-subtle: var(--color-neutral-700);
 }
 
 @media (prefers-color-scheme: light) {
   :root {
-    --bg-primary: #ffffff;
-    --bg-secondary: #f9f9f9;
-    --bg-tertiary: #f2f2f2;
-    --bg-translucent: #7172760d; /* neutral/500 @ 5% */
+    --bg-primary: var(--color-neutral-50);
+    --bg-secondary: var(--color-neutral-100);
+    --bg-tertiary: var(--color-neutral-200);
+    --bg-elevated: color-mix(in srgb, var(--color-neutral-400) 20%, transparent);
+    --bg-overlay: color-mix(in srgb, var(--color-neutral-900) 30%, transparent);
+    --bg-translucent: color-mix(in srgb, var(--color-neutral-500) 5%, transparent);
 
-    --fg-primary: #0f0f10;
-    --fg-secondary: #a7a9ad;
-    --fg-tertiary: #d1d1d1;
-    --fg-faded: #ededed;
-    --fg-on-primary: #ffffff;
-    --fg-on-secondary: #0f0f10;
+    --fg-primary: var(--color-neutral-900);
+    --fg-secondary: var(--color-neutral-450);
+    --fg-tertiary: var(--color-neutral-400);
+    --fg-faded: var(--color-neutral-300);
+    --fg-link: var(--color-neutral-700);
+    --fg-link-hover: var(--color-neutral-800);
+    --fg-link-active: var(--color-neutral-900);
+    --fg-on-primary: var(--color-neutral-50);
+    --fg-on-secondary: var(--color-neutral-900);
+    --fg-inverse: var(--color-neutral-50);
 
-    --border-subtle: #ededed;
+    --interactive-primary: var(--color-neutral-700);
+    --interactive-primary-hover: var(--color-neutral-600);
+    --interactive-primary-active: var(--color-neutral-600);
+    --interactive-secondary: var(--color-neutral-100);
+    --interactive-secondary-hover: var(--color-neutral-200);
+    --interactive-secondary-active: var(--color-neutral-300);
+    --interactive-focus-ring: var(--color-neutral-900);
+    --interactive-focus-inner: transparent;
 
-    --interactive-primary: #2e2f32;
-    --interactive-primary-hover: #3b3c3f;
-    --interactive-primary-active: #3b3c3f;
-    --interactive-secondary: #f9f9f9;
-    --interactive-secondary-hover: #f2f2f2;
-    --interactive-secondary-active: #ededed;
-    --interactive-focus-ring: #0f0f10;
+    --border-strong: var(--color-neutral-800);
+    --border-medium: var(--color-neutral-500);
+    --border-subtle: var(--color-neutral-300);
   }
 }
 
+/* Tailwind color utilities: bg-bg-primary, text-fg-secondary, border-border-subtle, … */
 @theme inline {
   --color-bg-primary: var(--bg-primary);
   --color-bg-secondary: var(--bg-secondary);
   --color-bg-tertiary: var(--bg-tertiary);
+  --color-bg-elevated: var(--bg-elevated);
+  --color-bg-overlay: var(--bg-overlay);
   --color-bg-translucent: var(--bg-translucent);
 
   --color-fg-primary: var(--fg-primary);
   --color-fg-secondary: var(--fg-secondary);
   --color-fg-tertiary: var(--fg-tertiary);
   --color-fg-faded: var(--fg-faded);
+  --color-fg-link: var(--fg-link);
+  --color-fg-link-hover: var(--fg-link-hover);
+  --color-fg-link-active: var(--fg-link-active);
   --color-fg-on-primary: var(--fg-on-primary);
   --color-fg-on-secondary: var(--fg-on-secondary);
-
-  --color-border-subtle: var(--border-subtle);
+  --color-fg-inverse: var(--fg-inverse);
 
   --color-interactive-primary: var(--interactive-primary);
   --color-interactive-primary-hover: var(--interactive-primary-hover);
@@ -92,40 +147,40 @@
   --color-interactive-secondary-hover: var(--interactive-secondary-hover);
   --color-interactive-secondary-active: var(--interactive-secondary-active);
   --color-interactive-focus-ring: var(--interactive-focus-ring);
+  --color-interactive-focus-inner: var(--interactive-focus-inner);
+
+  --color-border-strong: var(--border-strong);
+  --color-border-medium: var(--border-medium);
+  --color-border-subtle: var(--border-subtle);
 }
 
-/* ---------- Radius (Figma: border-radius/rounded-*) ----------
- * bejamas derives rounded-sm/md/lg/xl from --radius. 0.5rem makes rounded-sm = 4px (Figma).
+/* ---------- Radius ----------
+ * Figma Theme › radius/radius-* equals Tailwind's default scale
+ * (xs 2, sm 4, md 6, lg 8, xl 12, 2xl 16, 3xl 24, 4xl 32, full), so Tailwind's defaults are used.
  */
-@theme {
-  --radius-xs: 0.125rem; /* Figma rounded-xs = 2 */
-}
-:root {
-  --radius: 0.5rem;
-}
 
-/* ---------- Semantic layout tokens (Figma: Custom collection) ---------- */
+/* ---------- Layout tokens (Figma Custom › layout/*) ---------- */
 :root {
   /* base */
   --grid-column-count: 12;
-  --grid-gutter: 0.5rem; /* 8 */
-  --container-padding-x: 0.75rem; /* 12 */
-  --section-padding-y: 3rem; /* 48 */
-  --hero-padding-top: 12rem; /* 192 */
+  --grid-gutter: --spacing(2); /* 8 */
   --container-max-width: 90rem; /* 1440 — applied only via max-w-container */
+  --container-padding-x: --spacing(3); /* 12 */
+  --section-padding-y: --spacing(12); /* 48 */
+  --hero-padding-top: --spacing(48); /* 192 */
 }
 
 @media (width >= 48rem) {
   :root {
-    --section-padding-y: 4rem; /* 64 */
+    --section-padding-y: --spacing(16); /* 64 */
   }
 }
 
 @media (width >= 64rem) {
   :root {
-    --container-padding-x: 1rem; /* 16 */
-    --section-padding-y: 6rem; /* 96 */
-    --hero-padding-top: 16rem; /* 256 */
+    --container-padding-x: --spacing(4); /* 16 */
+    --section-padding-y: --spacing(24); /* 96 */
+    --hero-padding-top: --spacing(64); /* 256 */
   }
 }
 

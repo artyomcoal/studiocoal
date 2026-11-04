@@ -1,10 +1,13 @@
 /*
- * Typography — Figma text styles. Values: base / md / xl (px, converted to rem).
- * Letter-spacing in Figma is percent: headlines -4%, body/label/caption -3%, eyebrow +2%.
- * All styles use weight Medium (500).
+ * Typography — Figma text styles and the Custom › "text styles/*" variables.
+ * Variables switch per breakpoint (base / md / xl) like the Figma modes; the utilities below
+ * (text-headline-xxl, text-body-md, …) read them. Use the utilities in components.
+ *
+ * Letter-spacing is a style property in Figma (not a variable): headlines -4%, body / label /
+ * caption -3%, eyebrow +2% → converted to em.
+ * New utility? Also add it to the font-size list in src/lib/utils.ts (tailwind-merge).
  */
 
-/* ---------- Fonts ---------- */
 /* Graphik @font-face is declared inline in BaseLayout.astro (the WOFF2 files are licensed and
  * git-ignored, so Vite must not try to resolve them at build time). */
 /* "Graphik Fallback" is used until the real files exist. TODO: tune size-adjust /
@@ -15,136 +18,192 @@
   src: local("Arial");
 }
 
+/* Figma Theme › font family/* */
 @theme {
   --font-graphik: "Graphik", "Graphik Fallback", system-ui, sans-serif;
   /* Geist Mono is registered by Astro's fonts API (astro.config.mjs) as --font-geist-mono */
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
-/* ---------- Headlines (line-height = size) ---------- */
+/* ---------- Text-style variables (Figma Custom › text styles/*) ---------- */
+:root {
+  /* headline */
+  --headline-font-family: var(--font-graphik);
+  --headline-font-weight: var(--font-weight-medium);
+  --fontsize-headline-xxl: 2rem; /* 32 */
+  --lineheight-headline-xxl: 2rem;
+  --fontsize-headline-xl: 1.75rem; /* 28 */
+  --lineheight-headline-xl: 1.75rem;
+  --fontsize-headline-lg: 1.375rem; /* 22 */
+  --lineheight-headline-lg: 1.375rem;
+  --fontsize-headline-md: 1.125rem; /* 18 */
+  --lineheight-headline-md: 1.125rem;
+  --fontsize-headline-sm: 1.125rem; /* 18 */
+  --lineheight-headline-sm: 1.125rem;
+  --fontsize-headline-xs: 1rem; /* 16 */
+  --lineheight-headline-xs: 1rem;
+
+  /* body */
+  --body-font-family: var(--font-graphik);
+  --body-font-weight-medium: var(--font-weight-medium);
+  --fontsize-body-lg: 1.125rem; /* 18 */
+  --lineheight-body-lg: 1.375rem; /* 22 */
+  --fontsize-body-md: 1rem; /* 16 */
+  --lineheight-body-md: 1.25rem; /* 20 */
+  --fontsize-body-sm: 0.875rem; /* 14 */
+  --lineheight-body-sm: 1.125rem; /* 18 */
+  --fontsize-body-xs: 0.75rem; /* 12 */
+  --lineheight-body-xs: 1rem; /* 16 */
+
+  /* label */
+  --label-font-family: var(--font-graphik);
+  --label-font-weight: var(--font-weight-medium);
+  --fontsize-label-md: 1rem; /* 16 — variable only, no Figma text style uses it yet */
+  --lineheight-label-md: 1rem;
+  --fontsize-label-sm: 0.875rem; /* 14 */
+  --lineheight-label-sm: 0.875rem; /* Figma name: lineheight-label-xs */
+
+  /* eyebrow */
+  --eyebrow-font-family: var(--font-mono);
+  --eyebrow-font-weight: var(--font-weight-medium);
+  --fontsize-eyebrow-md: 0.625rem; /* 10 */
+  --lineheight-eyebrow-md: 1; /* Figma style: 100% */
+
+  /* caption */
+  --caption-font-family: var(--font-graphik);
+  --caption-font-weight: var(--font-weight-medium);
+  --fontsize-caption-m: 0.75rem; /* 12 */
+  --lineheight-caption-m: 1rem; /* 16 */
+  --fontsize-caption-s: 0.625rem; /* 10 */
+  --lineheight-caption-s: 0.75rem; /* 12 */
+}
+
+@media (width >= 48rem) {
+  :root {
+    --fontsize-headline-xxl: 2.25rem; /* 36 */
+    --lineheight-headline-xxl: 2.25rem;
+  }
+}
+
+@media (width >= 64rem) {
+  :root {
+    --fontsize-headline-xxl: 2.75rem; /* 44 */
+    --lineheight-headline-xxl: 2.75rem;
+    --fontsize-headline-xl: 2.25rem; /* 36 */
+    --lineheight-headline-xl: 2.25rem;
+    --fontsize-headline-lg: 1.5rem; /* 24 */
+    --lineheight-headline-lg: 1.5rem;
+    --fontsize-headline-md: 1.25rem; /* 20 */
+    --lineheight-headline-md: 1.25rem;
+  }
+}
+
+/* ---------- Text-style utilities (Figma text styles) ---------- */
+
+/* Headline/* */
 @utility text-headline-xxl {
-  font-family: var(--font-graphik);
-  font-weight: 500;
+  font-family: var(--headline-font-family);
+  font-weight: var(--headline-font-weight);
   letter-spacing: -0.04em;
-  font-size: 2rem; /* 32 */
-  line-height: 2rem;
-  @media (width >= 48rem) {
-    font-size: 2.25rem; /* 36 */
-    line-height: 2.25rem;
-  }
-  @media (width >= 64rem) {
-    font-size: 2.75rem; /* 44 */
-    line-height: 2.75rem;
-  }
+  font-size: var(--fontsize-headline-xxl);
+  line-height: var(--lineheight-headline-xxl);
 }
 @utility text-headline-xl {
-  font-family: var(--font-graphik);
-  font-weight: 500;
+  font-family: var(--headline-font-family);
+  font-weight: var(--headline-font-weight);
   letter-spacing: -0.04em;
-  font-size: 1.75rem; /* 28 */
-  line-height: 1.75rem;
-  @media (width >= 64rem) {
-    font-size: 2.25rem; /* 36 */
-    line-height: 2.25rem;
-  }
+  font-size: var(--fontsize-headline-xl);
+  line-height: var(--lineheight-headline-xl);
 }
 @utility text-headline-lg {
-  font-family: var(--font-graphik);
-  font-weight: 500;
+  font-family: var(--headline-font-family);
+  font-weight: var(--headline-font-weight);
   letter-spacing: -0.04em;
-  font-size: 1.375rem; /* 22 */
-  line-height: 1.375rem;
-  @media (width >= 64rem) {
-    font-size: 1.5rem; /* 24 */
-    line-height: 1.5rem;
-  }
+  font-size: var(--fontsize-headline-lg);
+  line-height: var(--lineheight-headline-lg);
 }
 @utility text-headline-md {
-  font-family: var(--font-graphik);
-  font-weight: 500;
+  font-family: var(--headline-font-family);
+  font-weight: var(--headline-font-weight);
   letter-spacing: -0.04em;
-  font-size: 1.125rem; /* 18 */
-  line-height: 1.125rem;
-  @media (width >= 64rem) {
-    font-size: 1.25rem; /* 20 */
-    line-height: 1.25rem;
-  }
+  font-size: var(--fontsize-headline-md);
+  line-height: var(--lineheight-headline-md);
 }
 @utility text-headline-sm {
-  font-family: var(--font-graphik);
-  font-weight: 500;
+  font-family: var(--headline-font-family);
+  font-weight: var(--headline-font-weight);
   letter-spacing: -0.04em;
-  font-size: 1.125rem; /* 18 */
-  line-height: 1.125rem;
+  font-size: var(--fontsize-headline-sm);
+  line-height: var(--lineheight-headline-sm);
 }
 @utility text-headline-xs {
-  font-family: var(--font-graphik);
-  font-weight: 500;
+  font-family: var(--headline-font-family);
+  font-weight: var(--headline-font-weight);
   letter-spacing: -0.04em;
-  font-size: 1rem; /* 16 */
-  line-height: 1rem;
+  font-size: var(--fontsize-headline-xs);
+  line-height: var(--lineheight-headline-xs);
 }
 
-/* ---------- Body ---------- */
+/* Body/* Medium */
 @utility text-body-lg {
-  font-family: var(--font-graphik);
-  font-weight: 500;
+  font-family: var(--body-font-family);
+  font-weight: var(--body-font-weight-medium);
   letter-spacing: -0.03em;
-  font-size: 1.125rem; /* 18 */
-  line-height: 1.375rem; /* 22 */
+  font-size: var(--fontsize-body-lg);
+  line-height: var(--lineheight-body-lg);
 }
 @utility text-body-md {
-  font-family: var(--font-graphik);
-  font-weight: 500;
+  font-family: var(--body-font-family);
+  font-weight: var(--body-font-weight-medium);
   letter-spacing: -0.03em;
-  font-size: 1rem; /* 16 */
-  line-height: 1.25rem; /* 20 */
+  font-size: var(--fontsize-body-md);
+  line-height: var(--lineheight-body-md);
 }
 @utility text-body-sm {
-  font-family: var(--font-graphik);
-  font-weight: 500;
+  font-family: var(--body-font-family);
+  font-weight: var(--body-font-weight-medium);
   letter-spacing: -0.03em;
-  font-size: 0.875rem; /* 14 */
-  line-height: 1.125rem; /* 18 */
+  font-size: var(--fontsize-body-sm);
+  line-height: var(--lineheight-body-sm);
 }
 @utility text-body-xs {
-  font-family: var(--font-graphik);
-  font-weight: 500;
+  font-family: var(--body-font-family);
+  font-weight: var(--body-font-weight-medium);
   letter-spacing: -0.03em;
-  font-size: 0.75rem; /* 12 */
-  line-height: 1rem; /* 16 */
+  font-size: var(--fontsize-body-xs);
+  line-height: var(--lineheight-body-xs);
 }
 
-/* ---------- Label ---------- */
+/* Labels/Label M Medium (uses the label-sm size variables, as in Figma) */
 @utility text-label {
-  font-family: var(--font-graphik);
-  font-weight: 500;
+  font-family: var(--label-font-family);
+  font-weight: var(--label-font-weight);
   letter-spacing: -0.03em;
-  font-size: 0.875rem; /* 14 */
-  line-height: 0.875rem; /* 14 */
+  font-size: var(--fontsize-label-sm);
+  line-height: var(--lineheight-label-sm);
 }
 
-/* ---------- Caption ---------- */
+/* Caption/* */
 @utility text-caption-md {
-  font-family: var(--font-graphik);
-  font-weight: 500;
+  font-family: var(--caption-font-family);
+  font-weight: var(--caption-font-weight);
   letter-spacing: -0.03em;
-  font-size: 0.75rem; /* 12 */
-  line-height: 1rem; /* 16 */
+  font-size: var(--fontsize-caption-m);
+  line-height: var(--lineheight-caption-m);
 }
 @utility text-caption-sm {
-  font-family: var(--font-graphik);
-  font-weight: 500;
+  font-family: var(--caption-font-family);
+  font-weight: var(--caption-font-weight);
   letter-spacing: -0.03em;
-  font-size: 0.625rem; /* 10 */
-  line-height: 0.75rem; /* 12 */
+  font-size: var(--fontsize-caption-s);
+  line-height: var(--lineheight-caption-s);
 }
 
-/* ---------- Eyebrow (Geist Mono) ---------- */
+/* Eyebrow/Eyebrow */
 @utility text-eyebrow {
-  font-family: var(--font-mono);
-  font-weight: 500;
+  font-family: var(--eyebrow-font-family);
+  font-weight: var(--eyebrow-font-weight);
   letter-spacing: 0.02em;
-  font-size: 0.625rem; /* 10 */
-  line-height: 1;
+  font-size: var(--fontsize-eyebrow-md);
+  line-height: var(--lineheight-eyebrow-md);
 }
