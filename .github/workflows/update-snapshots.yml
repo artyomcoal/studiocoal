@@ -1,0 +1,29 @@
+# Regenerates the linux visual baselines (CI compares against these).
+# Trigger: add the `update-snapshots` label to a PR, or run manually.
+# Output: a `linux-snapshots` artifact. Unzip it into tests/e2e/__screenshots__/linux/, review, commit.
+name: Update visual snapshots
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [labeled]
+
+jobs:
+  update:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.label.name == 'update-snapshots' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm exec playwright test visual --update-snapshots=all
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-snapshots
+          path: tests/e2e/__screenshots__/linux/
+          retention-days: 7

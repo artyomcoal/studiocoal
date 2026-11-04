@@ -1,0 +1,11 @@
+dist/
+.astro/
+.vercel/
+node_modules/
+pnpm-lock.yaml
+playwright-report/
+test-results/
+tests/e2e/__screenshots__/
+
+# Markdown is hand-formatted (Prettier mangles the astro code samples in CLAUDE.md)
+*.md

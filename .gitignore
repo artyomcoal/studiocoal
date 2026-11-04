@@ -29,3 +29,10 @@ public/fonts/graphik/
 # misc
 .DS_Store
 .vercel
+
+# Playwright
+playwright-report/
+test-results/
+# Only linux visual baselines (from CI) are committed
+tests/e2e/__screenshots__/*
+!tests/e2e/__screenshots__/linux/
