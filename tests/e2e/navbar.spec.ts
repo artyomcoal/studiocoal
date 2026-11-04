@@ -45,11 +45,18 @@ test.describe("navbar", () => {
     if (viewport.width < 768) {
       // Bottom centre of the viewport, 16px from the bottom edge.
       expect(Math.round(viewport.height - (box.y + box.height))).toBe(16);
-      expect(Math.abs(box.x + box.width / 2 - viewport.width / 2)).toBeLessThan(1);
+      // Centred in the visible width: the fixed header spans it (a reserved classic-scrollbar gutter is outside).
+      const width = await page.evaluate(
+        () => document.querySelector("header")!.getBoundingClientRect().width,
+      );
+      expect(Math.abs(box.x + box.width / 2 - width / 2)).toBeLessThan(1);
     } else {
       // Top right, 16px from the edges.
       expect(Math.round(box.y)).toBe(16);
-      expect(Math.round(viewport.width - (box.x + box.width))).toBe(16);
+      const width = await page.evaluate(
+        () => document.querySelector("header")!.getBoundingClientRect().width,
+      );
+      expect(Math.round(width - (box.x + box.width))).toBe(16);
     }
   });
 

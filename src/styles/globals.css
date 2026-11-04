@@ -67,6 +67,10 @@
   }
   html {
     @apply font-sans;
+    /* Always reserve the scrollbar's space (classic scrollbars on Windows / Linux), so the
+     * dialog's scroll lock never shifts the page and fixed elements stay put. No effect with
+     * overlay scrollbars (macOS, iOS, Android). */
+    scrollbar-gutter: stable;
   }
   body {
     @apply bg-background text-body-md text-foreground antialiased;

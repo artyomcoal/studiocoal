@@ -4,6 +4,7 @@
  * component state. Values shown are computed live, so they reflect the current breakpoint
  * (resize the window) and theme (OS setting, or DevTools › Rendering › prefers-color-scheme).
  */
+import GetInTouchModal from "@/components/GetInTouchModal.astro";
 import NavItem from "@/components/NavItem.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { Button } from "@/ui/button";
@@ -379,6 +380,41 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
         <Button variant="secondary" disabled>
           Disabled
         </Button>
+      </div>
+      <p class="text-body-sm text-fg-secondary">
+        Tertiary: the Secondary button on an <code>interactive-secondary</code> surface (Get in
+        touch dialog). Sizes <code>sm</code> (Copy) and <code>icon</code> (Close).
+      </p>
+      <div class="flex flex-wrap items-center gap-4 rounded-sm bg-interactive-secondary p-5">
+        <Button variant="tertiary" size="sm">
+          Copy
+        </Button>
+        <Button variant="tertiary" size="sm">
+          Copied!
+        </Button>
+        <Button variant="tertiary" size="icon" aria-label="Close">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path
+              d="M8.46447 8.46447L12 12M12 12L15.5355 15.5355M12 12L15.5355 8.46447M12 12L8.46447 15.5355"
+              stroke="currentColor"
+              stroke-width="1.5"
+            ></path>
+          </svg>
+        </Button>
+        <Button variant="tertiary">Tertiary</Button>
+      </div>
+    </section>
+
+    <section class="flex flex-col gap-6">
+      <h2 class="text-headline-lg">Get in touch dialog</h2>
+      <p class="max-w-2xl text-body-sm text-fg-secondary">
+        Figma "Dialog / Get in touch" (node 53307:8812). On pages it opens from the Navbar button,
+        under the button (md / xl) or centred above it (base). Here it opens from this copy of the
+        trigger, so its position is the page one. Esc, the close button and a click on the overlay
+        close it.
+      </p>
+      <div>
+        <GetInTouchModal />
       </div>
     </section>
 

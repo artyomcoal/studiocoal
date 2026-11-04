@@ -1,7 +1,7 @@
 ---
 /**
  * @component Button
- * @description Figma "Button" (node 444:177). variant: primary | secondary. Render a link with as="a".
+ * @description Figma "Button" (node 444:177). variant: primary | secondary | tertiary, size: default | sm | icon. Render a link with as="a".
  * @usage
  * <Button>Get in touch</Button>
  * <Button variant="secondary" as="a" href="/work">View work</Button>
@@ -16,6 +16,9 @@ import { cn } from "@/lib/utils";
 // - variants reduced to primary | secondary (Figma Type), one size (h-10, px-5, py-3)
 // - colors from interactive-* tokens, text-label type style, rounded-sm
 // - focus ring per Figma FocusState: 2px bg-primary gap + 2px focus-ring, hover fill on focus
+// - variant tertiary: the Secondary button on an interactive-secondary surface (Get in touch
+//   dialog), resting on the secondary hover fill as in Figma (node 5588:8842)
+// - sizes sm (Copy: h-7, px-3, rounded-xs) and icon (Close: size-6, rounded-xs)
 const buttonVariants = cva(
   [
     "group/button inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-sm text-label select-none",
@@ -31,9 +34,13 @@ const buttonVariants = cva(
           "bg-interactive-primary text-fg-on-primary hover:bg-interactive-primary-hover focus-visible:bg-interactive-primary-hover active:bg-interactive-primary-active",
         secondary:
           "bg-interactive-secondary text-fg-on-secondary hover:bg-interactive-secondary-hover focus-visible:bg-interactive-secondary-hover active:bg-interactive-secondary-active",
+        tertiary:
+          "bg-interactive-secondary-hover text-fg-on-secondary hover:bg-interactive-secondary-active focus-visible:bg-interactive-secondary-active active:bg-interactive-secondary-active",
       },
       size: {
         default: "h-10 px-5 py-3",
+        sm: "h-7 rounded-xs px-3 py-2",
+        icon: "size-6 rounded-xs",
       },
     },
     defaultVariants: {
