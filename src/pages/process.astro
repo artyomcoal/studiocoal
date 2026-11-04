@@ -1,0 +1,33 @@
+---
+/**
+ * Process page: hero, process stages, work formats, how we work, services CTA, recent work.
+ * Figma: Process / breakpoint=xl|md|base (frames 5002:21584, 53348:11048, 53348:11393)
+ */
+import { sanityClient } from "sanity:client";
+import PageLayout from "@/layouts/PageLayout.astro";
+import { FEATURED_WORK_QUERY } from "@/sanity/queries";
+import FeaturedWorkSection from "@/sections/FeaturedWorkSection.astro";
+import HowWeWorkSection from "@/sections/HowWeWorkSection.astro";
+import ProcessStepsSection from "@/sections/ProcessStepsSection.astro";
+import ServicesCtaSection from "@/sections/ServicesCtaSection.astro";
+import WorkFormatsSection from "@/sections/WorkFormatsSection.astro";
+
+const recentWork = await sanityClient.fetch(FEATURED_WORK_QUERY, { limit: 3 });
+---
+
+<PageLayout
+  title="Process"
+  description="Few people, close to the work, from the first conversation to launch and after."
+>
+  <section class="px-container pt-hero pb-12">
+    <h1 class="text-headline-xxl text-fg-primary">
+      <span class="text-fg-tertiary">Process.</span> Few people, close to the work, from the first
+      conversation to launch and after.
+    </h1>
+  </section>
+  <ProcessStepsSection />
+  <WorkFormatsSection />
+  <HowWeWorkSection />
+  <ServicesCtaSection />
+  <FeaturedWorkSection works={recentWork} />
+</PageLayout>

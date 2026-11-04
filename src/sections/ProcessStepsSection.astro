@@ -1,0 +1,52 @@
+---
+/**
+ * Process Steps Section
+ * The five process stages on /process, on a bg-secondary band with dividers.
+ * Figma: Process / breakpoint=xl (frame 5002:21584), "Process Row"
+ *
+ * xl: name in columns 1–4, description in 7–11. md: 1–4 and 6–11. base: stacked.
+ */
+import { cn } from "@/lib/utils";
+
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+
+const steps = [
+  {
+    name: "Discover",
+    text: "We start by listening. We talk to your team, your customers and your market, and map where you stand. The output is a short, sharp brief we all agree on, with clear goals and a plan that connects strategy, design and technology from day one.",
+  },
+  {
+    name: "Ideate",
+    text: "This is where we go wide. We use AI to explore more territory than a small team normally could: more directions, more variations, earlier prototypes. Then we narrow down with you and keep only the ideas that hold up.",
+  },
+  {
+    name: "Create",
+    text: "Strategy, concept and creative direction stay in-house, and the founders are involved throughout. When the work calls for it, senior specialists from our network join for motion, 3D, engineering or writing. This is where most of the time goes, and where craft shows.",
+  },
+  {
+    name: "Adapt and scale",
+    text: "We turn the work into a system: components, guidelines and templates that hold up across screens, channels and new team members. The aim is that the 50th page is as good as the first.",
+  },
+  {
+    name: "Launch",
+    text: "We ship, measure and refine. You get the files, the documentation and the reasoning behind the decisions, so your team can carry the work forward without us. If you'd like us to stay involved, we can.",
+  },
+];
+---
+
+<section aria-label="Process stages" class={cn("bg-bg-secondary px-container", className)}>
+  <ol class="animate-enter-stagger">
+    {steps.map((step) => (
+      <li class="grid-cols-layout gap-y-4 border-b border-border-subtle pt-12 pb-24 text-fg-primary xl:pb-32">
+        <h2 class="col-span-full text-headline-lg md:col-span-4">{step.name}</h2>
+        <p class="col-span-full text-body-md text-pretty md:col-span-6 md:col-start-6 xl:col-span-5 xl:col-start-7">
+          {step.text}
+        </p>
+      </li>
+    ))}
+  </ol>
+</section>

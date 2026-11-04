@@ -1,0 +1,35 @@
+---
+/**
+ * Services CTA Section
+ * Eyebrow, a Headline XL line and a "View all services" button. Process and About pages.
+ * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=53474-5978
+ */
+import { cn } from "@/lib/utils";
+import { Button } from "@/ui/button";
+
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<section aria-labelledby="services-cta" class={cn("px-container pb-section", className)}>
+  <h2
+    id="services-cta"
+    class="border-t border-border-subtle py-6 text-eyebrow text-fg-primary uppercase"
+  >
+    Our services
+  </h2>
+  <div class="grid-cols-layout pt-20">
+    <div class="col-span-full flex flex-col items-start gap-12 md:col-span-8 xl:col-span-6">
+      <p class="text-headline-xl text-balance text-fg-primary">
+        From strategy to technology, end-to-end execution for ambitious startups and complex
+        products.
+      </p>
+      <Button as="a" href="/services" variant="secondary">
+        View all services
+      </Button>
+    </div>
+  </div>
+</section>
