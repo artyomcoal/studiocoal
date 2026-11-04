@@ -16,6 +16,7 @@ import ClientsSection from "@/sections/ClientsSection.astro";
 import FeaturedArticlesSection from "@/sections/FeaturedArticlesSection.astro";
 import FeaturedWorkSection from "@/sections/FeaturedWorkSection.astro";
 import JournalArchiveSection from "@/sections/JournalArchiveSection.astro";
+import ServiceOfferingSection from "@/sections/ServiceOfferingSection.astro";
 import ServicesOverviewSection from "@/sections/ServicesOverviewSection.astro";
 import WorkDetailsSection from "@/sections/WorkDetailsSection.astro";
 import WorkArchiveSection from "@/sections/WorkArchiveSection.astro";
@@ -30,6 +31,7 @@ import { Button } from "@/ui/button";
 import { Badge } from "@/ui/badge";
 import { Input } from "@/ui/input";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/ui/accordion";
+import { SERVICES } from "@/lib/services";
 
 // Dynamic route with a single path in dev and none in production, so /styleguide
 // is never emitted by `astro build`. Explicit pages always take priority over this route.
@@ -779,6 +781,8 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
       ServicesOverviewSection (home; thumbnails empty without Work)
     </h2>
     <ServicesOverviewSection thumbnails={{ brand: null, web: null, "digital-products": null }} />
+    <h2 class="px-container pb-6 text-headline-lg">ServiceOfferingSection (services page)</h2>
+    <ServiceOfferingSection service={SERVICES[0]} works={listWorks(2)} />
     <h2 class="px-container pb-6 text-headline-lg">ClientsSection (logos need Sanity assets)</h2>
     <ClientsSection clients={demoClients} />
     <h2 class="px-container pt-section pb-6 text-headline-lg">
