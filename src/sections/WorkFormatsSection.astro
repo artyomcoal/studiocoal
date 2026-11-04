@@ -1,0 +1,74 @@
+---
+/**
+ * Work Formats Section
+ * Engagement models with price and tags (fixed budget, time and materials, retainer).
+ * Figma: Process / breakpoint=xl (frame 5002:21584), "work formats"
+ *
+ * Cards: 3 of 4 columns at xl, 3 at md, stacked at base.
+ */
+import { cn } from "@/lib/utils";
+import { Badge } from "@/ui/badge";
+
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+
+const formats = [
+  {
+    name: "Fixed budget",
+    price: "from 10,000 EUR",
+    text: "For projects with a clear brief, a set budget and a deadline. We agree the outcome up front and own the delivery.",
+    tags: ["Fixed conditions", "Defined scope", "Clear milestones", "Stage approvals"],
+  },
+  {
+    name: "Time and materials",
+    price: "100 EUR/h",
+    text: "For work that will change as we learn. You pay for the time we spend, with weekly visibility.",
+    tags: ["Flexible scope", "Weekly reporting", "Pay as you go", "Quick to start"],
+  },
+  {
+    name: "Retainer",
+    price: "from 10,000 EUR/monthly",
+    text: "For teams that want a design partner on call. Reserved capacity across brand, web and product.",
+    tags: ["Reserved capacity", "Monthly engagements", "Ongoing partnership", "Dedicated team"],
+  },
+];
+---
+
+<section aria-labelledby="work-formats" class={cn("px-container pb-section", className)}>
+  <p class="border-t border-border-subtle py-6 text-eyebrow text-fg-primary uppercase">
+    Work formats
+  </p>
+  <div class="flex flex-col gap-20 pt-20">
+    <div class="grid-cols-layout">
+      <h2
+        id="work-formats"
+        class="col-span-full text-headline-xl text-balance text-fg-primary md:col-span-8 xl:col-span-5"
+      >
+        Pick the shape that fits the moment, not the other way around.
+      </h2>
+    </div>
+    <ul class="grid animate-enter-stagger gap-2 md:grid-cols-3 xl:grid-cols-4">
+      {formats.map((format) => (
+        <li class="flex flex-col gap-8 rounded-sm bg-bg-secondary p-4 text-fg-primary">
+          <div class="flex flex-col gap-6">
+            <h3 class="text-body-sm text-fg-secondary">{format.name}</h3>
+            <p class="text-headline-md">{format.price}</p>
+            <p class="text-body-sm text-pretty">{format.text}</p>
+          </div>
+          <ul class="mt-auto flex flex-wrap gap-1" aria-label={`${format.name} includes`}>
+            {format.tags.map((tag) => (
+              <li>
+                <Badge variant="tertiary" size="default">
+                  {tag}
+                </Badge>
+              </li>
+            ))}
+          </ul>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>

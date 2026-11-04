@@ -15,9 +15,13 @@ import WorkListCard from "@/components/WorkListCard.astro";
 import ClientsSection from "@/sections/ClientsSection.astro";
 import FeaturedArticlesSection from "@/sections/FeaturedArticlesSection.astro";
 import FeaturedWorkSection from "@/sections/FeaturedWorkSection.astro";
+import HowWeWorkSection from "@/sections/HowWeWorkSection.astro";
 import JournalArchiveSection from "@/sections/JournalArchiveSection.astro";
+import ProcessStepsSection from "@/sections/ProcessStepsSection.astro";
 import ServiceOfferingSection from "@/sections/ServiceOfferingSection.astro";
+import ServicesCtaSection from "@/sections/ServicesCtaSection.astro";
 import ServicesOverviewSection from "@/sections/ServicesOverviewSection.astro";
+import WorkFormatsSection from "@/sections/WorkFormatsSection.astro";
 import WorkDetailsSection from "@/sections/WorkDetailsSection.astro";
 import WorkArchiveSection from "@/sections/WorkArchiveSection.astro";
 import type { MediaData } from "@/sanity/media";
@@ -783,6 +787,14 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
     <ServicesOverviewSection thumbnails={{ brand: null, web: null, "digital-products": null }} />
     <h2 class="px-container pb-6 text-headline-lg">ServiceOfferingSection (services page)</h2>
     <ServiceOfferingSection service={SERVICES[0]} works={listWorks(2)} />
+    <h2 class="px-container pb-6 text-headline-lg">ProcessStepsSection (process page)</h2>
+    <ProcessStepsSection />
+    <h2 class="px-container pt-section pb-6 text-headline-lg">WorkFormatsSection</h2>
+    <WorkFormatsSection />
+    <h2 class="px-container pb-6 text-headline-lg">HowWeWorkSection</h2>
+    <HowWeWorkSection />
+    <h2 class="px-container pb-6 text-headline-lg">ServicesCtaSection</h2>
+    <ServicesCtaSection />
     <h2 class="px-container pb-6 text-headline-lg">ClientsSection (logos need Sanity assets)</h2>
     <ClientsSection clients={demoClients} />
     <h2 class="px-container pt-section pb-6 text-headline-lg">

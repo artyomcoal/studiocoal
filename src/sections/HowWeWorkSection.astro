@@ -1,0 +1,64 @@
+---
+/**
+ * How We Work Section
+ * Four numbered principles. Process and About pages.
+ * Figma: Process / breakpoint=xl (frame 5002:21584), "how we work"
+ *
+ * Cards: 4 columns at xl, 2 × 2 at md, stacked at base.
+ */
+import { cn } from "@/lib/utils";
+
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+
+const principles = [
+  {
+    title: "One person who knows everything",
+    text: "One of the founders leads your project from the first call to launch. You always know who to ask, and the answer never gets lost between account managers, designers and developers.",
+  },
+  {
+    title: "Work in progress, every week",
+    text: "Every week you see real work, not just status updates. Rough is fine and early is better: it's how we catch wrong turns while they're cheap to fix, and how you stay part of the decisions.",
+  },
+  {
+    title: "Real things, early",
+    text: "We prototype in code and test with real content as soon as we can. Decisions are made on something you can click, read and react to, not on slides or static mockups.",
+  },
+  {
+    title: "Yours to keep",
+    text: "You own everything we make: source files, code and documentation. Systems are structured and AI-ready, so your team can keep building after launch, with or without us.",
+  },
+];
+---
+
+<section aria-labelledby="how-we-work" class={cn("px-container pb-section", className)}>
+  <p class="border-t border-border-subtle py-6 text-eyebrow text-fg-primary uppercase">
+    How we work
+  </p>
+  <div class="flex flex-col gap-20 pt-20">
+    <div class="grid-cols-layout">
+      <h2
+        id="how-we-work"
+        class="col-span-full text-headline-xl text-balance text-fg-primary md:col-span-8 xl:col-span-6"
+      >
+        What working with us actually looks like, from first call to launch.
+      </h2>
+    </div>
+    <ol class="grid animate-enter-stagger gap-2 md:grid-cols-2 xl:grid-cols-4">
+      {principles.map((principle, index) => (
+        <li class="flex flex-col gap-4 rounded-sm bg-bg-secondary p-4 text-fg-primary">
+          <div class="flex flex-col gap-12">
+            <span class="text-body-xs" aria-hidden="true">
+              {index + 1}
+            </span>
+            <h3 class="text-headline-xs text-balance">{principle.title}</h3>
+          </div>
+          <p class="text-body-sm text-pretty">{principle.text}</p>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>
