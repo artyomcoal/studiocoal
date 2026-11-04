@@ -154,6 +154,13 @@ export type SiteSettings = {
     } & Link
   >;
   seo?: Seo;
+  redirects?: Array<{
+    from: string;
+    to: string;
+    permanent?: boolean;
+    _type: "redirect";
+    _key: string;
+  }>;
 };
 
 export type SanityImageCrop = {
@@ -187,6 +194,7 @@ export type Journal = {
   body?: RichText;
   featured?: boolean;
   seo?: Seo;
+  previousSlugs?: Array<string>;
 };
 
 export type Slug = {
@@ -236,6 +244,7 @@ export type Work = {
       } & MediaPair)
   >;
   seo?: Seo;
+  previousSlugs?: Array<string>;
 };
 
 export type SanityImagePaletteSwatch = {
@@ -712,6 +721,13 @@ export type SITE_SETTINGS_QUERY_RESULT = {
     } & Link
   >;
   seo?: Seo;
+  redirects?: Array<{
+    from: string;
+    to: string;
+    permanent?: boolean;
+    _type: "redirect";
+    _key: string;
+  }>;
 } | null;
 
 // Source: src/sanity/queries.ts
@@ -1704,6 +1720,29 @@ export type SITEMAP_QUERY_RESULT = Array<
     }
 >;
 
+// Source: src/sanity/queries.ts
+// Variable: REDIRECTS_QUERY
+// Query: {    "content": *[_type in ["work", "journal"] && defined(slug.current)]{      _type,      "slug": slug.current,      previousSlugs    },    "manual": *[_type == "siteSettings" && _id == "siteSettings"][0].redirects[]{ from, to, permanent }  }
+export type REDIRECTS_QUERY_RESULT = {
+  content: Array<
+    | {
+        _type: "journal";
+        slug: string;
+        previousSlugs: Array<string> | null;
+      }
+    | {
+        _type: "work";
+        slug: string;
+        previousSlugs: Array<string> | null;
+      }
+  >;
+  manual: Array<{
+    from: string;
+    to: string;
+    permanent: boolean | null;
+  }> | null;
+};
+
 // Query TypeMap
 declare global {
   interface SanityQueries {
@@ -1723,6 +1762,7 @@ declare global {
     '*[_type == "journal" && slug.current == $slug][0]{\n    _id,\n    _updatedAt,\n    title,\n    "slug": slug.current,\n    publishedAt,\n    category,\n    excerpt,\n    seo,\n    coverImage{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n},\n    body[]{ ..., _type == "imageWithAlt" => {\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }': JOURNAL_QUERY_RESULT;
     '*[_type == "journal" && defined(slug.current) && slug.current != $slug] | order(publishedAt desc) [0...$limit] {\n  _id,\n  title,\n  "slug": slug.current,\n  publishedAt,\n  category,\n  excerpt,\n  coverImage{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n}\n}': RECENT_JOURNAL_QUERY_RESULT;
     '*[_type in ["work", "journal"] && defined(slug.current)]{\n    _type,\n    "slug": slug.current,\n    _updatedAt,\n    "noIndex": seo.noIndex == true\n  }': SITEMAP_QUERY_RESULT;
+    '{\n    "content": *[_type in ["work", "journal"] && defined(slug.current)]{\n      _type,\n      "slug": slug.current,\n      previousSlugs\n    },\n    "manual": *[_type == "siteSettings" && _id == "siteSettings"][0].redirects[]{ from, to, permanent }\n  }': REDIRECTS_QUERY_RESULT;
   }
 }
 // Lets @sanity/client releases that predate the global registry read it too

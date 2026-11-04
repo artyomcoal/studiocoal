@@ -1,11 +1,13 @@
 // @ts-check
 import react from "@astrojs/react";
 import sitemap from "@astrojs/sitemap";
+import vercel from "@astrojs/vercel";
 import sanity from "@sanity/astro";
 import tailwindcss from "@tailwindcss/vite";
 import { createClient } from "@sanity/client";
 import { defineConfig } from "astro/config";
-import { SITEMAP_QUERY } from "./src/sanity/queries.ts";
+import { buildRedirects } from "./src/lib/redirects.ts";
+import { REDIRECTS_QUERY, SITEMAP_QUERY } from "./src/sanity/queries.ts";
 
 // Load .env when present (local dev); in CI and on Vercel the variables come from the environment.
 try {
@@ -26,22 +28,34 @@ const apiVersion = "2026-11-01";
 
 // Sitemap data for project and post pages: last-modified dates, and the pages hidden from
 // search engines (SEO › Hide from search engines), which the sitemap leaves out.
-const sitemapPages = await createClient({
+const sanityBuildClient = createClient({
   projectId: PUBLIC_SANITY_PROJECT_ID,
   dataset: PUBLIC_SANITY_DATASET,
   apiVersion,
   useCdn: false,
-}).fetch(SITEMAP_QUERY);
+});
+const [sitemapPages, redirectSources] = await Promise.all([
+  sanityBuildClient.fetch(SITEMAP_QUERY),
+  sanityBuildClient.fetch(REDIRECTS_QUERY),
+]);
 /** @param {string} url */
 const pathOf = (url) => new URL(url).pathname.replace(/\/+$/, "") || "/";
 const pageByPath = new Map(
   sitemapPages.map((page) => [`/${page._type === "work" ? "work" : "journal"}/${page.slug}`, page]),
 );
 
+// Old project / post URLs and Site settings › Redirects (src/lib/redirects.ts).
+const redirects = buildRedirects(redirectSources.content, redirectSources.manual ?? []);
+
 // https://astro.build/config
 export default defineConfig({
   // Canonical production origin. Used for canonical URLs, Open Graph URLs and the sitemap.
   site,
+  redirects,
+  // On Vercel the adapter turns `redirects` into real HTTP redirects (301 / 302); the site
+  // stays static. Elsewhere (local, CI) Astro writes HTML redirect pages instead, since
+  // \`astro preview\` (the e2e tests) can't serve the adapter's output.
+  adapter: process.env.VERCEL ? vercel() : undefined,
   integrations: [
     // Match on the path: the full URL (https://studiocoal.com/…) itself contains "/studio".
     sitemap({

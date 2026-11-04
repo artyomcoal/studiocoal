@@ -1,5 +1,5 @@
 import { defineField, defineType } from "sanity";
-import { slugField } from "./fields";
+import { previousSlugsField, slugField } from "./fields";
 import { SEO_TOO_LONG_FILTER } from "./seo";
 
 /** GROQ condition for a post that's missing something the site shows, or has an SEO problem. */
@@ -69,6 +69,7 @@ export const journal = defineType({
       initialValue: false,
     }),
     defineField({ name: "seo", title: "SEO", type: "seo", group: "seo" }),
+    previousSlugsField("journal", "seo"),
   ],
   orderings: [
     {

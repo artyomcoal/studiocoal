@@ -4,8 +4,8 @@
  *
  * - While the document has never been published, the slug follows the title as it's typed,
  *   until an editor changes the slug by hand.
- * - Once published, the slug no longer changes by itself, and a note warns that editing it
- *   changes a live URL.
+ * - Once published, the slug no longer changes by itself, and a note says that a new URL
+ *   redirects from the old one (src/sanity/actions/publishWithRedirect.ts).
  */
 import { useEffect, useRef } from "react";
 import {
@@ -46,8 +46,8 @@ export function AutoSlugInput(props: SlugInputProps) {
       {props.renderDefault(props)}
       {isPublished && published?.slug !== undefined && (
         <p style={{ margin: 0, fontSize: "0.8125rem", lineHeight: 1.4, opacity: 0.7 }}>
-          This page is live. Changing its URL changes the address people and search engines already
-          use.
+          This page is live. If you change its URL, the old one will redirect here once you publish
+          (see SEO › Old URLs).
         </p>
       )}
     </div>

@@ -1,6 +1,7 @@
 import { visionTool } from "@sanity/vision";
 import { defineConfig } from "sanity";
 import { structureTool } from "sanity/structure";
+import { withSlugRedirect } from "./src/sanity/actions/publishWithRedirect";
 import { schemaTypes, singletonTypes } from "./src/sanity/schemas";
 import { structure } from "./src/sanity/structure";
 
@@ -10,6 +11,7 @@ const projectId = import.meta.env?.PUBLIC_SANITY_PROJECT_ID ?? process.env.PUBLI
 const dataset = import.meta.env?.PUBLIC_SANITY_DATASET ?? process.env.PUBLIC_SANITY_DATASET;
 
 const contextTemplates = new Set(["work-featured", "work-by-service"]);
+const redirectingTypes = new Set(["work", "journal"]);
 
 export default defineConfig({
   name: "default",
@@ -45,12 +47,20 @@ export default defineConfig({
       creationContext.type === "global"
         ? options.filter(({ templateId }) => !contextTemplates.has(templateId))
         : options,
-    // Singletons can't be duplicated or deleted.
-    actions: (actions, { schemaType }) =>
-      singletonTypes.has(schemaType)
-        ? actions.filter(
-            ({ action }) => action && ["publish", "discardChanges", "restore"].includes(action),
-          )
-        : actions,
+    actions: (actions, { schemaType }) => {
+      // Singletons can't be duplicated or deleted.
+      if (singletonTypes.has(schemaType)) {
+        return actions.filter(
+          ({ action }) => action && ["publish", "discardChanges", "restore"].includes(action),
+        );
+      }
+      // Pages with a URL keep their old URLs as redirects when it changes.
+      if (redirectingTypes.has(schemaType)) {
+        return actions.map((action) =>
+          action.action === "publish" ? withSlugRedirect(action) : action,
+        );
+      }
+      return actions;
+    },
   },
 });

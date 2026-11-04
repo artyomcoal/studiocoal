@@ -1,6 +1,6 @@
 import { defineArrayMember, defineField, defineType } from "sanity";
 import { SERVICES, serviceTitle } from "../../lib/services";
-import { slugField } from "./fields";
+import { previousSlugsField, slugField } from "./fields";
 import { mediaAspect } from "./media";
 import { SEO_TOO_LONG_FILTER } from "./seo";
 
@@ -253,6 +253,7 @@ export const work = defineType({
     }),
 
     defineField({ name: "seo", title: "SEO", type: "seo", group: "seo" }),
+    previousSlugsField("work", "seo"),
   ],
   orderings: [
     {

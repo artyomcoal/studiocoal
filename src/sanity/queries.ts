@@ -180,3 +180,15 @@ export const SITEMAP_QUERY = defineQuery(
     "noIndex": seo.noIndex == true
   }`,
 );
+
+/** Redirects (astro.config.mjs): old project / post slugs, and Site settings › Redirects. */
+export const REDIRECTS_QUERY = defineQuery(
+  `{
+    "content": *[_type in ["work", "journal"] && defined(slug.current)]{
+      _type,
+      "slug": slug.current,
+      previousSlugs
+    },
+    "manual": *[_type == "siteSettings" && _id == "siteSettings"][0].redirects[]{ from, to, permanent }
+  }`,
+);
