@@ -1,0 +1,93 @@
+---
+/**
+ * Navbar
+ * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=5005-6313
+ *
+ * Behaviour modelled on standard-projects.com: a fixed, always-visible frosted pill with every
+ * link visible at every breakpoint (no hamburger menu). The current section is the filled
+ * item. The header is a named View Transition group, so it stays pinned between pages.
+ *
+ * Layout per Figma: from md, pill top-left and "Get in touch" top-right. On base the pill is
+ * centred (6px sides) and the button is fixed to the bottom centre of the dynamic viewport
+ * (h-dvh), 16px from the bottom edge.
+ */
+import NavItem from "@/components/NavItem.astro";
+import { cn } from "@/lib/utils";
+import { sanityClient } from "sanity:client";
+import { SITE_SETTINGS_QUERY } from "@/sanity/queries";
+import { Button } from "@/ui/button";
+
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+
+/** Default nav; Sanity Site settings › Navigation overrides it when filled in. */
+const defaultItems = [
+  { label: "Work", href: "/work" },
+  { label: "Services", href: "/services" },
+  { label: "Process", href: "/process" },
+  { label: "Journal", href: "/journal" },
+  { label: "About", href: "/about" },
+];
+
+const settings = await sanityClient.fetch(SITE_SETTINGS_QUERY);
+const items = settings?.navigation?.length
+  ? settings.navigation.map(({ label, href }) => ({ label, href }))
+  : defaultItems;
+
+const path = Astro.url.pathname.replace(/\/+$/, "") || "/";
+const isActive = (href: string) => href !== "/" && (path === href || path.startsWith(`${href}/`));
+---
+
+<header
+  data-slot="navbar"
+  class={cn(
+    // Base: the pill is centred with 6px sides (Figma base frame: 363px pill in 375px),
+    // since five links don't fit inside 16px padding. From md: pill left, button right.
+    "pointer-events-none fixed inset-x-0 top-0 z-50 flex items-center justify-center px-1.5 py-4 view-transition-header md:justify-between md:p-4",
+    className,
+  )}
+>
+  <nav
+    aria-label="Main"
+    class="pointer-events-auto flex max-w-full min-w-0 items-center gap-1 rounded-sm bg-bg-translucent py-1 pr-2 pl-1 backdrop-blur-md xl:backdrop-blur-xs"
+  >
+    <a
+      href="/"
+      aria-current={path === "/" ? "page" : undefined}
+      class="shrink-0 rounded-xs outline-none focus-visible:ring-2 focus-visible:ring-interactive-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg-primary"
+    >
+      <img
+        src="/favicon.svg"
+        alt="Studio Coal home"
+        width="32"
+        height="32"
+        class="block size-8 rounded-xs"
+      />
+    </a>
+    <!-- When the links don't fit (narrow phones, wider font rendering on Android/Linux) they
+         scroll sideways inside the pill instead of overflowing it. Scrollbar hidden: no utility. -->
+    <ul class="flex min-w-0 items-center gap-0.5 overflow-x-auto [scrollbar-width:none]">
+      {items.map((item) => (
+        <li>
+          <NavItem href={item.href} active={isActive(item.href)}>
+            {item.label}
+          </NavItem>
+        </li>
+      ))}
+    </ul>
+  </nav>
+
+  <!-- One button for every breakpoint. On base its wrapper covers the dynamic viewport (h-dvh)
+       and pins it to the bottom centre; from md it sits in the header row. -->
+  <div class="pointer-events-none fixed inset-x-0 top-0 flex h-dvh items-end justify-center p-4 md:static md:h-auto md:p-0">
+    <!-- Keep clear of the iOS home indicator (no token for a device inset). -->
+    <div class="pointer-events-auto mb-[env(safe-area-inset-bottom)] md:mb-0">
+      <Button type="button" data-get-in-touch aria-haspopup="dialog">
+        Get in touch
+      </Button>
+    </div>
+  </div>
+</header>

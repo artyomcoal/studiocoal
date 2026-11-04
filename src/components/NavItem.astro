@@ -1,0 +1,47 @@
+---
+/**
+ * Nav Item
+ * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=704-3403
+ *
+ * One link in the Navbar. States from Figma "Navbar / NavItem":
+ * Default (fg-secondary), Hovered (bg-translucent), Focus (bg-translucent + FocusState ring),
+ * Active = current page (bg-translucent + fg-primary, aria-current="page").
+ */
+import { cva } from "class-variance-authority";
+import { cn } from "@/lib/utils";
+
+interface Props {
+  href: string;
+  /** Current page (or a page inside this section). */
+  active?: boolean;
+  class?: string;
+}
+
+const { href, active = false, class: className } = Astro.props;
+
+const navItemVariants = cva(
+  [
+    "flex h-8 shrink-0 items-center rounded-xs p-2 text-label whitespace-nowrap",
+    "transition-colors duration-150 ease-out outline-none",
+    "hover:bg-bg-translucent",
+    "focus-visible:bg-bg-translucent focus-visible:ring-2 focus-visible:ring-interactive-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg-primary",
+  ],
+  {
+    variants: {
+      active: {
+        true: "bg-bg-translucent text-fg-primary",
+        false: "text-fg-secondary",
+      },
+    },
+  },
+);
+---
+
+<a
+  href={href}
+  aria-current={active ? "page" : undefined}
+  data-slot="nav-item"
+  class={cn(navItemVariants({ active }), className)}
+>
+  <slot />
+</a>

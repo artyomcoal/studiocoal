@@ -2,19 +2,20 @@
 /**
  * Page layout: BaseLayout + page structure for every marketing page.
  *
- * - `header` slot: the Navbar. Give its root `view-transition-header` so it stays pinned
+ * - Navbar: rendered on every page. Its root has `view-transition-header`, so it stays pinned
  *   during page transitions (src/styles/motion.css).
  * - default slot: the page sections. Each top-level child of <main> plays the staggered
  *   entrance after an in-site navigation, so pass sections directly, not one wrapper.
  * - `footer` slot: the Footer. Not animated.
  */
+import Navbar from "@/components/Navbar.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 
 type Props = Parameters<typeof BaseLayout>[0];
 ---
 
 <BaseLayout {...Astro.props}>
-  <slot name="header" />
+  <Navbar />
   <main class="animate-enter-stagger">
     <slot />
   </main>
