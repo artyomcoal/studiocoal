@@ -1,0 +1,132 @@
+/*
+ * Typography — Figma text styles. Values: base / md / xl (px, converted to rem).
+ * Letter-spacing in Figma is percent: headlines -4%, body/label/caption -3%, eyebrow +2%.
+ * All styles use weight Medium (500).
+ */
+
+/* ---------- Fonts ---------- */
+/* Graphik @font-face is declared inline in BaseLayout.astro (the WOFF2 files are licensed and
+ * git-ignored, so Vite must not try to resolve them at build time). */
+/* "Graphik Fallback" is used until the real files exist. TODO: tune size-adjust /
+ * ascent-override / descent-override with the real Graphik files so the swap causes no
+ * layout shift. */
+@font-face {
+  font-family: "Graphik Fallback";
+  src: local("Arial");
+}
+
+@theme {
+  --font-graphik: "Graphik", "Graphik Fallback", system-ui, sans-serif;
+  /* Geist Mono is registered by Astro's fonts API (astro.config.mjs) as --font-geist-mono */
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+/* ---------- Headlines (line-height = size) ---------- */
+@utility text-headline-xxl {
+  font-family: var(--font-graphik);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  font-size: 2rem; /* 32 */
+  line-height: 2rem;
+  @media (width >= 48rem) {
+    font-size: 2.25rem; /* 36 */
+    line-height: 2.25rem;
+  }
+  @media (width >= 64rem) {
+    font-size: 2.75rem; /* 44 */
+    line-height: 2.75rem;
+  }
+}
+@utility text-headline-xl {
+  font-family: var(--font-graphik);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  font-size: 1.75rem; /* 28 */
+  line-height: 1.75rem;
+  @media (width >= 64rem) {
+    font-size: 2.25rem; /* 36 */
+    line-height: 2.25rem;
+  }
+}
+@utility text-headline-lg {
+  font-family: var(--font-graphik);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  font-size: 1.375rem; /* 22 */
+  line-height: 1.375rem;
+  @media (width >= 64rem) {
+    font-size: 1.5rem; /* 24 */
+    line-height: 1.5rem;
+  }
+}
+@utility text-headline-sm {
+  font-family: var(--font-graphik);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  font-size: 1.125rem; /* 18 */
+  line-height: 1.125rem;
+}
+@utility text-headline-xs {
+  font-family: var(--font-graphik);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  font-size: 1rem; /* 16 */
+  line-height: 1rem;
+}
+
+/* ---------- Body ---------- */
+@utility text-body-md {
+  font-family: var(--font-graphik);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  font-size: 1rem; /* 16 */
+  line-height: 1.25rem; /* 20 */
+}
+@utility text-body-sm {
+  font-family: var(--font-graphik);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  font-size: 0.875rem; /* 14 */
+  line-height: 1.125rem; /* 18 */
+}
+@utility text-body-xs {
+  font-family: var(--font-graphik);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  font-size: 0.75rem; /* 12 */
+  line-height: 1rem; /* 16 */
+}
+
+/* ---------- Label ---------- */
+@utility text-label {
+  font-family: var(--font-graphik);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  font-size: 0.875rem; /* 14 */
+  line-height: 0.875rem; /* 14 */
+}
+
+/* ---------- Caption ---------- */
+@utility text-caption-md {
+  font-family: var(--font-graphik);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  font-size: 0.75rem; /* 12 */
+  line-height: 1rem; /* 16 */
+}
+@utility text-caption-sm {
+  font-family: var(--font-graphik);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  font-size: 0.625rem; /* 10 */
+  line-height: 0.75rem; /* 12 */
+}
+
+/* ---------- Eyebrow (Geist Mono) ---------- */
+@utility text-eyebrow {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  font-size: 0.625rem; /* 10 */
+  line-height: 1;
+}
