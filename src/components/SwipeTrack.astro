@@ -1,0 +1,51 @@
+---
+/**
+ * Swipe Track
+ * Horizontal swipe row for mobile: fixed-width items scroll edge to edge, snap per item,
+ * hide the scrollbar and keep native momentum scrolling. Callers pass <li> children with a
+ * fixed width and turn the track into a grid from md (`md:grid md:overflow-visible …`).
+ * Used by the Work Archive visuals and the Featured Articles list.
+ * Figma (behaviour spec): https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=53355-3844
+ *
+ * - The track bleeds into the container padding (-mx / px with the container token), so items
+ *   scroll edge to edge, and scroll-padding keeps snapped items aligned with the text.
+ * - It is focusable so keyboard users can scroll it (axe scrollable-region-focusable); the
+ *   script drops it from the tab order whenever it doesn't scroll (md and up).
+ */
+import { cn } from "@/lib/utils";
+
+interface Props {
+  /** Accessible name of the list, e.g. "Modal visuals". */
+  label: string;
+  class?: string;
+}
+
+const { label, class: className } = Astro.props;
+---
+
+{/* eslint-disable astro/jsx-a11y/no-noninteractive-tabindex -- see the header comment */}
+<ul
+  data-slot="swipe-track"
+  tabindex="0"
+  aria-label={label}
+  class={cn(
+    "-mx-(--container-padding-x) flex snap-x snap-mandatory scroll-px-(--container-padding-x) gap-2 overflow-x-auto overscroll-x-contain px-container scrollbar-none outline-none focus-visible:ring-2 focus-visible:ring-interactive-focus-ring focus-visible:ring-inset motion-safe:scroll-smooth",
+    "*:shrink-0 *:snap-start *:last:snap-end",
+    "md:mx-0 md:snap-none md:overflow-visible md:px-0",
+    className,
+  )}
+>
+  <slot />
+</ul>
+{/* eslint-enable astro/jsx-a11y/no-noninteractive-tabindex */}
+
+<script>
+  const tracks = document.querySelectorAll<HTMLElement>("[data-slot=swipe-track]");
+  const observer = new ResizeObserver((entries) => {
+    for (const { target } of entries) {
+      const track = target as HTMLElement;
+      track.tabIndex = track.scrollWidth > track.clientWidth ? 0 : -1;
+    }
+  });
+  tracks.forEach((track) => observer.observe(track));
+</script>

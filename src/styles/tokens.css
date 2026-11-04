@@ -200,6 +200,11 @@
 @utility pt-section {
   padding-top: var(--section-padding-y);
 }
+/* Bottom only: sections that follow a block without a gap, e.g. Featured Work / Articles
+ * (pt 0 in Figma, the eyebrow border sits at the top). */
+@utility pb-section {
+  padding-bottom: var(--section-padding-y);
+}
 @utility pt-hero {
   padding-top: var(--hero-padding-top);
 }

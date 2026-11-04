@@ -1,0 +1,70 @@
+---
+/**
+ * Featured Articles Section
+ * Eyebrow, optional section header, 4 BlogListCards and an "All articles" button.
+ * xl: 4 columns. md: 2 × 2. base: a swipe track of fixed-width cards.
+ * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=53474-7992
+ * Renders nothing when there are no posts.
+ */
+import BlogListCard from "@/components/BlogListCard.astro";
+import SwipeTrack from "@/components/SwipeTrack.astro";
+import { cn } from "@/lib/utils";
+import type { FEATURED_JOURNAL_QUERY_RESULT } from "@/sanity/types";
+import { Button } from "@/ui/button";
+
+interface Props {
+  posts: FEATURED_JOURNAL_QUERY_RESULT;
+  /** Eyebrow heading. */
+  heading?: string;
+  /** Large header under the eyebrow. Omit to hide it (Figma `showHeader`). */
+  title?: string;
+  class?: string;
+}
+
+const {
+  posts,
+  heading = "Latest articles",
+  title = "Notes on what we're making, learning and thinking about.",
+  class: className,
+} = Astro.props;
+---
+
+{posts.length > 0 && (
+  <section aria-labelledby="featured-articles" class={cn("px-container pb-section", className)}>
+    <h2
+      id="featured-articles"
+      class="border-t border-border-subtle py-6 text-eyebrow text-fg-primary uppercase"
+    >
+      {heading}
+    </h2>
+    <div class="flex flex-col gap-12">
+      {title && (
+        <div class="grid-cols-layout">
+          <p class="col-span-full pt-20 text-headline-xl text-balance text-fg-primary md:col-span-8 xl:col-span-6">
+            {title}
+          </p>
+        </div>
+      )}
+      <div class="flex flex-col gap-20">
+        <SwipeTrack
+          label={heading}
+          class="animate-enter-stagger md:grid md:grid-cols-2 md:gap-y-12 xl:grid-cols-4"
+        >
+          {posts.map((post) => (
+            <li class="w-74 md:w-auto">
+              <BlogListCard
+                post={post}
+                sizes="(min-width: 64rem) 24vw, (min-width: 48rem) 49vw, 296px"
+              />
+            </li>
+          ))}
+        </SwipeTrack>
+        <div class="flex justify-center">
+          <Button as="a" href="/journal" variant="secondary">
+            All articles
+          </Button>
+        </div>
+      </div>
+    </div>
+  </section>
+)}

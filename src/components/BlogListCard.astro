@@ -1,0 +1,60 @@
+---
+/**
+ * Blog List Card
+ * Journal article card: 1:1 cover, title, excerpt, category and date tags.
+ * Used by the Featured Articles section and the Journal archive.
+ * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=5005-8529
+ *
+ * The whole card is clickable (stretched title link).
+ */
+import Media from "@/components/Media.astro";
+import { formatDate } from "@/lib/format";
+import { cn } from "@/lib/utils";
+import type { MediaData } from "@/sanity/media";
+import type { ALL_JOURNAL_QUERY_RESULT } from "@/sanity/types";
+import { Badge } from "@/ui/badge";
+
+interface Props {
+  post: ALL_JOURNAL_QUERY_RESULT[number];
+  /** Heading level of the title. */
+  as?: "h2" | "h3";
+  /** `sizes` for the cover. Defaults to the Journal grid (4 / 2 / 1 columns). */
+  sizes?: string;
+  class?: string;
+}
+
+const {
+  post,
+  as: Heading = "h3",
+  sizes = "(min-width: 64rem) 24vw, (min-width: 48rem) 49vw, 100vw",
+  class: className,
+} = Astro.props;
+
+// The cover is a plain image; Media takes the shared media shape.
+const cover: MediaData | null = post.coverImage
+  ? { kind: "image", image: post.coverImage, video: null }
+  : null;
+---
+
+<article
+  class={cn(
+    "relative flex flex-col gap-3 rounded-sm text-fg-primary has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-interactive-focus-ring has-[a:focus-visible]:ring-offset-2 has-[a:focus-visible]:ring-offset-bg-primary",
+    className,
+  )}
+>
+  <Media media={cover} aspect="square" sizes={sizes} />
+  <div class="flex flex-col gap-1">
+    <Heading class="text-headline-xs text-balance">
+      <a href={`/journal/${post.slug}`} class="outline-none after:absolute after:inset-0">
+        {post.title}
+      </a>
+    </Heading>
+    {post.excerpt && <p class="text-body-sm text-pretty">{post.excerpt}</p>}
+  </div>
+  <div class="flex items-end gap-1 pt-3">
+    {post.category && <Badge>{post.category}</Badge>}
+    <Badge>
+      <time datetime={post.publishedAt}>{formatDate(post.publishedAt)}</time>
+    </Badge>
+  </div>
+</article>

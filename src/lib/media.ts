@@ -9,6 +9,8 @@ export const ASPECT = {
   portrait: 4 / 5,
   /** Project hero and full-width visuals. */
   landscape: 16 / 9,
+  /** Journal article cards. */
+  square: 1,
 } as const;
 
 export type AspectName = keyof typeof ASPECT;
@@ -51,7 +53,7 @@ export function aspectMismatch(
   const expected = ASPECT[aspect];
   const actual = size.width / size.height;
   if (Math.abs(actual - expected) / expected <= tolerance) return null;
-  const label = aspect === "portrait" ? "4:5" : "16:9";
+  const label = { portrait: "4:5", landscape: "16:9", square: "1:1" }[aspect];
   return `This image is ${Math.round(size.width)} × ${Math.round(size.height)}, but this slot shows ${label}. It will be cropped around the hotspot.`;
 }
 

@@ -8,12 +8,19 @@ import Footer from "@/components/Footer.astro";
 import GetInTouchModal from "@/components/GetInTouchModal.astro";
 import Media from "@/components/Media.astro";
 import NavItem from "@/components/NavItem.astro";
+import BlogListCard from "@/components/BlogListCard.astro";
 import WorkArchiveCard from "@/components/WorkArchiveCard.astro";
 import WorkListCard from "@/components/WorkListCard.astro";
+import FeaturedArticlesSection from "@/sections/FeaturedArticlesSection.astro";
 import FeaturedWorkSection from "@/sections/FeaturedWorkSection.astro";
+import JournalArchiveSection from "@/sections/JournalArchiveSection.astro";
 import WorkArchiveSection from "@/sections/WorkArchiveSection.astro";
 import type { MediaData } from "@/sanity/media";
-import type { FEATURED_WORK_QUERY_RESULT, WORK_ARCHIVE_QUERY_RESULT } from "@/sanity/types";
+import type {
+  ALL_JOURNAL_QUERY_RESULT,
+  FEATURED_WORK_QUERY_RESULT,
+  WORK_ARCHIVE_QUERY_RESULT,
+} from "@/sanity/types";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { Button } from "@/ui/button";
 import { Badge } from "@/ui/badge";
@@ -74,7 +81,7 @@ const layout: [string, string, string][] = [
   ["--grid-gutter", "layout/grid-gutter", "gap-gutter"],
   ["--container-max-width", "layout/container-max-width", "max-w-container"],
   ["--container-padding-x", "layout/container-padding-x", "px-container"],
-  ["--section-padding-y", "layout/section-padding-y", "py-section, pt-section"],
+  ["--section-padding-y", "layout/section-padding-y", "py-section, pt-section, pb-section"],
   ["--hero-padding-top", "layout/hero-padding-top", "pt-hero"],
 ];
 
@@ -201,6 +208,20 @@ const archiveWorks = Array.from({ length: 3 }, (_, i) => ({
   _id: `archive-${i}`,
   archiveMedia: [emptyMedia, emptyMedia, emptyMedia],
 }));
+
+// Journal fixtures (Figma copy).
+const demoPost: ALL_JOURNAL_QUERY_RESULT[number] = {
+  _id: "post",
+  title: "Optimising a delivery process",
+  slug: "optimising-a-delivery-process",
+  publishedAt: "2025-08-17T09:00:00Z",
+  category: "News",
+  excerpt:
+    "ML Developer Nico Lutz explains how routing algorithms expanded Norwegian delivery routes without schedule disruptions.",
+  coverImage: null,
+};
+const posts = (n: number) =>
+  Array.from({ length: n }, (_, i) => ({ ...demoPost, _id: `post-${i}` }));
 
 const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
 ---
@@ -610,6 +631,19 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
     </section>
 
     <section class="flex flex-col gap-6">
+      <h2 class="text-headline-lg">BlogListCard</h2>
+      <p class="text-body-sm text-fg-secondary">
+        Card / Blog List Item: 1:1 cover, title, excerpt, category and date tags. The whole card is
+        the link.
+      </p>
+      <div class="grid gap-x-2 gap-y-12 md:grid-cols-2 xl:grid-cols-4">
+        <BlogListCard post={demoPost} />
+        <BlogListCard post={{ ...demoPost, _id: "no-category", category: null }} />
+        <BlogListCard post={{ ...demoPost, _id: "no-excerpt", excerpt: null }} />
+      </div>
+    </section>
+
+    <section class="flex flex-col gap-6">
       <h2 class="text-headline-lg">Divider</h2>
       <p class="text-body-sm text-fg-secondary">
         No component: horizontal is <code>&lt;hr class="border-border-subtle"&gt;</code>; vertical
@@ -644,6 +678,12 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
     <WorkArchiveSection works={archiveWorks} />
     <h2 class="px-container text-headline-lg">WorkArchiveSection, empty</h2>
     <WorkArchiveSection works={[]} />
+    <h2 class="px-container pt-section pb-6 text-headline-lg">
+      FeaturedArticlesSection (swipe track below md)
+    </h2>
+    <FeaturedArticlesSection posts={posts(4)} />
+    <h2 class="px-container pb-6 text-headline-lg">JournalArchiveSection (with next page)</h2>
+    <JournalArchiveSection posts={posts(6)} nextUrl="/journal/2" />
   </div>
   <!-- Footer (Figma node 53333:8956): the page one, full width. Hover the links, Tab through,
        and submit the newsletter form (success only after a 2xx from PUBLIC_NEWSLETTER_ENDPOINT). -->
