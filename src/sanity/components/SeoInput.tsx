@@ -58,19 +58,22 @@ function mediaImage(media?: MediaValue): ImageValue | undefined {
   return image?.asset?._ref ? image : undefined;
 }
 
-/** Social image in the site's order: SEO image, then the page's main visual. */
+/**
+ * Social image in the site's order: the SEO image, else a card generated at build time with
+ * the title over the page's main visual (src/lib/social-image.ts).
+ */
 function socialImage(doc: DocumentValue, seo?: SeoValue): [ImageValue | undefined, string] {
   if (seo?.image?.asset?._ref) return [seo.image, "from the field below"];
   if (doc._type === "work") {
     const listing = mediaImage(doc.listingMedia);
-    if (listing) return [listing, "from the listing visual"];
+    if (listing) return [listing, "generated: the title over the listing visual"];
     const hero = mediaImage(doc.heroMedia);
-    if (hero) return [hero, "from the project hero"];
+    if (hero) return [hero, "generated: the title over the project hero"];
   }
   if (doc._type === "journal" && doc.coverImage?.asset?._ref) {
-    return [doc.coverImage, "from the cover image"];
+    return [doc.coverImage, "generated: the title over the cover image"];
   }
-  return [undefined, "the site default (Site settings)"];
+  return [undefined, "generated: the title on a dark background"];
 }
 
 const isContentType = (type?: string): type is ContentType => !!type && type in CONTENT_PATHS;
@@ -135,7 +138,11 @@ export function SeoInput(props: ObjectInputProps) {
               height={315}
               style={{ width: "100%", maxWidth: "20rem", height: "auto", borderRadius: "0.25rem" }}
             />
-            <figcaption style={muted}>Share preview, cropped to 1200 × 630</figcaption>
+            <figcaption style={muted}>
+              {value?.image?.asset?._ref
+                ? "Share image, cropped to 1200 × 630"
+                : "Background of the generated share image (the title is added when the site builds)"}
+            </figcaption>
           </figure>
         ) : null}
       </section>

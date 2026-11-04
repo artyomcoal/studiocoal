@@ -1743,6 +1743,32 @@ export type REDIRECTS_QUERY_RESULT = {
   }> | null;
 };
 
+// Source: src/sanity/queries.ts
+// Variable: SOCIAL_IMAGES_QUERY
+// Query: *[_type in ["work", "journal"] && defined(slug.current) && !defined(seo.image.asset)]{    _type,    "slug": slug.current,    title,    "visual": select(      _type == "work" => coalesce(        select(listingMedia.kind == "video" => listingMedia.video.poster, listingMedia.image),        select(heroMedia.kind == "video" => heroMedia.video.poster, heroMedia.image)      ),      coverImage    ){ asset, crop, hotspot }  }
+export type SOCIAL_IMAGES_QUERY_RESULT = Array<
+  | {
+      _type: "journal";
+      slug: string;
+      title: string;
+      visual: {
+        asset: SanityImageAssetReference | null;
+        crop: SanityImageCrop | null;
+        hotspot: SanityImageHotspot | null;
+      } | null;
+    }
+  | {
+      _type: "work";
+      slug: string;
+      title: string;
+      visual: {
+        asset: SanityImageAssetReference | null;
+        crop: SanityImageCrop | null;
+        hotspot: SanityImageHotspot | null;
+      } | null;
+    }
+>;
+
 // Query TypeMap
 declare global {
   interface SanityQueries {
@@ -1763,6 +1789,7 @@ declare global {
     '*[_type == "journal" && defined(slug.current) && slug.current != $slug] | order(publishedAt desc) [0...$limit] {\n  _id,\n  title,\n  "slug": slug.current,\n  publishedAt,\n  category,\n  excerpt,\n  coverImage{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n}\n}': RECENT_JOURNAL_QUERY_RESULT;
     '*[_type in ["work", "journal"] && defined(slug.current)]{\n    _type,\n    "slug": slug.current,\n    _updatedAt,\n    "noIndex": seo.noIndex == true\n  }': SITEMAP_QUERY_RESULT;
     '{\n    "content": *[_type in ["work", "journal"] && defined(slug.current)]{\n      _type,\n      "slug": slug.current,\n      previousSlugs\n    },\n    "manual": *[_type == "siteSettings" && _id == "siteSettings"][0].redirects[]{ from, to, permanent }\n  }': REDIRECTS_QUERY_RESULT;
+    '*[_type in ["work", "journal"] && defined(slug.current) && !defined(seo.image.asset)]{\n    _type,\n    "slug": slug.current,\n    title,\n    "visual": select(\n      _type == "work" => coalesce(\n        select(listingMedia.kind == "video" => listingMedia.video.poster, listingMedia.image),\n        select(heroMedia.kind == "video" => heroMedia.video.poster, heroMedia.image)\n      ),\n      coverImage\n    ){ asset, crop, hotspot }\n  }': SOCIAL_IMAGES_QUERY_RESULT;
   }
 }
 // Lets @sanity/client releases that predate the global registry read it too
