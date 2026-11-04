@@ -11,9 +11,11 @@ import NavItem from "@/components/NavItem.astro";
 import BlogListCard from "@/components/BlogListCard.astro";
 import WorkArchiveCard from "@/components/WorkArchiveCard.astro";
 import WorkListCard from "@/components/WorkListCard.astro";
+import ClientsSection from "@/sections/ClientsSection.astro";
 import FeaturedArticlesSection from "@/sections/FeaturedArticlesSection.astro";
 import FeaturedWorkSection from "@/sections/FeaturedWorkSection.astro";
 import JournalArchiveSection from "@/sections/JournalArchiveSection.astro";
+import ServicesOverviewSection from "@/sections/ServicesOverviewSection.astro";
 import WorkArchiveSection from "@/sections/WorkArchiveSection.astro";
 import type { MediaData } from "@/sanity/media";
 import type {
@@ -222,6 +224,25 @@ const demoPost: ALL_JOURNAL_QUERY_RESULT[number] = {
 };
 const posts = (n: number) =>
   Array.from({ length: n }, (_, i) => ({ ...demoPost, _id: `post-${i}` }));
+
+// Clients fixture: the dataset has no logos, so the tiles render empty (asset refs are fake).
+const demoClients = [
+  "Vanta",
+  "Coinbase",
+  "Cabify",
+  "Ebury",
+  "Clara",
+  "Unwrap",
+  "Linear",
+  "Stripe",
+].map((name) => ({
+  _key: name,
+  name,
+  logo: {
+    _type: "image" as const,
+    asset: { _ref: "image-demo-96x24-svg", _type: "reference" as const },
+  },
+}));
 
 const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
 ---
@@ -678,6 +699,12 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
     <WorkArchiveSection works={archiveWorks} />
     <h2 class="px-container text-headline-lg">WorkArchiveSection, empty</h2>
     <WorkArchiveSection works={[]} />
+    <h2 class="px-container pt-section pb-6 text-headline-lg">
+      ServicesOverviewSection (home; thumbnails empty without Work)
+    </h2>
+    <ServicesOverviewSection thumbnails={{ brand: null, web: null, "digital-products": null }} />
+    <h2 class="px-container pb-6 text-headline-lg">ClientsSection (logos need Sanity assets)</h2>
+    <ClientsSection clients={demoClients} />
     <h2 class="px-container pt-section pb-6 text-headline-lg">
       FeaturedArticlesSection (swipe track below md)
     </h2>
