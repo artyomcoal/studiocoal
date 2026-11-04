@@ -14,6 +14,7 @@ export default defineConfig(
       "node_modules/",
       "playwright-report/",
       "test-results/",
+      "src/sanity/types.ts",
     ],
   },
   js.configs.recommended,
