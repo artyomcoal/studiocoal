@@ -1,2 +1,5 @@
 allowBuilds:
   lefthook: true
+overrides:
+  # @pierre/diffs 1.6.3 (via @sanity/vision) was published with a broken `workspace:*` dependency.
+  "@pierre/diffs": 1.6.2

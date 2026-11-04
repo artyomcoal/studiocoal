@@ -106,7 +106,7 @@ Token values live **only** in `src/styles/tokens.css` (neutral palette, semantic
 
 - Add components with `pnpm dlx bejamas@latest add <name>`. They land in `src/ui/` and are **ours** from then on.
 - **Edit copied files directly** to match Figma. Don't wrap them in extra layers. At the top of the file, record what you changed from upstream (upstream updates won't apply automatically).
-- Use bejamas for: **Button, Accordion, Dialog** (Get in touch modal), **Input / Textarea, Badge**.
+- Use bejamas for: **Button, Accordion, Dialog** (Get in touch modal), **Input** (footer email form), **Badge**.
 - Build by hand: **Navbar** (with mobile menu), **Footer**, **cards** (WorkListCard, WorkArchiveCard, BlogListCard).
 - **Don't make a component for something one utility class covers.** Divider → `<hr class="border-border-subtle">` (vertical: `<div role="separator" aria-orientation="vertical" class="w-px self-stretch bg-border-subtle">`); aspect ratio → `aspect-4/5` and similar. Text styles are utilities (`text-headline-*` etc.), never components.
 - The Figma **"Tag"** component is our **`Badge`** (`variant`: secondary | tertiary, `size`: sm | default).
@@ -137,10 +137,12 @@ Token values live **only** in `src/styles/tokens.css` (neutral palette, semantic
   - `FeaturedWorkSection` → featured Work items
   - `FeaturedArticlesSection` → latest or featured Journal posts
   - `ServiceOfferingSection` → related Work for that service, **max 2 items**
+- **Studio:** embedded at `/studio` via `@sanity/astro` (config in `sanity.config.ts`, schemas in `src/sanity/schemas/`). The site is static, so the Studio uses hash routing (`/studio#/…`). Each origin that opens the Studio (localhost, production, previews) must be added as a CORS origin with credentials in sanity.io/manage.
 - **All GROQ lives in `src/sanity/queries.ts`** using `defineQuery`. Never write inline queries in pages or components. Types come from `pnpm typegen`. Never hand-write query result types.
 - **Images** always go through the Sanity image URL builder, with responsive `srcset`/`sizes`, hotspot/crop and LQIP blur placeholders. Never use raw asset URLs.
 - **Portable Text** is rendered by one component (`src/components/RichText.astro`) mapped to the Figma Rich Text styles.
 - **Rendering:** static build. A Sanity webhook triggers a Vercel rebuild on publish. Draft preview runs on server-rendered routes (`prerender = false`) with the Presentation tool.
+- After changing a schema or query, run `pnpm typegen` and commit `src/sanity/types.ts`. CI fails if it is out of date.
 - Env vars (never commit them; keep `.env.example` up to date): `PUBLIC_SANITY_PROJECT_ID`, `PUBLIC_SANITY_DATASET`, `SANITY_API_READ_TOKEN`.
 - Never change or delete Sanity content or datasets from scripts without asking.
 

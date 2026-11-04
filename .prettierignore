@@ -9,3 +9,6 @@ tests/e2e/__screenshots__/
 
 # Markdown is hand-formatted (Prettier mangles the astro code samples in CLAUDE.md)
 *.md
+src/sanity/schema.json
+src/sanity/types.ts
+.claude/

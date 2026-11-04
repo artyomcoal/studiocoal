@@ -5,6 +5,11 @@ on:
   push:
     branches: [main]
 
+# Public Sanity identifiers (not secrets), needed by astro.config.mjs and the Sanity CLI.
+env:
+  PUBLIC_SANITY_PROJECT_ID: bw6geomj
+  PUBLIC_SANITY_DATASET: production
+
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
@@ -25,6 +30,8 @@ jobs:
       - run: pnpm lint
       - run: pnpm format:check
       - run: pnpm test
+      - name: Generated Sanity types are up to date
+        run: pnpm typegen && git diff --exit-code src/sanity/types.ts
       - run: pnpm build
 
   e2e:
