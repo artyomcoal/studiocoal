@@ -9,6 +9,8 @@ import { structure } from "./src/sanity/structure";
 const projectId = import.meta.env?.PUBLIC_SANITY_PROJECT_ID ?? process.env.PUBLIC_SANITY_PROJECT_ID;
 const dataset = import.meta.env?.PUBLIC_SANITY_DATASET ?? process.env.PUBLIC_SANITY_DATASET;
 
+const contextTemplates = new Set(["work-featured", "work-by-service"]);
+
 export default defineConfig({
   name: "default",
   title: "Studio Coal",
@@ -18,9 +20,31 @@ export default defineConfig({
   schema: {
     types: schemaTypes,
     // Singletons can't be created from the "new document" menu.
-    templates: (templates) => templates.filter(({ schemaType }) => !singletonTypes.has(schemaType)),
+    templates: (templates) => [
+      ...templates.filter(({ schemaType }) => !singletonTypes.has(schemaType)),
+      // Used by the filtered Work lists (src/sanity/structure.ts): a project created from
+      // "Featured on home page" or a project type list starts with that already set.
+      {
+        id: "work-featured",
+        title: "Featured project",
+        schemaType: "work",
+        value: { featured: true },
+      },
+      {
+        id: "work-by-service",
+        title: "Project of a type",
+        schemaType: "work",
+        parameters: [{ name: "service", type: "string" }],
+        value: ({ service }: { service: string }) => ({ services: [service] }),
+      },
+    ],
   },
   document: {
+    // The Work templates above only make sense inside their lists, not in the global menu.
+    newDocumentOptions: (options, { creationContext }) =>
+      creationContext.type === "global"
+        ? options.filter(({ templateId }) => !contextTemplates.has(templateId))
+        : options,
     // Singletons can't be duplicated or deleted.
     actions: (actions, { schemaType }) =>
       singletonTypes.has(schemaType)
