@@ -68,7 +68,7 @@
     @apply font-sans;
   }
   body {
-    @apply bg-background text-foreground text-body-md;
+    @apply bg-background text-foreground text-body-md antialiased;
   }
   .cn-font-heading {
     @apply font-heading;
