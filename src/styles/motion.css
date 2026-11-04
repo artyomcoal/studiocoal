@@ -3,7 +3,8 @@
  * tokens.css. Two parts:
  *
  * 1. Cross-document View Transitions: every navigation is a normal page load. The old page
- *    fades out; the header (view-transition-header) is a named group and stays pinned.
+ *    fades out; the header's nav pill and Get in touch button (view-transition-header,
+ *    view-transition-header-action) are named groups and stay pinned.
  * 2. Entrance: after an in-site navigation, BaseLayout adds `nav-entered` to <html> and the
  *    children of `animate-enter-stagger` fade in from blur, one after another. Direct visits
  *    don't animate, so the first paint (and LCP) is never delayed. Works without View
@@ -26,7 +27,10 @@
 /* Header is identical on every page: no cross-fade, it just stays. */
 ::view-transition-old(site-header),
 ::view-transition-new(site-header),
-::view-transition-group(site-header) {
+::view-transition-group(site-header),
+::view-transition-old(site-header-action),
+::view-transition-new(site-header-action),
+::view-transition-group(site-header-action) {
   animation: none;
 }
 
@@ -43,9 +47,15 @@
   }
 }
 
-/* Put on the site header (Navbar root) so it stays in place during transitions. */
+/* Put on the Navbar's nav pill and its Get in touch button so they stay in place during
+ * transitions. Not on the full-width <header>: a view-transition-name makes its element a
+ * backdrop root, so the pill's backdrop-blur would only see the transparent header, not the
+ * page behind it. */
 @utility view-transition-header {
   view-transition-name: site-header;
+}
+@utility view-transition-header-action {
+  view-transition-name: site-header-action;
 }
 
 /* One element. */
