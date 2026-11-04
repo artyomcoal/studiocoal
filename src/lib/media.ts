@@ -13,6 +13,8 @@ export const ASPECT = {
   square: 1,
   /** Service thumbnails on the home page. */
   thumbnail: 4 / 3,
+  /** About page studio photos. */
+  gallery: 3 / 2,
 } as const;
 
 export type AspectName = keyof typeof ASPECT;
@@ -55,7 +57,13 @@ export function aspectMismatch(
   const expected = ASPECT[aspect];
   const actual = size.width / size.height;
   if (Math.abs(actual - expected) / expected <= tolerance) return null;
-  const label = { portrait: "4:5", landscape: "16:9", square: "1:1", thumbnail: "4:3" }[aspect];
+  const label = {
+    portrait: "4:5",
+    landscape: "16:9",
+    square: "1:1",
+    thumbnail: "4:3",
+    gallery: "3:2",
+  }[aspect];
   return `This image is ${Math.round(size.width)} × ${Math.round(size.height)}, but this slot shows ${label}. It will be cropped around the hotspot.`;
 }
 

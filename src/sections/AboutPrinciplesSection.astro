@@ -1,0 +1,66 @@
+---
+/**
+ * About Principles Section
+ * "Our how": header and a principles accordion (Headline MD triggers) in columns 1–5 at xl,
+ * a square photo in 7–12; stacked below xl. The photo comes from Site settings › About page.
+ * Figma: About / breakpoint=xl (frame 5044:17639), "our how"
+ */
+import Media from "@/components/Media.astro";
+import { cn } from "@/lib/utils";
+import type { MediaData } from "@/sanity/media";
+import type { ABOUT_MEDIA_QUERY_RESULT } from "@/sanity/types";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/ui/accordion";
+
+interface Props {
+  image: NonNullable<ABOUT_MEDIA_QUERY_RESULT>["principlesImage"] | undefined;
+  class?: string;
+}
+
+const { image, class: className } = Astro.props;
+
+const principles = [
+  {
+    title: "Taste is the work",
+    text: "Making things has never been easier, knowing which one is right still isn't. We explore widely, with every tool we have, and spend our real effort on deciding.",
+  },
+  {
+    title: "A few projects at a time",
+    text: "We stay small by choice and take on only as much as we can do properly. You get our full attention, not a slot in a schedule.",
+  },
+  {
+    title: "The right people, not the available ones",
+    text: "Four of us at the core, and a network of senior specialists we've worked with for years. Each project gets the team it needs, from the first meeting to launch.",
+  },
+  {
+    title: "Made to be continued.",
+    text: "We hand over systems, not files: documented, structured and ready for your team and its AI tools to keep building on. The work should get better after we leave, not drift.",
+  },
+];
+---
+
+<section aria-labelledby="our-how" class={cn("px-container pb-section", className)}>
+  <p class="border-t border-border-subtle py-6 text-eyebrow text-fg-primary uppercase">Our how</p>
+  <div class="grid-cols-layout gap-y-12 pt-20">
+    <div class="col-span-full flex flex-col gap-12 xl:col-span-5">
+      <h2 id="our-how" class="text-headline-xl text-balance text-fg-primary">
+        The fundamental principles that shape our studio
+      </h2>
+      <Accordion>
+        {principles.map((principle) => (
+          <AccordionItem value={principle.title}>
+            <AccordionTrigger size="md">{principle.title}</AccordionTrigger>
+            <AccordionContent>{principle.text}</AccordionContent>
+          </AccordionItem>
+        ))}
+      </Accordion>
+    </div>
+    {image?.asset && (
+      <Media
+        media={{ kind: "image", image, video: null } as MediaData}
+        aspect="square"
+        sizes="(min-width: 64rem) 49vw, 100vw"
+        class="col-span-full rounded-none xl:col-span-6 xl:col-start-7"
+      />
+    )}
+  </div>
+</section>
