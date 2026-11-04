@@ -23,8 +23,6 @@ pnpm-debug.log*
 # jetbrains setting folder
 .idea/
 
-# fonts (Graphik is licensed; add WOFF2 files locally until the licence is bought)
-public/fonts/graphik/
 
 # misc
 .DS_Store

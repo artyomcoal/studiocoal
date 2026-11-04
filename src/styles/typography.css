@@ -8,14 +8,25 @@
  * New utility? Also add it to the font-size list in src/lib/utils.ts (tailwind-merge).
  */
 
-/* Graphik @font-face is declared inline in BaseLayout.astro (the WOFF2 files are licensed and
- * git-ignored, so Vite must not try to resolve them at build time). */
-/* "Graphik Fallback" is used until the real files exist. TODO: tune size-adjust /
- * ascent-override / descent-override with the real Graphik files so the swap causes no
- * layout shift. */
+/* Graphik Medium (licensed), self-hosted from public/fonts/graphik/ and preloaded in BaseLayout. */
+@font-face {
+  font-family: "Graphik";
+  src: url("/fonts/graphik/Graphik_Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Metric-matched Arial, shown until Graphik loads, so the swap causes no layout shift.
+ * Values computed from Graphik_Medium.woff2 vs Arial (unitsPerEm, typo metrics and the
+ * average width of English text): size-adjust = width ratio, overrides = Graphik metric / size. */
 @font-face {
   font-family: "Graphik Fallback";
-  src: local("Arial");
+  src: local("Arial"), local("ArialMT");
+  size-adjust: 107.58%;
+  ascent-override: 76.32%;
+  descent-override: 16.64%;
+  line-gap-override: 9.3%;
 }
 
 /* Geist Mono (OFL), self-hosted from public/fonts/geist/ and committed. */

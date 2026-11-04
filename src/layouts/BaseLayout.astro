@@ -57,16 +57,6 @@ const seo = buildSeo({
       type="font/woff2"
       crossorigin
     />
-    <!-- Graphik is licensed: public/fonts/graphik/ is git-ignored until the licence is bought. -->
-    <style is:inline>
-      @font-face {
-        font-family: "Graphik";
-        src: url("/fonts/graphik/Graphik_Medium.woff2") format("woff2");
-        font-weight: 500;
-        font-style: normal;
-        font-display: swap;
-      }
-    </style>
     <!-- Entrance animation only after an in-site navigation (src/styles/motion.css).
          Runs before first paint; direct visits stay static so LCP isn't delayed. -->
     <script is:inline>
