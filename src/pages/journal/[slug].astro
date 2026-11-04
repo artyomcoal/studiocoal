@@ -10,6 +10,7 @@ import PageLayout from "@/layouts/PageLayout.astro";
 import { formatDate } from "@/lib/format";
 import { ASPECT } from "@/lib/media";
 import { canonicalUrl, contentPath, contentSeo } from "@/lib/seo";
+import { socialImagePath, socialImagesEnabled } from "@/lib/social-image";
 import { article, breadcrumbs } from "@/lib/structured-data";
 import { imageSrcSet, urlFor } from "@/sanity/image";
 import type { MediaData } from "@/sanity/media";
@@ -35,11 +36,15 @@ const cover: MediaData | null = post.coverImage?.asset
   : null;
 // The 16:9 cover is the LCP element below the header on large screens: preload it.
 const coverSizes = "100vw";
-// Social image: SEO › Social image, then the cover.
-const socialImage = post.seo?.image?.asset ? post.seo.image : post.coverImage;
-const ogImage = socialImage?.asset
-  ? urlFor(socialImage).width(1200).height(630).fit("crop").url()
-  : null;
+// Social image: SEO › Social image, else the generated card (title over the cover,
+// src/pages/og/), else the cover.
+const ogImage = post.seo?.image?.asset
+  ? urlFor(post.seo.image).width(1200).height(630).fit("crop").url()
+  : socialImagesEnabled() && post.slug
+    ? new URL(socialImagePath("journal", post.slug), Astro.site ?? Astro.url.origin).href
+    : post.coverImage?.asset
+      ? urlFor(post.coverImage).width(1200).height(630).fit("crop").url()
+      : null;
 
 const seo = contentSeo(post);
 const site = String(Astro.site ?? Astro.url.origin);

@@ -192,3 +192,22 @@ export const REDIRECTS_QUERY = defineQuery(
     "manual": *[_type == "siteSettings" && _id == "siteSettings"][0].redirects[]{ from, to, permanent }
   }`,
 );
+
+/**
+ * Social share images (src/pages/og/[type]/[slug].png.ts): each project and post with the
+ * visual its image is built on. Pages that set SEO › Social image don't need one.
+ */
+export const SOCIAL_IMAGES_QUERY = defineQuery(
+  `*[_type in ["work", "journal"] && defined(slug.current) && !defined(seo.image.asset)]{
+    _type,
+    "slug": slug.current,
+    title,
+    "visual": select(
+      _type == "work" => coalesce(
+        select(listingMedia.kind == "video" => listingMedia.video.poster, listingMedia.image),
+        select(heroMedia.kind == "video" => heroMedia.video.poster, heroMedia.image)
+      ),
+      coverImage
+    ){ asset, crop, hotspot }
+  }`,
+);

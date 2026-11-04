@@ -10,6 +10,7 @@ import PageLayout from "@/layouts/PageLayout.astro";
 import { ASPECT } from "@/lib/media";
 import { canonicalUrl, contentPath, contentSeo } from "@/lib/seo";
 import { serviceTitle } from "@/lib/services";
+import { socialImagePath, socialImagesEnabled } from "@/lib/social-image";
 import { breadcrumbs, project } from "@/lib/structured-data";
 import { imageSrcSet, urlFor } from "@/sanity/image";
 import { resolveMedia } from "@/sanity/media";
@@ -35,16 +36,17 @@ const hero = resolveMedia(work.heroMedia);
 const heroImage = hero?.kind === "image" ? hero.image : hero?.video.poster;
 const heroSizes = "100vw";
 
-// Social image: SEO › Social image, then the listing visual, then the hero.
+// Social image: SEO › Social image, else the generated card (title over the listing visual,
+// src/pages/og/), else the listing visual, then the hero.
 const socialSource = resolveMedia(work.listingMedia) ?? hero;
-const socialImage = work.seo?.image?.asset
-  ? work.seo.image
-  : socialSource?.kind === "image"
-    ? socialSource.image
-    : socialSource?.video.poster;
-const ogImage = socialImage?.asset
-  ? urlFor(socialImage).width(1200).height(630).fit("crop").url()
-  : null;
+const visual = socialSource?.kind === "image" ? socialSource.image : socialSource?.video.poster;
+const ogImage = work.seo?.image?.asset
+  ? urlFor(work.seo.image).width(1200).height(630).fit("crop").url()
+  : socialImagesEnabled() && work.slug
+    ? new URL(socialImagePath("work", work.slug), Astro.site ?? Astro.url.origin).href
+    : visual?.asset
+      ? urlFor(visual).width(1200).height(630).fit("crop").url()
+      : null;
 
 const seo = contentSeo(work);
 const site = String(Astro.site ?? Astro.url.origin);
