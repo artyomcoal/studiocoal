@@ -1,0 +1,254 @@
+---
+/**
+ * Footer
+ * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=53333-8956
+ *
+ * Contacts, Services (anchors on /services), Connect (socials), Office, the newsletter sign-up,
+ * the wordmark and the legal row. Every link is fg-primary and turns fg-secondary on hover.
+ *
+ * Newsletter: the form posts the email to PUBLIC_NEWSLETTER_ENDPOINT (any provider that takes a
+ * form-encoded `email` field and allows CORS from the site). Without JS it is a plain form
+ * post. With JS it is sent with fetch, and "Thank you…" appears only after a 2xx response.
+ * An invalid address and a failed request are both reported by the browser's native
+ * validation bubble, so there is no custom error UI.
+ */
+import { sanityClient } from "sanity:client";
+import Wordmark from "@/assets/studio-coal-wordmark.svg";
+import { cn } from "@/lib/utils";
+import { SITE_SETTINGS_QUERY } from "@/sanity/queries";
+import { Button } from "@/ui/button";
+import { Input } from "@/ui/input";
+
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+
+const settings = await sanityClient.fetch(SITE_SETTINGS_QUERY);
+
+const contacts = [
+  { label: "General enquiries", email: "hello@studiocoal.com" },
+  { label: "New business", email: "partner@studiocoal.com" },
+  { label: "Careers", email: "careers@studiocoal.com" },
+];
+
+/** Anchors of the service blocks on the single Services page. */
+const services = [
+  { label: "Brand", href: "/services#brand" },
+  { label: "Website", href: "/services#website" },
+  { label: "Product", href: "/services#product" },
+];
+
+/** Default socials; Sanity Site settings › Social links overrides them when filled in. */
+const defaultSocials = [
+  { label: "LinkedIn", href: "https://www.linkedin.com/company/studiocoal" },
+  { label: "Instagram", href: "https://www.instagram.com/studiocoal" },
+  { label: "X", href: "https://x.com/studiocoal" },
+];
+const socials = settings?.social?.length
+  ? settings.social.map(({ label, href }) => ({ label, href }))
+  : defaultSocials;
+
+/** Default address; Sanity Site settings › Address (one line per row) overrides it. */
+const addressLines = settings?.address?.trim()
+  ? settings.address.trim().split(/\r?\n/)
+  : ["Korte Prinsengracht 42H", "1013 GT Amsterdam", "The Netherlands"];
+
+const newsletterEndpoint = import.meta.env.PUBLIC_NEWSLETTER_ENDPOINT || undefined;
+const year = new Date().getFullYear();
+
+const linkClass = cn(
+  "rounded-xs text-fg-primary transition-colors duration-150 ease-out outline-none",
+  "hover:text-fg-secondary",
+  "focus-visible:ring-2 focus-visible:ring-interactive-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg-primary",
+);
+---
+
+<footer
+  data-slot="footer"
+  class={cn("flex flex-col gap-20 bg-bg-secondary px-container pt-section", className)}
+>
+  <div class="flex flex-col gap-12">
+    <div class="grid-cols-layout gap-y-12 xl:gap-y-0">
+      <!-- Contacts -->
+      <address class="col-span-12 flex flex-col gap-6 not-italic xl:col-span-4">
+        {contacts.map(({ label, email }) => (
+          <div class="flex flex-col gap-1">
+            <p class="text-body-sm text-fg-secondary" id={`footer-contact-${email.split("@")[0]}`}>
+              {label}
+            </p>
+            <a
+              href={`mailto:${email}`}
+              class={cn(linkClass, "self-start text-body-md")}
+              aria-describedby={`footer-contact-${email.split("@")[0]}`}
+            >
+              {email}
+            </a>
+          </div>
+        ))}
+      </address>
+
+      <!-- Services -->
+      <nav
+        aria-labelledby="footer-services"
+        class="col-span-12 flex flex-col gap-2 md:col-span-4 xl:col-span-2 xl:col-start-7"
+      >
+        <h2 id="footer-services" class="text-body-sm text-fg-secondary">
+          Services
+        </h2>
+        <ul class="flex flex-col items-start gap-1 text-body-md">
+          {services.map(({ label, href }) => (
+            <li>
+              <a href={href} class={linkClass}>
+                {label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <!-- Connect -->
+      <nav
+        aria-labelledby="footer-connect"
+        class="col-span-12 flex flex-col gap-2 md:col-span-4 md:col-start-5 xl:col-span-2 xl:col-start-9"
+      >
+        <h2 id="footer-connect" class="text-body-sm text-fg-secondary">
+          Connect
+        </h2>
+        <ul class="flex flex-col items-start gap-1 text-body-md">
+          {socials.map(({ label, href }) => (
+            <li>
+              <a href={href} target="_blank" rel="noopener noreferrer" class={linkClass}>
+                {label}
+                <span class="sr-only"> (opens in a new tab)</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <!-- Office -->
+      <div class="col-span-12 flex flex-col gap-2 md:col-span-4 md:col-start-9 xl:col-span-2 xl:col-start-11">
+        <h2 class="text-body-sm text-fg-secondary">Office</h2>
+        <address class="text-body-md text-pretty text-fg-primary not-italic">
+          {addressLines.map((line, i) => (
+            <Fragment>
+              {line}
+              {i < addressLines.length - 1 && <br />}
+            </Fragment>
+          ))}
+        </address>
+      </div>
+    </div>
+
+    <!-- Newsletter -->
+    <div class="grid-cols-layout">
+      <section
+        aria-labelledby="footer-newsletter"
+        class="col-span-12 flex max-w-96 flex-col gap-6 md:col-span-6 md:max-w-112 xl:col-span-4"
+      >
+        <div class="flex flex-col gap-2 text-pretty">
+          <h2 id="footer-newsletter" class="text-body-sm text-fg-secondary">
+            Newsletter
+          </h2>
+          <p class="text-body-md text-fg-primary">
+            Occasional notes from the studio: work in progress, things we’ve learned, things we
+            like. A few times a year.
+          </p>
+        </div>
+
+        <form
+          data-newsletter-form
+          action={newsletterEndpoint}
+          method="post"
+          class="relative w-full xl:max-w-96"
+        >
+          <label for="footer-newsletter-email" class="sr-only">
+            Email address
+          </label>
+          <Input
+            id="footer-newsletter-email"
+            type="email"
+            name="email"
+            required
+            autocomplete="email"
+            placeholder="Email address"
+            class="pr-20"
+          />
+          <!-- Submit sits inside the field: 4px from its top, right and bottom edges (Figma). -->
+          <Button type="submit" size="sm" class="absolute top-1 right-1">
+            Submit
+          </Button>
+          <!-- Absolute so the message takes no space and nothing below it moves (Figma). -->
+          <p
+            data-newsletter-status
+            role="status"
+            class="absolute inset-x-0 top-full mt-2 text-body-sm text-pretty text-fg-primary"
+          ></p>
+        </form>
+      </section>
+    </div>
+  </div>
+
+  <div class="flex flex-col gap-6">
+    <Wordmark role="img" aria-label="Studio Coal" class="block h-auto w-full text-fg-faded" />
+    <div class="flex items-start justify-between gap-8 py-6 text-body-xs">
+      <a href="/cookie-policy" class={linkClass}>
+        Cookie policy
+      </a>
+      <p class="text-fg-primary">© Studio Coal • {year}</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const SUCCESS = "Thank you. We’ll see you soon.";
+  const FAILURE = "Something went wrong. Please try again.";
+
+  for (const form of document.querySelectorAll<HTMLFormElement>("[data-newsletter-form]")) {
+    const input = form.querySelector<HTMLInputElement>("input[name=email]");
+    const button = form.querySelector<HTMLButtonElement>("button[type=submit]");
+    const status = form.querySelector<HTMLElement>("[data-newsletter-status]");
+    if (!input || !button || !status) continue;
+
+    // A failed request is shown with the native validation bubble. Editing clears it, and the
+    // success message from a previous sign-up.
+    input.addEventListener("input", () => {
+      input.setCustomValidity("");
+      status.textContent = "";
+    });
+
+    const fail = () => {
+      input.setCustomValidity(FAILURE);
+      input.reportValidity();
+    };
+
+    // Runs only after native validation passed (invalid input never fires submit).
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      status.textContent = "";
+
+      const endpoint = form.getAttribute("action");
+      if (!endpoint) return fail();
+
+      button.disabled = true;
+      form.setAttribute("aria-busy", "true");
+      try {
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: { Accept: "application/json" },
+          body: new URLSearchParams({ email: input.value.trim() }),
+        });
+        if (!response.ok) throw new Error(`Newsletter: HTTP ${response.status}`);
+        form.reset();
+        status.textContent = SUCCESS;
+      } catch {
+        fail();
+      } finally {
+        button.disabled = false;
+        form.removeAttribute("aria-busy");
+      }
+    });
+  }
+</script>

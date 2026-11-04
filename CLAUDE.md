@@ -69,7 +69,7 @@ Token values live **only** in `src/styles/tokens.css` (neutral palette, semantic
 1. **No raw hex, rgb, hsl or px values** in components. Use tokens only.
 2. **No arbitrary Tailwind values** (`w-[347px]`, `text-[#fff]`). The only exception is a value with an inline comment explaining why no token fits. Prefer asking first.
 3. **Spacing** comes only from the Tailwind `spacing` scale (`p-4`, `gap-6`), which matches Figma `spacing/N`.
-4. **Section layout** uses the semantic utilities only: `px-container`, `py-section`, `pt-hero`, `gap-gutter`, `max-w-container`, `grid-cols-layout`.
+4. **Section layout** uses the semantic utilities only: `px-container`, `py-section`, `pt-section`, `pt-hero`, `gap-gutter`, `max-w-container`, `grid-cols-layout`.
 5. **Text** uses the type utilities only: `text-headline-xxl|xl|lg|md|sm|xs`, `text-body-lg|md|sm|xs`, `text-label`, `text-caption-md|sm`, `text-eyebrow`. Never compose `text-2xl font-medium leading-…` by hand.
 6. **Variants** use `class-variance-authority` (`cva`), as bejamas components do. Merge classes with `cn()` from `src/lib/utils.ts`.
 7. **Never add, rename or change a token without asking.** If a design needs a value that has no token, stop and ask.
@@ -144,7 +144,7 @@ Token values live **only** in `src/styles/tokens.css` (neutral palette, semantic
 - **Portable Text** is rendered by one component (`src/components/RichText.astro`) mapped to the Figma Rich Text styles.
 - **Rendering:** static build. A Sanity webhook triggers a Vercel rebuild on publish. Draft preview runs on server-rendered routes (`prerender = false`) with the Presentation tool.
 - After changing a schema or query, run `pnpm typegen` and commit `src/sanity/types.ts`. CI fails if it is out of date.
-- Env vars (never commit them; keep `.env.example` up to date): `PUBLIC_SANITY_PROJECT_ID`, `PUBLIC_SANITY_DATASET`, `SANITY_API_READ_TOKEN`.
+- Env vars (never commit them; keep `.env.example` up to date): `PUBLIC_SANITY_PROJECT_ID`, `PUBLIC_SANITY_DATASET`, `SANITY_API_READ_TOKEN`, `PUBLIC_NEWSLETTER_ENDPOINT` (Footer newsletter form).
 - Never change or delete Sanity content or datasets from scripts without asking.
 
 ## Figma → code workflow

@@ -190,6 +190,10 @@
 @utility py-section {
   padding-block: var(--section-padding-y);
 }
+/* Top only: sections that run into the next block, e.g. the Footer (pb 0 in Figma). */
+@utility pt-section {
+  padding-top: var(--section-padding-y);
+}
 @utility pt-hero {
   padding-top: var(--hero-padding-top);
 }

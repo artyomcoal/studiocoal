@@ -1,0 +1,40 @@
+---
+/**
+ * @component Input
+ * @description Figma "Field" (Footer newsletter, node 53554:5641). A single-line text field.
+ * @usage
+ * <label for="email" class="sr-only">Email address</label>
+ * <Input id="email" type="email" placeholder="Email address" />
+ */
+
+import type { HTMLAttributes } from "astro/types";
+
+import { cn } from "@/lib/utils";
+
+// Studio Coal: restyled to the Figma Field (Footer newsletter, node 53554:5641). Changes from
+// upstream:
+// - one size (h-9, pl-4, pr-3): the ui size variants and the nativeSize prop are removed
+// - colors from tokens: bg-tertiary fill, border-subtle stroke, fg-primary text,
+//   fg-secondary placeholder; text-body-sm type style, rounded-sm
+// - focus ring per Figma FocusState, like Button: 2px bg-primary gap + 2px focus ring
+// - no aria-invalid styling: invalid input is reported by the browser's native validation UI
+// - file-input styles removed (not used on the site)
+// To put a Button inside the field (newsletter Submit), wrap both in a `relative` element,
+// position the button `absolute inset-y-1 right-1` and give the input enough right padding.
+type Props = HTMLAttributes<"input">;
+
+const { class: className, type = "text", ...props } = Astro.props;
+---
+
+<input
+  type={type}
+  data-slot="input"
+  class={cn(
+    "h-9 w-full min-w-0 rounded-sm border border-border-subtle bg-bg-tertiary pr-3 pl-4 text-body-sm text-fg-primary",
+    "transition-colors duration-150 ease-out outline-none placeholder:text-fg-secondary",
+    "focus-visible:ring-2 focus-visible:ring-interactive-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg-primary",
+    "disabled:pointer-events-none disabled:opacity-50",
+    className,
+  )}
+  {...props}
+/>
