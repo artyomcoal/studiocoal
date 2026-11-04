@@ -4,6 +4,9 @@ on:
   pull_request:
   push:
     branches: [main]
+  # Started by "Update visual snapshots" after it commits new baselines (pushes made with
+  # GITHUB_TOKEN don't trigger workflows on their own).
+  workflow_dispatch:
 
 # Public Sanity identifiers (not secrets), needed by astro.config.mjs and the Sanity CLI.
 env:
@@ -45,7 +48,7 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps chromium
+      - uses: ./.github/actions/setup-playwright
       - run: pnpm test:e2e
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
