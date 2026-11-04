@@ -15,7 +15,7 @@ import NavItem from "@/components/NavItem.astro";
 import { cn } from "@/lib/utils";
 import { sanityClient } from "sanity:client";
 import { SITE_SETTINGS_QUERY } from "@/sanity/queries";
-import { Button } from "@/ui/button";
+import GetInTouchModal from "@/components/GetInTouchModal.astro";
 
 interface Props {
   class?: string;
@@ -85,9 +85,8 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
   <div class="pointer-events-none fixed inset-x-0 top-0 flex h-dvh items-end justify-center p-4 md:static md:h-auto md:p-0">
     <!-- Keep clear of the iOS home indicator (no token for a device inset). -->
     <div class="pointer-events-auto mb-[env(safe-area-inset-bottom)] md:mb-0">
-      <Button type="button" data-get-in-touch aria-haspopup="dialog">
-        Get in touch
-      </Button>
+      <!-- The "Get in touch" button is the dialog's trigger, rendered by the modal. -->
+      <GetInTouchModal />
     </div>
   </div>
 </header>

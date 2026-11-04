@@ -1,0 +1,68 @@
+---
+/**
+ * Dialog portal: full-page overlay + panel. The portal moves to <body> while open.
+ *
+ * Studio Coal: the overlay uses the bg-overlay token. The panel scales and fades from its anchor
+ * corner (transform-origin set by the caller) using the dialog motion tokens, and reverses on
+ * close: @data-slot/dialog keeps it visible until the transition ends.
+ */
+import { cn } from "@/lib/utils";
+import type { HTMLAttributes } from "astro/types";
+
+interface Props extends HTMLAttributes<"div"> {
+  overlayClass?: string;
+}
+
+const { class: className, overlayClass, ...rest } = Astro.props;
+---
+
+<div data-slot="dialog-portal" class="isolate">
+  <div
+    data-slot="dialog-overlay"
+    hidden
+    class={cn("dialog-motion fixed inset-0 z-60 bg-bg-overlay", overlayClass)}
+  ></div>
+  <div
+    data-slot="dialog-content"
+    hidden
+    class={cn("dialog-motion dialog-panel fixed z-60 outline-none", className)}
+    {...rest}
+  >
+    <slot />
+  </div>
+</div>
+
+<style is:global>
+  /* Values from tokens.css (--motion-*-dialog). Opening: from the starting style to the open
+   * state; closing: back to the ending style (same values, so it plays in reverse). */
+  .dialog-motion {
+    opacity: 0;
+    transition:
+      transform var(--motion-duration-dialog) var(--motion-ease-dialog),
+      opacity var(--motion-duration-dialog) var(--motion-ease-dialog);
+  }
+  .dialog-panel {
+    transform: scale(var(--motion-scale-dialog));
+    will-change: transform, opacity;
+  }
+  .dialog-motion[data-open] {
+    opacity: 1;
+  }
+  .dialog-panel[data-open] {
+    transform: none;
+  }
+  .dialog-motion[data-starting-style],
+  .dialog-motion[data-ending-style] {
+    opacity: 0;
+  }
+  .dialog-panel[data-starting-style],
+  .dialog-panel[data-ending-style] {
+    transform: scale(var(--motion-scale-dialog));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dialog-motion {
+      transition: none;
+    }
+  }
+</style>

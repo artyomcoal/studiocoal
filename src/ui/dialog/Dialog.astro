@@ -1,0 +1,48 @@
+---
+/**
+ * @component Dialog
+ * @description Modal dialog. Behaviour from @data-slot/dialog: Esc, click outside, focus trap,
+ * focus restore, scroll lock, aria-modal / labelledby / describedby, aria-expanded on the trigger.
+ *
+ * Studio Coal: copied from bejamas/ui Dialog and trimmed. Changes from upstream:
+ * - no `astro:page-load` re-binding (no ClientRouter, CLAUDE.md › JavaScript)
+ * - DialogContent: overlay + panel styles and transitions are ours (see DialogContent.astro)
+ * - Header / Footer / Title / Description / Trigger wrappers dropped: put data-slot="dialog-title",
+ *   "dialog-description" and "dialog-trigger" on your own elements (Button forwards data-slot)
+ */
+import { cn } from "@/lib/utils";
+import type { HTMLAttributes } from "astro/types";
+
+interface Props extends HTMLAttributes<"div"> {
+  closeOnClickOutside?: boolean;
+  closeOnEscape?: boolean;
+  lockScroll?: boolean;
+}
+
+const {
+  class: className,
+  closeOnClickOutside = true,
+  closeOnEscape = true,
+  lockScroll = true,
+  ...rest
+} = Astro.props;
+---
+
+<div
+  data-slot="dialog"
+  data-close-on-click-outside={String(closeOnClickOutside)}
+  data-close-on-escape={String(closeOnEscape)}
+  data-lock-scroll={String(lockScroll)}
+  class={cn(className)}
+  {...rest}
+>
+  <slot />
+</div>
+
+<script>
+  import { createDialog } from "@data-slot/dialog";
+
+  document.querySelectorAll<HTMLElement>('[data-slot="dialog"]').forEach((root) => {
+    createDialog(root);
+  });
+</script>

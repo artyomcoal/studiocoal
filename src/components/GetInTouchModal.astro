@@ -1,0 +1,108 @@
+---
+/**
+ * Get In Touch Modal
+ * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=53307-8812
+ *
+ * Opened by the Navbar's "Get in touch" button (rendered here as the dialog trigger).
+ * Closes on Esc, the close button and a click on the overlay (@data-slot/dialog).
+ *
+ * Position: md / xl: right edge aligned with the button (right-4), top edge on the navbar's
+ * bottom edge (top-18 = 16 + 40 + 16), so 16px below the button; scales from the top right.
+ * Base: centred, 16px above the bottom-pinned button (bottom-18); scales from the bottom centre.
+ * Width 384px (w-96), never wider than the viewport minus the container padding on both sides.
+ */
+import { Button } from "@/ui/button";
+import { Dialog, DialogContent } from "@/ui/dialog";
+
+const contacts = [
+  { label: "General enquiries", email: "hello@studiocoal.com" },
+  { label: "New business", email: "business@studiocoal.com" },
+];
+---
+
+<Dialog class="contents">
+  <Button type="button" data-slot="dialog-trigger" data-get-in-touch>
+    Get in touch
+  </Button>
+
+  <DialogContent
+    data-get-in-touch-dialog
+    class="inset-x-0 bottom-[calc(--spacing(18)+env(safe-area-inset-bottom))] mx-auto w-96 max-w-[calc(100vw-var(--container-padding-x)*2)] origin-bottom rounded-sm bg-interactive-secondary p-5 md:top-18 md:right-4 md:bottom-auto md:left-auto md:mx-0 md:origin-top-right"
+  >
+    <!-- bottom: 16px gap + 40px button + 16px, plus the iOS home-indicator inset the button also
+         keeps clear of. max-w: viewport minus --container-padding-x on both sides (owner spec). -->
+    <div class="flex flex-col gap-6">
+      <h2 data-slot="dialog-title" class="pr-4 text-headline-lg text-balance text-fg-primary">
+        <span class="text-fg-tertiary">Get in touch.</span> Tell us what’s coming up: a launch, a
+        raise, a new product.
+      </h2>
+
+      <hr class="border-border-subtle" />
+
+      {contacts.map(({ label, email }) => (
+        <div class="flex flex-col">
+          <p class="text-body-sm text-fg-secondary">{label}</p>
+          <div class="flex items-center justify-between gap-2">
+            <a
+              href={`mailto:${email}`}
+              class="text-body-md text-fg-primary underline-offset-2 hover:underline"
+            >
+              {email}
+            </a>
+            <Button
+              type="button"
+              variant="tertiary"
+              size="sm"
+              data-copy-email={email}
+              aria-label={`Copy ${email}`}
+            >
+              <span aria-live="polite">Copy</span>
+            </Button>
+          </div>
+        </div>
+      ))}
+
+      <hr class="border-border-subtle" />
+
+      <p data-slot="dialog-description" class="text-body-sm text-fg-secondary">
+        We reply to every message ourselves, usually within one working day.
+      </p>
+    </div>
+
+    <Button
+      type="button"
+      variant="tertiary"
+      size="icon"
+      data-slot="dialog-close"
+      aria-label="Close"
+      class="absolute top-3 right-3"
+    >
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path
+          d="M8.46447 8.46447L12 12M12 12L15.5355 15.5355M12 12L15.5355 8.46447M12 12L8.46447 15.5355"
+          stroke="currentColor"
+          stroke-width="1.5"
+        ></path>
+      </svg>
+    </Button>
+  </DialogContent>
+</Dialog>
+
+<script>
+  // Copy buttons: write the address to the clipboard and show "Copied!" for a moment.
+  const RESET_AFTER_MS = 2000;
+  document.querySelectorAll<HTMLButtonElement>("[data-copy-email]").forEach((button) => {
+    const label = button.querySelector("span")!;
+    let timer: number | undefined;
+    button.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(button.dataset.copyEmail!);
+      } catch {
+        return; // Clipboard blocked (insecure context or permission): keep "Copy".
+      }
+      label.textContent = "Copied!";
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => (label.textContent = "Copy"), RESET_AFTER_MS);
+    });
+  });
+</script>
