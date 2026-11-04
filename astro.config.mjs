@@ -8,10 +8,11 @@ import tailwindcss from "@tailwindcss/vite";
 const BEJAMAS_ASTRO_FONTS = [
   {
     provider: fontProviders.google(),
-    name: "Inter",
-    cssVariable: "--font-sans",
-    weights: ["100 900"],
+    name: "Geist Mono",
+    cssVariable: "--font-geist-mono",
+    weights: [500],
     subsets: ["latin"],
+    fallbacks: ["ui-monospace", "monospace"],
   },
 ];
 // bejamas:astro-fonts:end

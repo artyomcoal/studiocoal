@@ -1,0 +1,138 @@
+/*
+ * Design tokens — source of truth is the Figma file xqG6nM7oVW4iev0PrbuqWt.
+ * Do not add, rename or change a token without asking (see CLAUDE.md).
+ *
+ * Breakpoints (mobile-first):
+ *   base  < 768px   (designed at 375)
+ *   md    >= 768px  (designed at 768)
+ *   xl    >= 1024px (designed at 1440)
+ */
+
+/* ---------- Breakpoints ---------- */
+@theme {
+  --breakpoint-*: initial;
+  --breakpoint-md: 48rem;
+  --breakpoint-xl: 64rem;
+}
+
+/* ---------- Semantic colors (Figma: Theme collection) ----------
+ * Dark values live on :root and are the default.
+ * TODO(light theme): the Figma Light-mode values for this collection are not
+ * available to the build agent yet. Add them in the light block below once
+ * they are provided, then switch color-scheme to `light dark`.
+ */
+:root {
+  color-scheme: dark;
+
+  --bg-primary: #0f0f10;
+  --bg-secondary: #1d1e20;
+  --bg-tertiary: #2e2f32;
+  --bg-translucent: #f9f9f91a;
+
+  --fg-primary: #f2f2f2;
+  --fg-secondary: #a7a9ad;
+  --fg-tertiary: #717276;
+  --fg-faded: #2e2f32;
+  --fg-on-primary: #1d1e20;
+  --fg-on-secondary: #f2f2f2;
+
+  --border-subtle: #2e2f32;
+
+  --interactive-primary: #ffffff;
+  --interactive-primary-hover: #f2f2f2;
+  --interactive-primary-active: #d1d1d1;
+  --interactive-secondary: #1d1e20;
+  --interactive-secondary-hover: #2e2f32;
+  --interactive-secondary-active: #2e2f32;
+  --interactive-focus-ring: #ffffff;
+}
+
+/*
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+    --bg-primary: ...;
+  }
+}
+*/
+
+@theme inline {
+  --color-bg-primary: var(--bg-primary);
+  --color-bg-secondary: var(--bg-secondary);
+  --color-bg-tertiary: var(--bg-tertiary);
+  --color-bg-translucent: var(--bg-translucent);
+
+  --color-fg-primary: var(--fg-primary);
+  --color-fg-secondary: var(--fg-secondary);
+  --color-fg-tertiary: var(--fg-tertiary);
+  --color-fg-faded: var(--fg-faded);
+  --color-fg-on-primary: var(--fg-on-primary);
+  --color-fg-on-secondary: var(--fg-on-secondary);
+
+  --color-border-subtle: var(--border-subtle);
+
+  --color-interactive-primary: var(--interactive-primary);
+  --color-interactive-primary-hover: var(--interactive-primary-hover);
+  --color-interactive-primary-active: var(--interactive-primary-active);
+  --color-interactive-secondary: var(--interactive-secondary);
+  --color-interactive-secondary-hover: var(--interactive-secondary-hover);
+  --color-interactive-secondary-active: var(--interactive-secondary-active);
+  --color-interactive-focus-ring: var(--interactive-focus-ring);
+}
+
+/* ---------- Radius (Figma: border-radius/rounded-*) ----------
+ * bejamas derives rounded-sm/md/lg/xl from --radius. 0.5rem makes rounded-sm = 4px (Figma).
+ */
+@theme {
+  --radius-xs: 0.125rem; /* Figma rounded-xs = 2 */
+}
+:root {
+  --radius: 0.5rem;
+}
+
+/* ---------- Semantic layout tokens (Figma: Custom collection) ---------- */
+:root {
+  /* base */
+  --grid-column-count: 12;
+  --grid-gutter: 0.5rem; /* 8 */
+  --container-padding-x: 0.75rem; /* 12 */
+  --section-padding-y: 3rem; /* 48 */
+  --hero-padding-top: 12rem; /* 192 */
+  --container-max-width: 90rem; /* 1440 — applied only via max-w-container */
+}
+
+@media (width >= 48rem) {
+  :root {
+    --section-padding-y: 4rem; /* 64 */
+  }
+}
+
+@media (width >= 64rem) {
+  :root {
+    --container-padding-x: 1rem; /* 16 */
+    --section-padding-y: 6rem; /* 96 */
+    --hero-padding-top: 16rem; /* 256 */
+  }
+}
+
+@utility px-container {
+  padding-inline: var(--container-padding-x);
+}
+@utility py-section {
+  padding-block: var(--section-padding-y);
+}
+@utility pt-hero {
+  padding-top: var(--hero-padding-top);
+}
+@utility gap-gutter {
+  gap: var(--grid-gutter);
+}
+@utility max-w-container {
+  max-width: var(--container-max-width);
+  margin-inline: auto;
+}
+@utility grid-cols-layout {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-column-count), minmax(0, 1fr));
+  column-gap: var(--grid-gutter);
+}
