@@ -1,0 +1,100 @@
+---
+/**
+ * Work Archive Card
+ * One project row on /work: name, description, project type tags and the three 4:5
+ * archive visuals.
+ * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=53355-3844
+ *
+ * - xl: 4 columns, content + 3 visuals in one row.
+ * - md: content over 6 of 12 columns, the 3 visuals below (4 columns each).
+ * - base: stacked; the visuals are a horizontal swipe track of fixed 256px cards that runs
+ *   to the screen edges, snaps to each card and hides the scrollbar.
+ *
+ * The project name links to the project. From md up the link covers the whole card; on base
+ * it covers the text only, so swiping the visuals never starts a navigation.
+ */
+import Media from "@/components/Media.astro";
+import { serviceTitle } from "@/lib/services";
+import { cn } from "@/lib/utils";
+import type { WORK_ARCHIVE_QUERY_RESULT } from "@/sanity/types";
+import { Badge } from "@/ui/badge";
+
+interface Props {
+  work: WORK_ARCHIVE_QUERY_RESULT[number];
+  /** Heading level of the project name. */
+  as?: "h2" | "h3";
+  /** Load the visuals eagerly (first row above the fold). */
+  priority?: boolean;
+  class?: string;
+}
+
+const { work, as: Heading = "h2", priority = false, class: className } = Astro.props;
+
+// Always three slots, so a project with missing visuals keeps the row's layout.
+const visuals = Array.from({ length: 3 }, (_, i) => work.archiveMedia?.[i] ?? null);
+---
+
+<article
+  class={cn(
+    "group/card flex flex-col gap-6 rounded-sm text-fg-primary md:relative md:grid-cols-layout md:gap-y-6 xl:grid-cols-4 xl:gap-y-2",
+    "has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-interactive-focus-ring has-[a:focus-visible]:ring-offset-2 has-[a:focus-visible]:ring-offset-bg-primary",
+    className,
+  )}
+>
+  <div class="relative flex flex-col gap-2 md:static md:col-span-6 md:pr-6 xl:col-span-1">
+    <Heading class="text-headline-md text-pretty">
+      <a href={`/work/${work.slug}`} class="outline-none after:absolute after:inset-0">
+        {work.title}
+      </a>
+    </Heading>
+    {work.excerpt && <p class="text-body-sm text-pretty">{work.excerpt}</p>}
+    {work.services?.length ? (
+      <ul class="flex flex-wrap gap-1 pt-4 md:pt-2 xl:pt-4" aria-label="Project type">
+        {work.services.map((service) => (
+          <li>
+            <Badge>{serviceTitle(service)}</Badge>
+          </li>
+        ))}
+      </ul>
+    ) : null}
+  </div>
+
+  <!-- Base: the track bleeds into the container padding (-mx / px with the container token),
+       so cards scroll edge to edge, and scroll-padding keeps snapped cards aligned with the
+       text. No utility exists for these, hence the token references. -->
+  <!-- tabindex: a scrollable region must be focusable so keyboard users can scroll it (axe
+       scrollable-region-focusable); the script below drops it from the tab order when the
+       track doesn't scroll. The <ul> keeps its list semantics, so it isn't role="region". -->
+  {/* eslint-disable astro/jsx-a11y/no-noninteractive-tabindex -- see the comment above */}
+  <ul
+    data-slot="archive-track"
+    tabindex="0"
+    aria-label={`${work.title} visuals`}
+    class="-mx-(--container-padding-x) flex snap-x snap-mandatory scroll-px-(--container-padding-x) gap-2 overflow-x-auto overscroll-x-contain px-container scrollbar-none outline-none focus-visible:ring-2 focus-visible:ring-interactive-focus-ring focus-visible:ring-inset motion-safe:scroll-smooth md:col-span-full md:mx-0 md:grid md:snap-none md:grid-cols-3 md:overflow-visible md:px-0 xl:col-span-3"
+  >
+    {visuals.map((media) => (
+      <li class="w-64 shrink-0 snap-start last:snap-end md:w-auto">
+        <Media
+          media={media}
+          aspect="portrait"
+          sizes="(min-width: 64rem) 24vw, (min-width: 48rem) 32vw, 256px"
+          priority={priority}
+        />
+      </li>
+    ))}
+  </ul>
+  {/* eslint-enable astro/jsx-a11y/no-noninteractive-tabindex */}
+</article>
+
+<script>
+  // The track only scrolls below md. Keep it in the tab order only while it can scroll,
+  // so keyboard users can scroll it on mobile but don't hit a dead tab stop on desktop.
+  const tracks = document.querySelectorAll<HTMLElement>("[data-slot=archive-track]");
+  const sync = (track: HTMLElement) => {
+    track.tabIndex = track.scrollWidth > track.clientWidth ? 0 : -1;
+  };
+  const observer = new ResizeObserver((entries) =>
+    entries.forEach((e) => sync(e.target as HTMLElement)),
+  );
+  tracks.forEach((track) => observer.observe(track));
+</script>

@@ -90,3 +90,12 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Hides the scrollbar but keeps the element scrollable (touch, trackpad, keyboard).
+ * Used by horizontal swipe tracks, e.g. the Work Archive visuals on mobile. */
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
