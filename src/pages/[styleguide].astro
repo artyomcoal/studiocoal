@@ -298,8 +298,9 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
       <p class="max-w-2xl text-body-sm text-fg-secondary">
         Page transitions (src/styles/motion.css). After an in-site navigation, children of{" "}
         <code>animate-enter-stagger</code> fade in from blur one after another;{" "}
-        <code>animate-enter</code> does the same for one element. The header gets{" "}
-        <code>view-transition-header</code> and stays pinned. Off under reduced motion.
+        <code>animate-enter</code> does the same for one element. The nav pill gets{" "}
+        <code>view-transition-header</code> and the Get in touch button{" "}
+        <code>view-transition-header-action</code>, so both stay pinned. Off under reduced motion.
       </p>
       <ul class="flex flex-col gap-2">
         {motion.map(([name, use]) => (

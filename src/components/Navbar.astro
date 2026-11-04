@@ -5,7 +5,9 @@
  *
  * Behaviour modelled on standard-projects.com: a fixed, always-visible frosted pill with every
  * link visible at every breakpoint (no hamburger menu). The current section is the filled
- * item. The header is a named View Transition group, so it stays pinned between pages.
+ * item. The nav pill and the button are named View Transition groups, so they stay pinned
+ * between pages. The names sit on them, not on <header>: a named element is a backdrop root,
+ * which would stop the pill's backdrop-blur from seeing the page.
  *
  * Layout per Figma: from md, pill top-left and "Get in touch" top-right. On base the pill is
  * centred (6px sides) and the button is fixed to the bottom centre of the dynamic viewport
@@ -46,13 +48,13 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
   class={cn(
     // Base: the pill is centred with 6px sides (Figma base frame: 363px pill in 375px),
     // since five links don't fit inside 16px padding. From md: pill left, button right.
-    "pointer-events-none fixed inset-x-0 top-0 z-50 flex items-center justify-center px-1.5 py-4 view-transition-header md:justify-between md:p-4",
+    "pointer-events-none fixed inset-x-0 top-0 z-50 flex items-center justify-center px-1.5 py-4 md:justify-between md:p-4",
     className,
   )}
 >
   <nav
     aria-label="Main"
-    class="pointer-events-auto flex max-w-full min-w-0 items-center gap-1 rounded-sm bg-bg-translucent py-1 pr-2 pl-1 backdrop-blur-md xl:backdrop-blur-xs"
+    class="pointer-events-auto flex max-w-full min-w-0 items-center gap-1 rounded-sm bg-bg-translucent py-1 pr-2 pl-1 backdrop-blur-md view-transition-header xl:backdrop-blur-xs"
   >
     <a
       href="/"
@@ -84,7 +86,7 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
        and pins it to the bottom centre; from md it sits in the header row. -->
   <div class="pointer-events-none fixed inset-x-0 top-0 flex h-dvh items-end justify-center p-4 md:static md:h-auto md:p-0">
     <!-- Keep clear of the iOS home indicator (no token for a device inset). -->
-    <div class="pointer-events-auto mb-[env(safe-area-inset-bottom)] md:mb-0">
+    <div class="pointer-events-auto mb-[env(safe-area-inset-bottom)] view-transition-header-action md:mb-0">
       <!-- The "Get in touch" button is the dialog's trigger, rendered by the modal. -->
       <GetInTouchModal />
     </div>

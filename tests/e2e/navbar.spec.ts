@@ -60,6 +60,28 @@ test.describe("navbar", () => {
     }
   });
 
+  test("pill blurs the page behind it: no view-transition-name on an ancestor", async ({
+    page,
+  }) => {
+    // A view-transition-name makes its element a backdrop root, so on an ancestor of the
+    // pill the backdrop-filter would only see that (transparent) ancestor, never the page.
+    const result = await page.getByRole("navigation", { name: "Main" }).evaluate((nav) => {
+      const named: string[] = [];
+      // <html> (view-transition-name: root) is the page itself, so it's fine.
+      for (
+        let el = nav.parentElement;
+        el && el !== document.documentElement;
+        el = el.parentElement
+      ) {
+        const name = getComputedStyle(el).viewTransitionName;
+        if (name && name !== "none") named.push(`${el.tagName}: ${name}`);
+      }
+      return { filter: getComputedStyle(nav).backdropFilter, named };
+    });
+    expect(result.filter).toMatch(/^blur\(/);
+    expect(result.named).toEqual([]);
+  });
+
   test("is reachable by keyboard in order", async ({ page }) => {
     await page.keyboard.press("Tab");
     await expect(page.getByRole("link", { name: "Studio Coal home" })).toBeFocused();
