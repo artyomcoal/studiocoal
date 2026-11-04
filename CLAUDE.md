@@ -120,6 +120,15 @@ Token values live **only** in `src/styles/tokens.css` (neutral palette, semantic
 - Animation: CSS first (transitions, `@keyframes`, View Transitions). Always respect `prefers-reduced-motion`.
 - Budget: under 20 KB of JS per page (excluding `/studio`).
 
+### Page transitions
+- **Cross-document View Transitions** (CSS `@view-transition { navigation: auto; }`). Every navigation is a normal full page load. **Don't add Astro's `<ClientRouter />`** or any SPA router without asking.
+- Reference: permanent.is. The old page fades out, and the header keeps a `view-transition-name` so it stays pinned. On the new page, top-level sections play a staggered fade-in from blur (opacity 0 → 1, blur → 0, about 0.95s, staggered about 110ms). Grids and lists stagger their children the same way. Rebuild it in our own code; don't copy their CSS.
+- The entrance animation is CSS-only, defined once (keyframes and stagger in `src/styles/`) and applied through `PageLayout`/shared classes, not per component. It must still play where View Transitions aren't supported (e.g. Firefox).
+- Motion values (durations, easings, blur) go in `tokens.css` like any other token, so ask before adding them.
+- Component scripts stay plain `<script>` that run once per page load. No `astro:page-load` re-init logic.
+- Under `prefers-reduced-motion: reduce`, turn off both the View Transition animations and the entrance animation.
+- Text-morph effects (spring-animated label changes like "Menu ↔ Close") need a library such as Torph, which is a new runtime dependency, so ask first and check it against the JS budget.
+
 ## Sanity
 
 - Collections: **Work** and **Journal** (posts). Plus a `siteSettings` singleton (nav, footer, contacts, social).
