@@ -67,7 +67,12 @@ const linkClass = cn(
 
 <footer
   data-slot="footer"
-  class={cn("flex flex-col gap-20 bg-bg-secondary px-container pt-section", className)}
+  class={cn(
+    // Base: bottom padding keeps the legal row clear of the Navbar's bottom-pinned "Get in
+    // touch" button (16px gap + 40px button + iOS home-indicator inset; no token for the inset).
+    "flex flex-col gap-20 bg-bg-secondary px-container pt-section pb-[calc(--spacing(14)+env(safe-area-inset-bottom))] md:pb-0",
+    className,
+  )}
 >
   <div class="flex flex-col gap-12">
     <div class="grid-cols-layout gap-y-12 xl:gap-y-0">
