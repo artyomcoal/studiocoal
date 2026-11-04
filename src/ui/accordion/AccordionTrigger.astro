@@ -26,9 +26,10 @@ const {
 // - text from headline styles via `size`, interactive-primary color, hover/expanded/focus use -hover
 // - 20px vertical padding (py-5), Figma focus ring, plus icon in a 24px box (bg-secondary,
 //   bg-tertiary on hover/press) instead of chevrons
+// - cursor-pointer: Tailwind v4 Preflight leaves <button> on the default cursor
 const triggerVariants = cva(
   [
-    "group/accordion-trigger relative flex flex-1 items-center justify-between gap-4 py-5 text-left",
+    "group/accordion-trigger relative flex flex-1 cursor-pointer items-center justify-between gap-4 py-5 text-left",
     "text-interactive-primary transition-colors duration-150 ease-out outline-none",
     "hover:text-interactive-primary-hover aria-expanded:text-interactive-primary-hover focus-visible:text-interactive-primary-hover",
     "focus-visible:ring-2 focus-visible:ring-interactive-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg-primary",
