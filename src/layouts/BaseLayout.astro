@@ -1,12 +1,38 @@
 ---
+/**
+ * Base layout: document shell, fonts and SEO / social meta.
+ * Defaults come from the Sanity siteSettings singleton, then from src/lib/seo.ts.
+ */
+import { sanityClient } from "sanity:client";
+import { buildSeo, SITE_NAME } from "@/lib/seo";
+import { urlFor } from "@/sanity/image";
+import { SITE_SETTINGS_QUERY } from "@/sanity/queries";
 import "@/styles/globals.css";
 
 interface Props {
-  title: string;
-  description?: string;
+  /** Page title without the site name. Omit on the home page. */
+  title?: string;
+  description?: string | null;
+  /** Absolute URL of a 1200 × 630 social image. Defaults to the site settings image. */
+  image?: string | null;
+  noindex?: boolean;
 }
 
-const { title, description } = Astro.props;
+const { title, description, image, noindex } = Astro.props;
+
+const settings = await sanityClient.fetch(SITE_SETTINGS_QUERY);
+const defaultImage = settings?.seo?.image?.asset
+  ? urlFor(settings.seo.image).width(1200).height(630).fit("crop").url()
+  : null;
+
+const seo = buildSeo({
+  title,
+  description: description ?? settings?.seo?.description ?? settings?.description,
+  image: image ?? defaultImage,
+  pathname: Astro.url.pathname,
+  site: Astro.site ?? Astro.url.origin,
+  noindex,
+});
 ---
 
 <!doctype html>
@@ -41,8 +67,22 @@ const { title, description } = Astro.props;
         font-display: swap;
       }
     </style>
-    <title>{title}</title>
-    {description && <meta name="description" content={description} />}
+    <title>{seo.title}</title>
+    <meta name="description" content={seo.description} />
+    <link rel="canonical" href={seo.canonical} />
+    {seo.noindex && <meta name="robots" content="noindex, nofollow" />}
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE_NAME} />
+    <meta property="og:title" content={seo.title} />
+    <meta property="og:description" content={seo.description} />
+    <meta property="og:url" content={seo.canonical} />
+    {seo.image && <meta property="og:image" content={seo.image} />}
+    <meta name="twitter:card" content={seo.image ? "summary_large_image" : "summary"} />
+    <meta name="twitter:title" content={seo.title} />
+    <meta name="twitter:description" content={seo.description} />
+    {seo.image && <meta name="twitter:image" content={seo.image} />}
   </head>
   <body>
     <slot />

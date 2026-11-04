@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@astrojs/react": "^7.1.2",
+    "@astrojs/sitemap": "^3.7.4",
     "@data-slot/accordion": "^1.1.2",
     "@lucide/astro": "^1.47.0",
     "@sanity/astro": "^3.6.0",
