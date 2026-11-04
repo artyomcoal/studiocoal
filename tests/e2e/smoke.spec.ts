@@ -1,9 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { routes } from "./routes";
 
-// Graphik is git-ignored until the licence is bought, so its preload 404s in CI.
-const ignoredRequests = [/\/fonts\/graphik\//];
-
 for (const route of routes) {
   test(`${route.name} loads without errors`, async ({ page }) => {
     const errors: string[] = [];
@@ -13,7 +10,7 @@ for (const route of routes) {
     });
     page.on("response", (response) => {
       const url = response.url();
-      if (response.status() >= 400 && !ignoredRequests.some((pattern) => pattern.test(url))) {
+      if (response.status() >= 400) {
         errors.push(`${response.status()} ${url}`);
       }
     });
@@ -28,12 +25,6 @@ for (const route of routes) {
       new RegExp(`^https://studiocoal\\.com${route.path}$`),
     );
 
-    // Console errors for the ignored requests are reported without a URL, so filter on the
-    // generic resource message only when such a request actually failed.
-    const unexpected = errors.filter(
-      (error) =>
-        !error.startsWith("Failed to load resource: the server responded with a status of 404"),
-    );
-    expect(unexpected).toEqual([]);
+    expect(errors).toEqual([]);
   });
 }
