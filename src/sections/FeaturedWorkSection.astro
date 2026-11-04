@@ -1,0 +1,72 @@
+---
+/**
+ * Featured Work Section
+ * Eyebrow, a grid of WorkListCards and a "View all work" button.
+ * - columns="3" (default): 3 items, 3 columns from md. Project pages, services, about.
+ *   Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=53474-6300
+ * - columns="2": 6 items, 2 columns at md, 3 at xl. Home page.
+ *   Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=53307-8815
+ * Renders nothing when there's no work to show.
+ */
+import { cva } from "class-variance-authority";
+import WorkListCard from "@/components/WorkListCard.astro";
+import { cn } from "@/lib/utils";
+import type { FEATURED_WORK_QUERY_RESULT } from "@/sanity/types";
+import { Button } from "@/ui/button";
+
+interface Props {
+  works: FEATURED_WORK_QUERY_RESULT;
+  /** Eyebrow heading. */
+  heading?: string;
+  /** Columns at md. xl always has 3. */
+  columns?: "2" | "3";
+  /** Show the "View all work" link to /work. */
+  showAllLink?: boolean;
+  class?: string;
+}
+
+const {
+  works,
+  heading = "Recent work",
+  columns = "3",
+  showAllLink = true,
+  class: className,
+} = Astro.props;
+
+const grid = cva("grid animate-enter-stagger gap-x-2 gap-y-12 xl:grid-cols-3", {
+  variants: { columns: { "2": "md:grid-cols-2", "3": "md:grid-cols-3" } },
+});
+
+// `sizes` per layout: 1 column below md, then 2 or 3, then 3.
+const sizes =
+  columns === "2"
+    ? "(min-width: 64rem) 32vw, (min-width: 48rem) 49vw, 100vw"
+    : "(min-width: 48rem) 32vw, 100vw";
+
+const headingId = `featured-work-${columns}`;
+---
+
+{works.length > 0 && (
+  <section aria-labelledby={headingId} class={cn("px-container pb-section", className)}>
+    <h2
+      id={headingId}
+      class="border-t border-border-subtle py-6 text-eyebrow text-fg-primary uppercase"
+    >
+      {heading}
+    </h2>
+    <div class="flex flex-col gap-20">
+      <div class={grid({ columns })}>
+        {works.map((work) => (
+          <WorkListCard work={work} sizes={sizes} />
+        ))}
+      </div>
+      {showAllLink && (
+        <div class="flex justify-center">
+          <Button as="a" href="/work" variant="secondary">
+            View all work
+          </Button>
+        </div>
+      )}
+    </div>
+  </section>
+)}

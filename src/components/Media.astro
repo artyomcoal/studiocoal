@@ -3,6 +3,7 @@
  * Media
  * One Work visual from the shared Sanity `media` object: a responsive Sanity image or a
  * Bunny Stream HLS video, cropped to 4:5 (portrait) or 16:9 (landscape) around the hotspot.
+ * "hero" is art-directed: 4:5 below md, 16:9 from md (Work Single › Featured Media).
  * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=2743-34179
  *
  * Images: srcset/sizes from the URL builder, LQIP blur behind the image, explicit dimensions.
@@ -23,8 +24,8 @@ import { resolveMedia, type MediaData } from "@/sanity/media";
 
 interface Props {
   media: MediaData | null | undefined;
-  /** Crop ratio: portrait = 4:5, landscape = 16:9. */
-  aspect: AspectName;
+  /** Crop ratio: portrait = 4:5, landscape = 16:9, hero = 4:5 below md and 16:9 from md. */
+  aspect: AspectName | "hero";
   /** The `sizes` attribute: how wide the visual renders at each breakpoint. */
   sizes: string;
   /** LCP visual: load eagerly with high fetch priority. */
@@ -35,9 +36,11 @@ interface Props {
 const { media, aspect, sizes, priority = false, class: className } = Astro.props;
 
 const resolved = resolveMedia(media);
-const ratio = ASPECT[aspect];
+// Base crop. A hero adds a 16:9 <source> from md.
+const base: AspectName = aspect === "hero" ? "portrait" : aspect;
+const ratio = ASPECT[base];
 // Intrinsic size for width/height attributes (no layout shift); the CSS aspect box wins.
-const width = aspect === "portrait" ? 1600 : 1920;
+const width = base === "portrait" ? 1600 : 1920;
 const height = Math.round(width / ratio);
 
 const image = resolved?.kind === "image" ? resolved.image : resolved?.video.poster;
@@ -45,7 +48,11 @@ const video = resolved?.kind === "video" ? resolved.video : null;
 const alt = resolved?.kind === "image" ? (resolved.image.alt ?? "") : "";
 const playerPoster =
   video?.playback === "player" && image?.asset
-    ? urlFor(image).width(width).height(height).fit("crop").url()
+    ? urlFor(image)
+        .width(1920)
+        .height(Math.round(1920 / (aspect === "portrait" ? ASPECT.portrait : ASPECT.landscape)))
+        .fit("crop")
+        .url()
     : undefined;
 ---
 
@@ -54,28 +61,43 @@ const playerPoster =
   data-playback={video?.playback}
   class={cn(
     "group/media relative overflow-hidden rounded-sm bg-bg-secondary",
-    aspect === "portrait" ? "aspect-4/5" : "aspect-video",
+    {
+      portrait: "aspect-4/5",
+      landscape: "aspect-video",
+      hero: "aspect-4/5 md:aspect-video",
+    }[aspect],
     className,
   )}
 >
   {image?.asset && (
-    <img
-      src={urlFor(image)
-        .width(1024)
-        .height(Math.round(1024 / ratio))
-        .fit("crop")
-        .url()}
-      srcset={imageSrcSet(image, ratio)}
-      sizes={sizes}
-      width={width}
-      height={height}
-      alt={alt}
-      loading={priority ? "eager" : "lazy"}
-      decoding={priority ? "sync" : "async"}
-      fetchpriority={priority ? "high" : "auto"}
-      class="absolute inset-0 size-full bg-cover object-cover"
-      style={image.lqip ? `background-image: url(${image.lqip})` : undefined}
-    />
+    <picture>
+      {aspect === "hero" && (
+        <source
+          media="(min-width: 48rem)"
+          srcset={imageSrcSet(image, ASPECT.landscape)}
+          sizes={sizes}
+          width={1920}
+          height={1080}
+        />
+      )}
+      <img
+        src={urlFor(image)
+          .width(1024)
+          .height(Math.round(1024 / ratio))
+          .fit("crop")
+          .url()}
+        srcset={imageSrcSet(image, ratio)}
+        sizes={sizes}
+        width={width}
+        height={height}
+        alt={alt}
+        loading={priority ? "eager" : "lazy"}
+        decoding={priority ? "sync" : "async"}
+        fetchpriority={priority ? "high" : "auto"}
+        class="absolute inset-0 size-full bg-cover object-cover"
+        style={image.lqip ? `background-image: url(${image.lqip})` : undefined}
+      />
+    </picture>
   )}
   {video && (
     <>

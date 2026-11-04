@@ -7,6 +7,7 @@
  * - default slot: the page sections. Each top-level child of <main> plays the staggered
  *   entrance after an in-site navigation, so pass sections directly, not one wrapper.
  * - Footer: rendered on every page, after <main>. Not animated.
+ * - "head" slot: forwarded to BaseLayout's <head> (preloads, page-specific meta).
  */
 import Footer from "@/components/Footer.astro";
 import Navbar from "@/components/Navbar.astro";
@@ -16,6 +17,7 @@ type Props = Parameters<typeof BaseLayout>[0];
 ---
 
 <BaseLayout {...Astro.props}>
+  <slot name="head" slot="head" />
   <Navbar />
   <main class="animate-enter-stagger">
     <slot />

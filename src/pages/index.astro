@@ -1,5 +1,10 @@
 ---
+import { sanityClient } from "sanity:client";
 import PageLayout from "@/layouts/PageLayout.astro";
+import { FEATURED_WORK_QUERY } from "@/sanity/queries";
+import FeaturedWorkSection from "@/sections/FeaturedWorkSection.astro";
+
+const featuredWork = await sanityClient.fetch(FEATURED_WORK_QUERY, { limit: 6 });
 ---
 
 <PageLayout>
@@ -7,4 +12,5 @@ import PageLayout from "@/layouts/PageLayout.astro";
     <p class="text-eyebrow text-fg-primary">STUDIO COAL</p>
     <h1 class="text-headline-xxl text-fg-primary">Site under construction.</h1>
   </section>
+  <FeaturedWorkSection works={featuredWork} columns="2" />
 </PageLayout>

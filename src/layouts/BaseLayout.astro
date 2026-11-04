@@ -84,6 +84,8 @@ const seo = buildSeo({
     <meta name="twitter:title" content={seo.title} />
     <meta name="twitter:description" content={seo.description} />
     {seo.image && <meta name="twitter:image" content={seo.image} />}
+    <!-- Page-specific head tags, e.g. the LCP image preload on project pages. -->
+    <slot name="head" />
   </head>
   <body>
     <slot />
