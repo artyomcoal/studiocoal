@@ -107,7 +107,7 @@ export const WORK_QUERY = defineQuery(
 
 /** FeaturedArticlesSection: featured posts first, then the newest. */
 export const FEATURED_JOURNAL_QUERY = defineQuery(
-  `*[_type == "journal" && defined(slug.current)] | order(featured desc, publishedAt desc) [0...$limit] ${journalCard}`,
+  `*[_type == "journal" && defined(slug.current)] | order(coalesce(featured, false) desc, publishedAt desc) [0...$limit] ${journalCard}`,
 );
 
 export const ALL_JOURNAL_QUERY = defineQuery(
