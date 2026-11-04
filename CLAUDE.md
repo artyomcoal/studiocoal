@@ -160,7 +160,7 @@ Token values live **only** in `src/styles/tokens.css` (neutral palette, semantic
 - **Tests:** Playwright for smoke and visual tests at 375 / 768 / 1440, in light and dark. Vitest only for `src/lib/` helpers.
   - New routes go in `tests/e2e/routes.ts`, so they get smoke, axe and visual coverage.
   - Visual baselines are per OS. Only the linux ones (`tests/e2e/__screenshots__/linux/`) are committed, because CI compares against them. To create or update them, add the `update-snapshots` label to the PR, download the `linux-snapshots` artifact, unzip it into that folder, review the images and commit them. Local (darwin) baselines are git-ignored.
-- **Accessibility:** WCAG 2.2 AA. Everything works by keyboard, with visible focus states. Use semantic HTML (`<nav>`, `<dialog>`, `<details>` where suitable). An axe check runs in Playwright on every PR.
+- **Accessibility:** WCAG 2.2 AA, except colour contrast: the low-contrast text tokens (`fg-secondary`, `fg-tertiary`, especially in light mode) are an accepted design decision, and axe's `color-contrast` rule is disabled. Don't change tokens or swap colours to fix contrast. Everything works by keyboard, with visible focus states. Use semantic HTML (`<nav>`, `<dialog>`, `<details>` where suitable). An axe check runs in Playwright on every PR.
 - **Performance:** Lighthouse mobile 95+ in all four categories. The LCP image is preloaded and not lazy. Images have explicit dimensions.
 - **Browsers:** last 2 versions of evergreen browsers, plus Safari iOS 16+.
 
