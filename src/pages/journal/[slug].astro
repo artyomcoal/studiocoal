@@ -9,6 +9,8 @@ import RichText from "@/components/RichText.astro";
 import PageLayout from "@/layouts/PageLayout.astro";
 import { formatDate } from "@/lib/format";
 import { ASPECT } from "@/lib/media";
+import { canonicalUrl, contentPath, contentSeo } from "@/lib/seo";
+import { article, breadcrumbs } from "@/lib/structured-data";
 import { imageSrcSet, urlFor } from "@/sanity/image";
 import type { MediaData } from "@/sanity/media";
 import { JOURNAL_QUERY, JOURNAL_SLUGS_QUERY, RECENT_JOURNAL_QUERY } from "@/sanity/queries";
@@ -33,15 +35,41 @@ const cover: MediaData | null = post.coverImage?.asset
   : null;
 // The 16:9 cover is the LCP element below the header on large screens: preload it.
 const coverSizes = "100vw";
-const ogImage = post.coverImage?.asset
-  ? urlFor(post.coverImage).width(1200).height(630).fit("crop").url()
+// Social image: SEO › Social image, then the cover.
+const socialImage = post.seo?.image?.asset ? post.seo.image : post.coverImage;
+const ogImage = socialImage?.asset
+  ? urlFor(socialImage).width(1200).height(630).fit("crop").url()
   : null;
+
+const seo = contentSeo(post);
+const site = String(Astro.site ?? Astro.url.origin);
+const url = canonicalUrl(contentPath("journal", post.slug ?? slug), site);
+const jsonLd = [
+  article({
+    site,
+    url,
+    title: post.title ?? "",
+    description: seo.description,
+    image: ogImage,
+    publishedAt: post.publishedAt,
+    updatedAt: post._updatedAt,
+    category: post.category,
+  }),
+  breadcrumbs([
+    ["Home", canonicalUrl("/", site)],
+    ["Journal", canonicalUrl("/journal", site)],
+    [post.title ?? "", url],
+  ]),
+];
 ---
 
 <PageLayout
-  title={post.seo?.title ?? post.title}
-  description={post.seo?.description ?? post.excerpt}
+  title={seo.title}
+  description={seo.description}
   image={ogImage}
+  noindex={seo.noindex}
+  ogType="article"
+  jsonLd={jsonLd}
 >
   <Fragment slot="head">
     {post.coverImage?.asset && (

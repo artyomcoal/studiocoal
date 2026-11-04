@@ -1,13 +1,15 @@
 import { defineArrayMember, defineField, defineType } from "sanity";
 import { SERVICES, serviceTitle } from "../../lib/services";
+import { slugField } from "./fields";
 import { mediaAspect } from "./media";
+import { SEO_TOO_LONG_FILTER } from "./seo";
 
 /** How many projects the home page's Featured Work section shows (src/pages/index.astro). */
 const HOME_FEATURED_LIMIT = 6;
 
 /**
- * GROQ condition for a Work document that's missing something the site shows. Used by the
- * Studio's "Needs attention" list, and mirrors the fields' required validation.
+ * GROQ condition for a Work document that's missing something the site shows, or has an SEO
+ * problem. Used by the Studio's "Needs attention" list.
  */
 export const WORK_NEEDS_ATTENTION_FILTER = [
   "!defined(slug.current)",
@@ -16,6 +18,10 @@ export const WORK_NEEDS_ATTENTION_FILTER = [
   "!defined(listingMedia)",
   "count(coalesce(archiveMedia, [])) != 3",
   "!defined(heroMedia)",
+  // SEO: too long for Google, or a listing visual without alt text.
+  SEO_TOO_LONG_FILTER,
+  `listingMedia.kind == "image" && !defined(listingMedia.image.alt)`,
+  `listingMedia.kind == "video" && !defined(listingMedia.video.alt)`,
 ].join(" || ");
 
 export const work = defineType({
@@ -46,16 +52,7 @@ export const work = defineType({
       description: "Shown on project cards and as the project page title.",
       validation: (rule) => rule.required(),
     }),
-    defineField({
-      name: "slug",
-      title: "URL",
-      type: "slug",
-      group: "details",
-      description:
-        "The project page address: studiocoal.com/work/<this>. Generate it from the name.",
-      options: { source: "title", maxLength: 96 },
-      validation: (rule) => rule.required(),
-    }),
+    slugField("work", "details"),
     defineField({
       name: "client",
       title: "Client",

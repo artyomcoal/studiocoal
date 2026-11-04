@@ -109,6 +109,7 @@ export const WORK_SLUGS_QUERY = defineQuery(
 export const WORK_QUERY = defineQuery(
   `*[_type == "work" && slug.current == $slug][0]{
     _id,
+    _updatedAt,
     title,
     "slug": slug.current,
     client,
@@ -150,6 +151,7 @@ export const JOURNAL_SLUGS_QUERY = defineQuery(
 export const JOURNAL_QUERY = defineQuery(
   `*[_type == "journal" && slug.current == $slug][0]{
     _id,
+    _updatedAt,
     title,
     "slug": slug.current,
     publishedAt,
@@ -164,4 +166,17 @@ export const JOURNAL_QUERY = defineQuery(
 /** FeaturedArticlesSection on an article page: the newest other posts. */
 export const RECENT_JOURNAL_QUERY = defineQuery(
   `*[_type == "journal" && defined(slug.current) && slug.current != $slug] | order(publishedAt desc) [0...$limit] ${journalCard}`,
+);
+
+/**
+ * Sitemap (astro.config.mjs): every project and post page, when it last changed and whether
+ * it's hidden from search engines (SEO › Hide from search engines).
+ */
+export const SITEMAP_QUERY = defineQuery(
+  `*[_type in ["work", "journal"] && defined(slug.current)]{
+    _type,
+    "slug": slug.current,
+    _updatedAt,
+    "noIndex": seo.noIndex == true
+  }`,
 );
