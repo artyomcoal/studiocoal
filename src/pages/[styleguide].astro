@@ -17,6 +17,7 @@ import FeaturedArticlesSection from "@/sections/FeaturedArticlesSection.astro";
 import FeaturedWorkSection from "@/sections/FeaturedWorkSection.astro";
 import JournalArchiveSection from "@/sections/JournalArchiveSection.astro";
 import ServicesOverviewSection from "@/sections/ServicesOverviewSection.astro";
+import WorkDetailsSection from "@/sections/WorkDetailsSection.astro";
 import WorkArchiveSection from "@/sections/WorkArchiveSection.astro";
 import type { MediaData } from "@/sanity/media";
 import type {
@@ -225,6 +226,35 @@ const demoPost: ALL_JOURNAL_QUERY_RESULT[number] = {
 };
 const posts = (n: number) =>
   Array.from({ length: n }, (_, i) => ({ ...demoPost, _id: `post-${i}` }));
+
+// Work Single fixture (Figma copy).
+const demoWorkDetails = {
+  _id: "details",
+  title: "Modal",
+  slug: "modal",
+  client: "Modal",
+  year: 2026,
+  services: ["brand", "web"],
+  excerpt:
+    "Developer-first platform changing the computing paradigm with a fully serverless cloud infrastructure for AI, ML, and data applications.",
+  seo: null,
+  industry: ["DevTools"],
+  deliverables: ["Brand Strategy", "Brand System", "Website", "Product Design", "UX/UI Design"],
+  challenge:
+    "Etticus was building more than a product: it was defining a new layer of financial infrastructure.\n\nThe challenge was to translate that ambition into a system that could scale.",
+  solution:
+    "We created a scalable brand operating system that acts as an extension of the product.",
+  outcome: "The result is a cohesive system where brand and product evolve together.",
+  results: [
+    { _key: "a", value: "20%", label: "Success metric" },
+    { _key: "b", value: "3×", label: "Faster launches" },
+    { _key: "c", value: "40+", label: "Components" },
+  ],
+  websiteUrl: "https://studiocoal.com",
+  listingMedia: emptyMedia,
+  heroMedia: emptyMedia,
+  content: null,
+} as unknown as Parameters<typeof WorkDetailsSection>[0]["work"];
 
 // Clients fixture: the dataset has no logos, so the tiles render empty (asset refs are fake).
 const demoClients = [
@@ -743,6 +773,8 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
     <WorkArchiveSection works={archiveWorks} />
     <h2 class="px-container text-headline-lg">WorkArchiveSection, empty</h2>
     <WorkArchiveSection works={[]} />
+    <h2 class="px-container pt-section text-headline-lg">WorkDetailsSection (project page)</h2>
+    <WorkDetailsSection work={demoWorkDetails} />
     <h2 class="px-container pt-section pb-6 text-headline-lg">
       ServicesOverviewSection (home; thumbnails empty without Work)
     </h2>

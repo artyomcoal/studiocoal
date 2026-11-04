@@ -200,7 +200,18 @@ export type Work = {
   year?: number;
   services?: Array<string>;
   excerpt?: string;
-  body?: RichText;
+  industry?: Array<string>;
+  deliverables?: Array<string>;
+  challenge?: string;
+  solution?: string;
+  outcome?: string;
+  results?: Array<{
+    value: string;
+    label: string;
+    _type: "result";
+    _key: string;
+  }>;
+  websiteUrl?: string;
   featured?: boolean;
   listingMedia: Media;
   archiveMedia: Array<
@@ -1035,7 +1046,7 @@ export type WORK_SLUGS_QUERY_RESULT = Array<string>;
 
 // Source: src/sanity/queries.ts
 // Variable: WORK_QUERY
-// Query: *[_type == "work" && slug.current == $slug][0]{    _id,    title,    "slug": slug.current,    client,    year,    services,    excerpt,    seo,    body[]{ ..., _type == "imageWithAlt" => {  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} },    listingMedia{  kind,  kind == "image" => { "image": image{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} },  kind == "video" => {    "video": video{ playlistUrl, alt, caption, playback, poster{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} }  }},    heroMedia{  kind,  kind == "image" => { "image": image{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} },  kind == "video" => {    "video": video{ playlistUrl, alt, caption, playback, poster{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} }  }},    content[]{      _key,      _type,      _type == "mediaFullWidth" => { "media": media{  kind,  kind == "image" => { "image": image{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} },  kind == "video" => {    "video": video{ playlistUrl, alt, caption, playback, poster{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} }  }} },      _type == "mediaPair" => { "left": left{  kind,  kind == "image" => { "image": image{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} },  kind == "video" => {    "video": video{ playlistUrl, alt, caption, playback, poster{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} }  }}, "right": right{  kind,  kind == "image" => { "image": image{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} },  kind == "video" => {    "video": video{ playlistUrl, alt, caption, playback, poster{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} }  }} }    }  }
+// Query: *[_type == "work" && slug.current == $slug][0]{    _id,    title,    "slug": slug.current,    client,    year,    services,    excerpt,    seo,    industry,    deliverables,    challenge,    solution,    outcome,    results[]{ _key, value, label },    websiteUrl,    listingMedia{  kind,  kind == "image" => { "image": image{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} },  kind == "video" => {    "video": video{ playlistUrl, alt, caption, playback, poster{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} }  }},    heroMedia{  kind,  kind == "image" => { "image": image{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} },  kind == "video" => {    "video": video{ playlistUrl, alt, caption, playback, poster{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} }  }},    content[]{      _key,      _type,      _type == "mediaFullWidth" => { "media": media{  kind,  kind == "image" => { "image": image{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} },  kind == "video" => {    "video": video{ playlistUrl, alt, caption, playback, poster{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} }  }} },      _type == "mediaPair" => { "left": left{  kind,  kind == "image" => { "image": image{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} },  kind == "video" => {    "video": video{ playlistUrl, alt, caption, playback, poster{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} }  }}, "right": right{  kind,  kind == "image" => { "image": image{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} },  kind == "video" => {    "video": video{ playlistUrl, alt, caption, playback, poster{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} }  }} }    }  }
 export type WORK_QUERY_RESULT = {
   _id: string;
   title: string;
@@ -1045,42 +1056,17 @@ export type WORK_QUERY_RESULT = {
   services: Array<string> | null;
   excerpt: string | null;
   seo: Seo | null;
-  body: Array<
-    | {
-        children?: Array<{
-          marks?: Array<string>;
-          text?: string;
-          _type: "span";
-          _key: string;
-        }>;
-        style?: "blockquote" | "h2" | "h3" | "normal";
-        listItem?: "bullet" | "number";
-        markDefs?: Array<{
-          href: string;
-          _type: "link";
-          _key: string;
-        }>;
-        level?: number;
-        _type: "block";
-        _key: string;
-      }
-    | {
-        _key: string;
-        _type: "imageWithAlt";
-        asset?: SanityImageAssetReference;
-        media?: unknown;
-        hotspot?: SanityImageHotspot;
-        crop?: SanityImageCrop;
-        alt?: string;
-        caption?: string;
-        lqip: string | null;
-        dimensions: {
-          width: number;
-          height: number;
-          aspectRatio: number;
-        } | null;
-      }
-  > | null;
+  industry: Array<string> | null;
+  deliverables: Array<string> | null;
+  challenge: string | null;
+  solution: string | null;
+  outcome: string | null;
+  results: Array<{
+    _key: string;
+    value: string;
+    label: string;
+  }> | null;
+  websiteUrl: string | null;
   listingMedia:
     | {
         kind: "image" | "video";
@@ -1659,7 +1645,7 @@ declare global {
     '*[_type == "work" && defined(slug.current)] | order(year desc, _createdAt desc) {\n  _id,\n  title,\n  "slug": slug.current,\n  services,\n  excerpt,\n  archiveMedia[]{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n}\n}': WORK_ARCHIVE_QUERY_RESULT;
     '*[_type == "work" && $service in services && defined(slug.current)] | order(year desc) [0...2] {\n  _id,\n  title,\n  "slug": slug.current,\n  client,\n  year,\n  services,\n  excerpt,\n  listingMedia{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n}\n}': WORK_BY_SERVICE_QUERY_RESULT;
     '*[_type == "work" && defined(slug.current)].slug.current': WORK_SLUGS_QUERY_RESULT;
-    '*[_type == "work" && slug.current == $slug][0]{\n    _id,\n    title,\n    "slug": slug.current,\n    client,\n    year,\n    services,\n    excerpt,\n    seo,\n    body[]{ ..., _type == "imageWithAlt" => {\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n    listingMedia{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n},\n    heroMedia{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n},\n    content[]{\n      _key,\n      _type,\n      _type == "mediaFullWidth" => { "media": media{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n} },\n      _type == "mediaPair" => { "left": left{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n}, "right": right{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n} }\n    }\n  }': WORK_QUERY_RESULT;
+    '*[_type == "work" && slug.current == $slug][0]{\n    _id,\n    title,\n    "slug": slug.current,\n    client,\n    year,\n    services,\n    excerpt,\n    seo,\n    industry,\n    deliverables,\n    challenge,\n    solution,\n    outcome,\n    results[]{ _key, value, label },\n    websiteUrl,\n    listingMedia{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n},\n    heroMedia{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n},\n    content[]{\n      _key,\n      _type,\n      _type == "mediaFullWidth" => { "media": media{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n} },\n      _type == "mediaPair" => { "left": left{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n}, "right": right{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n} }\n    }\n  }': WORK_QUERY_RESULT;
     '*[_type == "journal" && defined(slug.current)] | order(coalesce(featured, false) desc, publishedAt desc) [0...$limit] {\n  _id,\n  title,\n  "slug": slug.current,\n  publishedAt,\n  category,\n  excerpt,\n  coverImage{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n}\n}': FEATURED_JOURNAL_QUERY_RESULT;
     '*[_type == "journal" && defined(slug.current)] | order(publishedAt desc) {\n  _id,\n  title,\n  "slug": slug.current,\n  publishedAt,\n  category,\n  excerpt,\n  coverImage{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n}\n}': ALL_JOURNAL_QUERY_RESULT;
     '*[_type == "journal" && defined(slug.current)].slug.current': JOURNAL_SLUGS_QUERY_RESULT;

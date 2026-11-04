@@ -1,21 +1,18 @@
 ---
 /**
- * Work Single page: project hero, intro, project content visuals and recent work.
+ * Work Single page: project hero, details (intro, tags, challenge / solution / outcome,
+ * results), project content visuals and recent work.
  * Figma: Work Single / breakpoint=xl|md|base (frames 5044:18541, 53350:12638, 53350:12880)
- *
- * Interim layout: the full Work Single text design (industry, challenge / solution /
- * outcome, results) is a separate page PR. This page wires up the media model.
  */
 import { sanityClient } from "sanity:client";
 import Media from "@/components/Media.astro";
 import PageLayout from "@/layouts/PageLayout.astro";
 import { ASPECT } from "@/lib/media";
-import { serviceTitle } from "@/lib/services";
 import { imageSrcSet, urlFor } from "@/sanity/image";
 import { resolveMedia } from "@/sanity/media";
 import { RECENT_WORK_QUERY, WORK_QUERY, WORK_SLUGS_QUERY } from "@/sanity/queries";
 import FeaturedWorkSection from "@/sections/FeaturedWorkSection.astro";
-import { Badge } from "@/ui/badge";
+import WorkDetailsSection from "@/sections/WorkDetailsSection.astro";
 
 export async function getStaticPaths() {
   const slugs = await sanityClient.fetch(WORK_SLUGS_QUERY);
@@ -73,21 +70,7 @@ const ogImage = socialImage?.asset
 
   <Media media={work.heroMedia} aspect="hero" sizes={heroSizes} priority class="md:rounded-none" />
 
-  <section class="grid-cols-layout px-container py-section">
-    <div class="col-span-full flex flex-col gap-6 xl:col-span-6 xl:col-start-4">
-      <h1 class="text-headline-lg text-fg-primary">{work.title}</h1>
-      {work.excerpt && <p class="text-body-lg text-fg-primary">{work.excerpt}</p>}
-      {work.services?.length ? (
-        <ul class="flex flex-wrap gap-1" aria-label="Project type">
-          {work.services.map((service) => (
-            <li>
-              <Badge>{serviceTitle(service)}</Badge>
-            </li>
-          ))}
-        </ul>
-      ) : null}
-    </div>
-  </section>
+  <WorkDetailsSection work={work} />
 
   {work.content?.length ? (
     <section aria-label="Project visuals" class="flex flex-col gap-2 px-container pb-section">
