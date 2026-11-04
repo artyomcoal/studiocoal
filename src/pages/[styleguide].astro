@@ -1,0 +1,109 @@
+---
+/**
+ * Styleguide — dev-only QA page. Lists every token and component state.
+ * Not available in production builds.
+ */
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { Button } from "@/ui/button";
+
+// Dynamic route with a single path in dev and none in production, so /styleguide
+// is never emitted by `astro build`. Explicit pages always take priority over this route.
+export function getStaticPaths() {
+  return import.meta.env.DEV ? [{ params: { styleguide: "styleguide" } }] : [];
+}
+
+const colors = [
+  ["bg-primary", "bg-bg-primary"],
+  ["bg-secondary", "bg-bg-secondary"],
+  ["bg-tertiary", "bg-bg-tertiary"],
+  ["bg-translucent", "bg-bg-translucent"],
+  ["fg-primary", "bg-fg-primary"],
+  ["fg-secondary", "bg-fg-secondary"],
+  ["fg-tertiary", "bg-fg-tertiary"],
+  ["fg-faded", "bg-fg-faded"],
+  ["fg-on-primary", "bg-fg-on-primary"],
+  ["fg-on-secondary", "bg-fg-on-secondary"],
+  ["border-subtle", "bg-border-subtle"],
+  ["interactive-primary", "bg-interactive-primary"],
+  ["interactive-primary-hover", "bg-interactive-primary-hover"],
+  ["interactive-primary-active", "bg-interactive-primary-active"],
+  ["interactive-secondary", "bg-interactive-secondary"],
+  ["interactive-secondary-hover", "bg-interactive-secondary-hover"],
+  ["interactive-focus-ring", "bg-interactive-focus-ring"],
+];
+
+const type = [
+  ["text-headline-xxl", "text-headline-xxl"],
+  ["text-headline-xl", "text-headline-xl"],
+  ["text-headline-lg", "text-headline-lg"],
+  ["text-headline-sm", "text-headline-sm"],
+  ["text-headline-xs", "text-headline-xs"],
+  ["text-body-md", "text-body-md"],
+  ["text-body-sm", "text-body-sm"],
+  ["text-body-xs", "text-body-xs"],
+  ["text-label", "text-label"],
+  ["text-caption-md", "text-caption-md"],
+  ["text-caption-sm", "text-caption-sm"],
+  ["text-eyebrow", "text-eyebrow"],
+];
+---
+
+<BaseLayout title="Styleguide — Studio Coal">
+  <main class="px-container py-section flex flex-col gap-12">
+    <header class="flex flex-col gap-2">
+      <p class="text-eyebrow text-fg-tertiary">STYLEGUIDE</p>
+      <h1 class="text-headline-xxl">Tokens</h1>
+      <p class="text-body-md text-fg-secondary">
+        Dev-only page for visual QA against Figma. Resize to check base, md (768) and xl (1024).
+      </p>
+    </header>
+
+    <section class="flex flex-col gap-4">
+      <h2 class="text-headline-lg">Colors</h2>
+      <ul class="grid grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-6">
+        {
+          colors.map(([name, cls]) => (
+            <li class="flex flex-col gap-2">
+              <div class={`h-16 rounded-sm border border-border-subtle ${cls}`} />
+              <span class="text-body-xs text-fg-secondary">{name}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section class="flex flex-col gap-4">
+      <h2 class="text-headline-lg">Typography</h2>
+      <ul class="flex flex-col gap-4">
+        {
+          type.map(([name, cls]) => (
+            <li class="flex flex-col gap-1 border-b border-border-subtle pb-4">
+              <span class="text-caption-md text-fg-tertiary">{name}</span>
+              <span class={cls}>Brands built with purpose and precision</span>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section class="flex flex-col gap-4">
+      <h2 class="text-headline-lg">Layout</h2>
+      <p class="text-body-sm text-fg-secondary">
+        px-container, py-section, pt-hero, gap-gutter and grid-cols-layout switch at md and xl.
+        The 12-column grid below uses grid-cols-layout.
+      </p>
+      <div class="grid-cols-layout">
+        {Array.from({ length: 12 }, (_, i) => <div class="h-12 bg-bg-secondary" data-col={i + 1} />)}
+      </div>
+    </section>
+
+    <section class="flex flex-col gap-4">
+      <h2 class="text-headline-lg">Button (bejamas default, not yet restyled)</h2>
+      <div class="flex flex-wrap gap-2">
+        <Button>Default</Button>
+        <Button variant="secondary">Secondary</Button>
+        <Button variant="outline">Outline</Button>
+      </div>
+    </section>
+  </main>
+</BaseLayout>

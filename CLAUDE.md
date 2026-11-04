@@ -38,9 +38,9 @@ src/
   sections/         page sections (ClientsSection, FeaturedWorkSection, …)
   layouts/          BaseLayout, PageLayout
   pages/            routes
-  lib/              helpers (cn, formatters, seo)
+  lib/              helpers (utils.ts with cn(), formatters, seo)
   sanity/           client, queries.ts (GROQ), types.ts (generated), schemas/
-  styles/           global.css, tokens.css, typography.css
+  styles/           globals.css (imports the rest + shadcn aliases), tokens.css, typography.css
 public/fonts/       self-hosted WOFF2 (Graphik is git-ignored until licensed)
 ```
 
@@ -62,15 +62,15 @@ Routes: `/`, `/work`, `/work/[slug]`, `/journal`, `/journal/[slug]`, `/services`
 
 ## Design tokens (most important section)
 
-Token values live **only** in `src/styles/tokens.css`. Components never contain raw values.
+Token values live **only** in `src/styles/tokens.css` (colors, layout, radius) and `src/styles/typography.css` (type styles). Components never contain raw values.
 
 ### Hard rules
 1. **No raw hex, rgb, hsl or px values** in components. Use tokens only.
 2. **No arbitrary Tailwind values** (`w-[347px]`, `text-[#fff]`). The only exception is a value with an inline comment explaining why no token fits. Prefer asking first.
 3. **Spacing** comes only from the Tailwind `spacing` scale (`p-4`, `gap-6`), which matches Figma `spacing/N`.
 4. **Section layout** uses the semantic utilities only: `px-container`, `py-section`, `pt-hero`, `gap-gutter`, `max-w-container`, `grid-cols-layout`.
-5. **Text** uses the type utilities only: `text-headline-xxl|xl|lg|md|sm|xs`, `text-body-md|sm|xs`, `text-label`, `text-eyebrow`. Never compose `text-2xl font-medium leading-…` by hand.
-6. **Variants** use `tailwind-variants` (`tv()`). Merge classes with `cn()` from `src/lib/cn.ts`.
+5. **Text** uses the type utilities only: `text-headline-xxl|xl|lg|sm|xs`, `text-body-md|sm|xs`, `text-label`, `text-caption-md|sm`, `text-eyebrow`. Never compose `text-2xl font-medium leading-…` by hand.
+6. **Variants** use `class-variance-authority` (`cva`), as bejamas components do. Merge classes with `cn()` from `src/lib/utils.ts`.
 7. **Never add, rename or change a token without asking.** If a design needs a value that has no token, stop and ask.
 
 ### Colors and themes
@@ -91,7 +91,7 @@ Token values live **only** in `src/styles/tokens.css`. Components never contain 
 ### Typography
 - Graphik for headline, body and label; Geist Mono for eyebrow. All styles use weight Medium (500) unless Figma says otherwise.
 - Letter-spacing is in percent in Figma. Convert to `em`: -4% → `-0.04em` (headlines), -3% → `-0.03em` (body), +2% → `0.02em` (eyebrow).
-- Fonts are self-hosted WOFF2 with `font-display: swap`, and the fonts used above the fold are preloaded. Until the Graphik licence is bought, local files are used in development and `public/fonts/graphik/` is git-ignored. The fallback stack uses a metric-adjusted `@font-face` (`size-adjust`, `ascent-override`) so swapping causes no layout shift.
+- Graphik is self-hosted WOFF2 (`public/fonts/graphik/Graphik-Medium.woff2`, git-ignored until the licence is bought). Its `@font-face` is declared inline in `BaseLayout.astro` so Vite doesn't try to resolve the missing file. Geist Mono comes from Astro's fonts API (`astro.config.mjs`). The "Graphik Fallback" face still needs metric tuning (`size-adjust`, `ascent-override`) once the real files exist.
 
 ## bejamas/ui
 
@@ -131,7 +131,7 @@ Token values live **only** in `src/styles/tokens.css`. Components never contain 
 3. Reuse before creating: check `src/ui`, `src/components` and `src/sections` first.
 4. **Fidelity:** spacing, type and color match exactly through tokens. Up to 2px layout difference is acceptable where browsers render differently.
 5. **When Figma is unclear or a state is missing:** follow existing patterns in the codebase, then bejamas/Tailwind conventions. Make the call and **list every judgement call in the PR description**.
-6. Every component and state is added to **`/styleguide`**, which is excluded from production builds.
+6. Every component and state is added to **`/styleguide`** (`src/pages/[styleguide].astro`), which only exists in dev and is not emitted by `pnpm build`.
 
 ## Quality
 

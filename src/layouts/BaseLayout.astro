@@ -1,0 +1,39 @@
+---
+import "@/styles/globals.css";
+import { Font } from "astro:assets";
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- bejamas:astro-fonts:start -->
+<Font cssVariable="--font-geist-mono" />
+<!-- bejamas:astro-fonts:end -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <!-- Graphik is licensed: drop Graphik-Medium.woff2 into public/fonts/graphik/ (git-ignored). -->
+    <style is:inline>
+      @font-face {
+        font-family: "Graphik";
+        src: url("/fonts/graphik/Graphik-Medium.woff2") format("woff2");
+        font-weight: 500;
+        font-style: normal;
+        font-display: swap;
+      }
+    </style>
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>
