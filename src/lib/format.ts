@@ -11,3 +11,11 @@ const dateFormat = new Intl.DateTimeFormat("en-US", {
 export function formatDate(value: string): string {
   return dateFormat.format(new Date(value));
 }
+
+/** Paragraphs from plain text: split on blank lines, trimmed, empties dropped. */
+export function paragraphs(value: string | null | undefined): string[] {
+  return (value ?? "")
+    .split(/\n\s*\n/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean);
+}

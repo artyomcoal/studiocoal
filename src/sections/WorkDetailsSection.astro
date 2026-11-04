@@ -1,0 +1,114 @@
+---
+/**
+ * Work Details Section
+ * Project page text: intro (name + description), industry and services tags, challenge /
+ * solution / outcome, measurable results and a "View website" button.
+ * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=5044-18949
+ *
+ * Columns: 6 from column 4 at xl, 10 from column 2 at md, full width at base.
+ * Empty fields are skipped, and a divider only shows when there's something on both sides.
+ */
+import { paragraphs } from "@/lib/format";
+import { cn } from "@/lib/utils";
+import type { WORK_QUERY_RESULT } from "@/sanity/types";
+import { Badge } from "@/ui/badge";
+import { Button } from "@/ui/button";
+
+interface Props {
+  work: NonNullable<WORK_QUERY_RESULT>;
+  class?: string;
+}
+
+const { work, class: className } = Astro.props;
+
+const meta = [
+  { label: "Industry", tags: work.industry ?? [] },
+  { label: "Services", tags: work.deliverables ?? [] },
+].filter(({ tags }) => tags.length > 0);
+
+const story = [
+  { label: "Challenge", text: paragraphs(work.challenge) },
+  { label: "Solution", text: paragraphs(work.solution) },
+  { label: "Outcome", text: paragraphs(work.outcome) },
+].filter(({ text }) => text.length > 0);
+
+const results = work.results ?? [];
+
+// Groups between dividers, in order; empty groups are dropped so no divider doubles up.
+const groups = [
+  meta.length > 0 && "meta",
+  story.length > 0 && "story",
+  results.length > 0 && "results",
+  work.websiteUrl && "link",
+].filter(Boolean);
+---
+
+<section class={cn("grid-cols-layout px-container py-section", className)}>
+  <div class="col-span-full flex flex-col gap-12 text-fg-primary md:col-span-10 md:col-start-2 xl:col-span-6 xl:col-start-4">
+    <h1 class="text-headline-lg text-balance">
+      <span class="text-fg-tertiary">{work.title}.</span> {work.excerpt}
+    </h1>
+
+    {groups.map((group, index) => (
+      <>
+        {index > 0 && <hr class="border-border-subtle" />}
+        {group === "meta" && (
+          <dl class="flex flex-col gap-6">
+            {meta.map(({ label, tags }) => (
+              <div class="flex flex-col gap-4">
+                <dt class="text-body-sm text-fg-secondary">{label}</dt>
+                <dd>
+                  <ul class="flex flex-wrap gap-1">
+                    {tags.map((tag) => (
+                      <li>
+                        <Badge size="default">{tag}</Badge>
+                      </li>
+                    ))}
+                  </ul>
+                </dd>
+              </div>
+            ))}
+          </dl>
+        )}
+        {group === "story" &&
+          story.map(({ label, text }) => (
+            <div class="flex flex-col gap-4">
+              <h2 class="text-body-sm text-fg-secondary">{label}</h2>
+              <div class="flex flex-col gap-5 text-body-md text-pretty">
+                {text.map((paragraph) => (
+                  <p class="whitespace-pre-line">{paragraph}</p>
+                ))}
+              </div>
+            </div>
+          ))}
+        {group === "results" && (
+          <div class="flex flex-col gap-4">
+            <h2 class="text-body-sm text-fg-secondary">Measurable results</h2>
+            <ul class="grid grid-cols-2 gap-2 md:grid-cols-3">
+              {results.map((result) => (
+                <li class="flex flex-col gap-2.5 rounded-sm bg-bg-secondary p-4 text-balance">
+                  <span class="text-headline-xxl text-fg-tertiary">{result.value}</span>
+                  <span class="text-headline-sm">{result.label}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {group === "link" && (
+          <div>
+            <Button
+              as="a"
+              href={work.websiteUrl!}
+              variant="secondary"
+              rel="noopener"
+              target="_blank"
+            >
+              View website
+              <span class="sr-only">(opens in a new tab)</span>
+            </Button>
+          </div>
+        )}
+      </>
+    ))}
+  </div>
+</section>
