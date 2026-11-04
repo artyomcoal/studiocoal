@@ -1559,18 +1559,15 @@ export type JOURNAL_SLUGS_QUERY_RESULT = Array<string>;
 
 // Source: src/sanity/queries.ts
 // Variable: JOURNAL_QUERY
-// Query: *[_type == "journal" && slug.current == $slug][0]{    ...,    "slug": slug.current,    coverImage{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }},    body[]{ ..., _type == "imageWithAlt" => {  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} }  }
+// Query: *[_type == "journal" && slug.current == $slug][0]{    _id,    title,    "slug": slug.current,    publishedAt,    category,    excerpt,    seo,    coverImage{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }},    body[]{ ..., _type == "imageWithAlt" => {  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} }  }
 export type JOURNAL_QUERY_RESULT = {
   _id: string;
-  _type: "journal";
-  _createdAt: string;
-  _updatedAt: string;
-  _rev: string;
   title: string;
   slug: string;
   publishedAt: string;
-  category?: string;
-  excerpt?: string;
+  category: string | null;
+  excerpt: string | null;
+  seo: Seo | null;
   coverImage: {
     _type: "imageWithAlt";
     asset?: SanityImageAssetReference;
@@ -1622,9 +1619,34 @@ export type JOURNAL_QUERY_RESULT = {
         } | null;
       }
   > | null;
-  featured?: boolean;
-  seo?: Seo;
 } | null;
+
+// Source: src/sanity/queries.ts
+// Variable: RECENT_JOURNAL_QUERY
+// Query: *[_type == "journal" && defined(slug.current) && slug.current != $slug] | order(publishedAt desc) [0...$limit] {  _id,  title,  "slug": slug.current,  publishedAt,  category,  excerpt,  coverImage{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }}}
+export type RECENT_JOURNAL_QUERY_RESULT = Array<{
+  _id: string;
+  title: string;
+  slug: string;
+  publishedAt: string;
+  category: string | null;
+  excerpt: string | null;
+  coverImage: {
+    _type: "imageWithAlt";
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    caption?: string;
+    lqip: string | null;
+    dimensions: {
+      width: number;
+      height: number;
+      aspectRatio: number;
+    } | null;
+  } | null;
+}>;
 
 // Query TypeMap
 declare global {
@@ -1641,7 +1663,8 @@ declare global {
     '*[_type == "journal" && defined(slug.current)] | order(coalesce(featured, false) desc, publishedAt desc) [0...$limit] {\n  _id,\n  title,\n  "slug": slug.current,\n  publishedAt,\n  category,\n  excerpt,\n  coverImage{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n}\n}': FEATURED_JOURNAL_QUERY_RESULT;
     '*[_type == "journal" && defined(slug.current)] | order(publishedAt desc) {\n  _id,\n  title,\n  "slug": slug.current,\n  publishedAt,\n  category,\n  excerpt,\n  coverImage{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n}\n}': ALL_JOURNAL_QUERY_RESULT;
     '*[_type == "journal" && defined(slug.current)].slug.current': JOURNAL_SLUGS_QUERY_RESULT;
-    '*[_type == "journal" && slug.current == $slug][0]{\n    ...,\n    "slug": slug.current,\n    coverImage{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n},\n    body[]{ ..., _type == "imageWithAlt" => {\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }': JOURNAL_QUERY_RESULT;
+    '*[_type == "journal" && slug.current == $slug][0]{\n    _id,\n    title,\n    "slug": slug.current,\n    publishedAt,\n    category,\n    excerpt,\n    seo,\n    coverImage{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n},\n    body[]{ ..., _type == "imageWithAlt" => {\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }': JOURNAL_QUERY_RESULT;
+    '*[_type == "journal" && defined(slug.current) && slug.current != $slug] | order(publishedAt desc) [0...$limit] {\n  _id,\n  title,\n  "slug": slug.current,\n  publishedAt,\n  category,\n  excerpt,\n  coverImage{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n}\n}': RECENT_JOURNAL_QUERY_RESULT;
   }
 }
 // Lets @sanity/client releases that predate the global registry read it too

@@ -1,0 +1,84 @@
+---
+/**
+ * Journal article page: header, 16:9 cover, rich text body and the latest other articles.
+ * Figma: Article Template / breakpoint=xl|md|base (frames 5068:9132, 53350:13666, 53350:14038)
+ */
+import { sanityClient } from "sanity:client";
+import Media from "@/components/Media.astro";
+import RichText from "@/components/RichText.astro";
+import PageLayout from "@/layouts/PageLayout.astro";
+import { formatDate } from "@/lib/format";
+import { ASPECT } from "@/lib/media";
+import { imageSrcSet, urlFor } from "@/sanity/image";
+import type { MediaData } from "@/sanity/media";
+import { JOURNAL_QUERY, JOURNAL_SLUGS_QUERY, RECENT_JOURNAL_QUERY } from "@/sanity/queries";
+import FeaturedArticlesSection from "@/sections/FeaturedArticlesSection.astro";
+import { Badge } from "@/ui/badge";
+
+export async function getStaticPaths() {
+  const slugs = await sanityClient.fetch(JOURNAL_SLUGS_QUERY);
+  return slugs.map((slug) => ({ params: { slug } }));
+}
+
+const { slug } = Astro.params;
+const [post, recentPosts] = await Promise.all([
+  sanityClient.fetch(JOURNAL_QUERY, { slug }),
+  sanityClient.fetch(RECENT_JOURNAL_QUERY, { slug, limit: 4 }),
+]);
+// Paths come from the same dataset, so a missing post means the build raced a delete.
+if (!post) throw new Error(`Journal post "${slug}" not found`);
+
+const cover: MediaData | null = post.coverImage?.asset
+  ? { kind: "image", image: post.coverImage, video: null }
+  : null;
+// The 16:9 cover is the LCP element below the header on large screens: preload it.
+const coverSizes = "100vw";
+const ogImage = post.coverImage?.asset
+  ? urlFor(post.coverImage).width(1200).height(630).fit("crop").url()
+  : null;
+---
+
+<PageLayout
+  title={post.seo?.title ?? post.title}
+  description={post.seo?.description ?? post.excerpt}
+  image={ogImage}
+>
+  <Fragment slot="head">
+    {post.coverImage?.asset && (
+      <link
+        rel="preload"
+        as="image"
+        imagesrcset={imageSrcSet(post.coverImage, ASPECT.landscape)}
+        imagesizes={coverSizes}
+      />
+    )}
+  </Fragment>
+
+  <header class="grid-cols-layout px-container pt-40 pb-12">
+    <div class="col-span-full flex flex-col gap-6 text-fg-primary md:col-span-8 md:col-start-3 xl:col-span-6 xl:col-start-4">
+      <div class="flex gap-1">
+        {post.category && <Badge>{post.category}</Badge>}
+        <Badge>
+          <time datetime={post.publishedAt}>{formatDate(post.publishedAt)}</time>
+        </Badge>
+      </div>
+      <h1 class="text-headline-xl text-balance">{post.title}</h1>
+      {post.excerpt && <p class="text-headline-md text-pretty">{post.excerpt}</p>}
+    </div>
+  </header>
+
+  {cover && (
+    <div class="px-container">
+      <Media media={cover} aspect="landscape" sizes={coverSizes} priority class="rounded-none" />
+    </div>
+  )}
+
+  <article class="grid-cols-layout px-container pt-12 pb-section">
+    <RichText
+      value={post.body}
+      class="col-span-full md:col-span-8 md:col-start-3 xl:col-span-6 xl:col-start-4"
+    />
+  </article>
+
+  <FeaturedArticlesSection posts={recentPosts} title="" />
+</PageLayout>

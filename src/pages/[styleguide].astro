@@ -7,6 +7,7 @@
 import Footer from "@/components/Footer.astro";
 import GetInTouchModal from "@/components/GetInTouchModal.astro";
 import Media from "@/components/Media.astro";
+import RichText from "@/components/RichText.astro";
 import NavItem from "@/components/NavItem.astro";
 import BlogListCard from "@/components/BlogListCard.astro";
 import WorkArchiveCard from "@/components/WorkArchiveCard.astro";
@@ -243,6 +244,40 @@ const demoClients = [
     asset: { _ref: "image-demo-96x24-svg", _type: "reference" as const },
   },
 }));
+
+// Rich text fixture: every block style, a list, marks and a link.
+const span = (text: string, marks: string[] = []) => ({
+  _type: "span" as const,
+  _key: text,
+  text,
+  marks,
+});
+const pt = (key: string, style: string, children: ReturnType<typeof span>[], extra = {}) => ({
+  _type: "block" as const,
+  _key: key,
+  style,
+  markDefs: [{ _key: "l1", _type: "link", href: "/work" }],
+  children,
+  ...extra,
+});
+const demoBody = [
+  pt("p1", "normal", [
+    span("As a studio, we have long worked in AI: building prototypes, developing "),
+    span("products", ["strong"]),
+    span(" and crafting "),
+    span("product narratives", ["em"]),
+    span(". See "),
+    span("our work", ["l1"]),
+    span("."),
+  ]),
+  pt("p2", "normal", [span("A second paragraph, one blank Body MD line below the first.")]),
+  pt("h2", "h2", [span("Once Upon a Time in AI")]),
+  pt("p3", "normal", [span("Paragraph after a heading.")]),
+  pt("l1", "normal", [span("First bullet")], { listItem: "bullet", level: 1 }),
+  pt("l2", "normal", [span("Second bullet")], { listItem: "bullet", level: 1 }),
+  pt("h3", "h3", [span("A smaller heading")]),
+  pt("q", "blockquote", [span("A pull quote from the panel discussion.")]),
+] as unknown as Parameters<typeof RichText>[0]["value"];
 
 const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
 ---
@@ -649,6 +684,15 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
         scrollbar, snaps per card, bleeds to the screen edges).
       </p>
       <WorkArchiveCard work={demoArchiveWork} as="h3" />
+    </section>
+
+    <section class="flex flex-col gap-6">
+      <h2 class="text-headline-lg">RichText</h2>
+      <p class="text-body-sm text-fg-secondary">
+        Portable Text with the article styles. Figures (inline images) need a Sanity asset, so they
+        aren't shown here.
+      </p>
+      <RichText value={demoBody} class="max-w-2xl" />
     </section>
 
     <section class="flex flex-col gap-6">
