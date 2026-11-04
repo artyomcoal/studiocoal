@@ -1,0 +1,98 @@
+---
+/**
+ * Rich Text
+ * Renders Portable Text (the `richText` schema) with the Figma article text styles:
+ * paragraphs Body SM, H2 Headline LG, H3 Headline MD, figures with a Body XS caption.
+ * The one place Portable Text is rendered (CLAUDE.md). No runtime JS, no dependency.
+ * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=5070-9330
+ *
+ * Spacing follows Figma's article body: a blank Body MD line (20px) between paragraphs,
+ * two before a heading, 64px around figures.
+ */
+import { groupLists, renderSpans, type PtBlock } from "@/lib/portableText";
+import { cn } from "@/lib/utils";
+import { imageSrcSet, urlFor } from "@/sanity/image";
+import type { JOURNAL_QUERY_RESULT } from "@/sanity/types";
+
+type Body = NonNullable<NonNullable<JOURNAL_QUERY_RESULT>["body"]>;
+
+interface Props {
+  value: Body | null | undefined;
+  /** `sizes` for inline images (the column width). */
+  sizes?: string;
+  class?: string;
+}
+
+const {
+  value,
+  sizes = "(min-width: 64rem) 49vw, (min-width: 48rem) 65vw, 100vw",
+  class: className,
+} = Astro.props;
+
+const nodes = groupLists(value ?? []);
+
+const blockClass: Record<string, string> = {
+  normal: "mt-5 text-body-sm first:mt-0",
+  h2: "mt-10 text-headline-lg first:mt-0",
+  h3: "mt-10 text-headline-md first:mt-0",
+  blockquote: "mt-10 border-l border-border-subtle pl-4 text-headline-md first:mt-0",
+};
+const blockTag: Record<string, string> = {
+  normal: "p",
+  h2: "h2",
+  h3: "h3",
+  blockquote: "blockquote",
+};
+---
+
+<!-- Block flow (not flex), so vertical margins collapse: 64px around a figure wins over a
+     heading's 40px. -->
+<div class={cn("text-pretty text-fg-primary", className)}>
+  {nodes.map((node) => {
+    if (node._type === "list") {
+      const List = node.listItem === "number" ? "ol" : "ul";
+      return (
+        <List
+          class={cn(
+            "mt-5 flex flex-col gap-2 pl-5 text-body-sm first:mt-0",
+            node.listItem === "number" ? "list-decimal" : "list-disc",
+          )}
+        >
+          {node.items.map((item) => (
+            <li set:html={renderSpans(item as PtBlock)} />
+          ))}
+        </List>
+      );
+    }
+    if (node._type === "block") {
+      const block = node as PtBlock;
+      const style = block.style && blockTag[block.style] ? block.style : "normal";
+      const Tag = blockTag[style] as "p";
+      const html = renderSpans(block);
+      // Empty paragraphs are editor spacing; the layout already has the gaps.
+      if (!html.trim()) return null;
+      return <Tag class={blockClass[style]} set:html={html} />;
+    }
+    if (node._type === "imageWithAlt" && "asset" in node && node.asset) {
+      const { width, height } = node.dimensions ?? { width: 1600, height: 1200 };
+      return (
+        <figure class="my-16 flex flex-col gap-2 first:mt-0 last:mb-0">
+          <img
+            src={urlFor(node).width(1024).url()}
+            srcset={imageSrcSet(node)}
+            sizes={sizes}
+            width={width}
+            height={height}
+            alt={node.alt ?? ""}
+            loading="lazy"
+            decoding="async"
+            class="h-auto w-full rounded-sm bg-bg-secondary bg-cover"
+            style={node.lqip ? `background-image: url(${node.lqip})` : undefined}
+          />
+          {node.caption && <figcaption class="text-body-xs">{node.caption}</figcaption>}
+        </figure>
+      );
+    }
+    return null;
+  })}
+</div>

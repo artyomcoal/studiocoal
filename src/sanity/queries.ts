@@ -135,9 +135,19 @@ export const JOURNAL_SLUGS_QUERY = defineQuery(
 
 export const JOURNAL_QUERY = defineQuery(
   `*[_type == "journal" && slug.current == $slug][0]{
-    ...,
+    _id,
+    title,
     "slug": slug.current,
+    publishedAt,
+    category,
+    excerpt,
+    seo,
     coverImage${image},
     body[]{ ..., _type == "imageWithAlt" => ${image} }
   }`,
+);
+
+/** FeaturedArticlesSection on an article page: the newest other posts. */
+export const RECENT_JOURNAL_QUERY = defineQuery(
+  `*[_type == "journal" && defined(slug.current) && slug.current != $slug] | order(publishedAt desc) [0...$limit] ${journalCard}`,
 );
