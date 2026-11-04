@@ -1,10 +1,14 @@
 import { defineArrayMember, defineField, defineType } from "sanity";
+import { normalizePath } from "../../lib/redirects";
 
 export const siteSettings = defineType({
   name: "siteSettings",
   title: "Site settings",
   type: "document",
-  groups: [{ name: "about", title: "About page" }],
+  groups: [
+    { name: "about", title: "About page" },
+    { name: "redirects", title: "Redirects" },
+  ],
   fields: [
     defineField({
       name: "title",
@@ -75,6 +79,62 @@ export const siteSettings = defineType({
       of: [{ type: "link" }],
     }),
     defineField({ name: "seo", title: "Default SEO", type: "seo" }),
+    defineField({
+      name: "redirects",
+      title: "Redirects",
+      group: "redirects",
+      description:
+        "Send old or short addresses somewhere else, e.g. /projects → /work. Changed project and post URLs redirect by themselves (their Old URLs field). Applies after the next deploy.",
+      type: "array",
+      of: [
+        defineArrayMember({
+          type: "object",
+          name: "redirect",
+          fields: [
+            defineField({
+              name: "from",
+              title: "From",
+              type: "string",
+              description: "A path on this site, e.g. /projects.",
+              validation: (rule) =>
+                rule
+                  .required()
+                  .custom((value) =>
+                    value && !value.startsWith("/") ? "Start with /, e.g. /projects." : true,
+                  ),
+            }),
+            defineField({
+              name: "to",
+              title: "To",
+              type: "string",
+              description: "A path on this site (/work) or a full URL (https://…).",
+              validation: (rule) =>
+                rule
+                  .required()
+                  .custom((value) =>
+                    value && !/^(\/|https?:\/\/)/.test(value)
+                      ? "Use a path starting with / or a full https:// URL."
+                      : true,
+                  ),
+            }),
+            defineField({
+              name: "permanent",
+              title: "Permanent (301)",
+              type: "boolean",
+              description: "Turn off for a temporary redirect (302), e.g. a campaign.",
+              initialValue: true,
+            }),
+          ],
+          preview: {
+            select: { from: "from", to: "to", permanent: "permanent" },
+            prepare: ({ from, to, permanent }) => ({
+              title: `${from ? normalizePath(from) : "…"} → ${to ?? "…"}`,
+              subtitle: permanent === false ? "Temporary (302)" : "Permanent (301)",
+            }),
+          },
+        }),
+      ],
+    }),
   ],
   preview: { prepare: () => ({ title: "Site settings" }) },
 });
