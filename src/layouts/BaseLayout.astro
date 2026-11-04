@@ -5,6 +5,7 @@
  */
 import { sanityClient } from "sanity:client";
 import { buildSeo, SITE_NAME } from "@/lib/seo";
+import { graph, organization, serializeJsonLd, website } from "@/lib/structured-data";
 import { urlFor } from "@/sanity/image";
 import { SITE_SETTINGS_QUERY } from "@/sanity/queries";
 import "@/styles/globals.css";
@@ -15,10 +16,18 @@ interface Props {
   description?: string | null;
   /** Absolute URL of a 1200 × 630 social image. Defaults to the site settings image. */
   image?: string | null;
+  /** Ask search engines not to list the page (SEO › Hide from search engines). */
   noindex?: boolean;
+  /** Open Graph type: "article" for Journal posts. */
+  ogType?: "website" | "article";
+  /**
+   * Page-specific structured data nodes (src/lib/structured-data.ts). The organisation and
+   * website nodes are added on every page, so page nodes can reference them.
+   */
+  jsonLd?: Record<string, unknown>[];
 }
 
-const { title, description, image, noindex } = Astro.props;
+const { title, description, image, noindex, ogType = "website", jsonLd = [] } = Astro.props;
 
 const settings = await sanityClient.fetch(SITE_SETTINGS_QUERY);
 const defaultImage = settings?.seo?.image?.asset
@@ -33,6 +42,20 @@ const seo = buildSeo({
   site: Astro.site ?? Astro.url.origin,
   noindex,
 });
+
+const site = String(Astro.site ?? Astro.url.origin);
+const structuredData = serializeJsonLd(
+  graph(
+    organization({
+      site,
+      description: settings?.description,
+      email: settings?.email,
+      sameAs: settings?.social?.map((link) => link.href),
+    }),
+    website(site),
+    ...(jsonLd as Parameters<typeof graph>),
+  ),
+);
 ---
 
 <!doctype html>
@@ -71,10 +94,10 @@ const seo = buildSeo({
     <title>{seo.title}</title>
     <meta name="description" content={seo.description} />
     <link rel="canonical" href={seo.canonical} />
-    {seo.noindex && <meta name="robots" content="noindex, nofollow" />}
+    {seo.noindex && <meta name="robots" content="noindex" />}
     <link rel="sitemap" href="/sitemap-index.xml" />
 
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={ogType} />
     <meta property="og:site_name" content={SITE_NAME} />
     <meta property="og:title" content={seo.title} />
     <meta property="og:description" content={seo.description} />
@@ -84,6 +107,7 @@ const seo = buildSeo({
     <meta name="twitter:title" content={seo.title} />
     <meta name="twitter:description" content={seo.description} />
     {seo.image && <meta name="twitter:image" content={seo.image} />}
+    <script type="application/ld+json" set:html={structuredData} />
     <!-- Page-specific head tags, e.g. the LCP image preload on project pages. -->
     <slot name="head" />
   </head>

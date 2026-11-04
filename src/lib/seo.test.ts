@@ -1,5 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { buildSeo, canonicalUrl, DEFAULT_DESCRIPTION, pageTitle } from "./seo";
+import {
+  buildSeo,
+  canonicalUrl,
+  contentPath,
+  contentSeo,
+  DEFAULT_DESCRIPTION,
+  pageTitle,
+  SLUG_MAX_LENGTH,
+  SLUG_PATTERN,
+  slugify,
+} from "./seo";
 
 const site = "https://studiocoal.com";
 
@@ -35,5 +45,57 @@ describe("buildSeo", () => {
   it("passes through image and noindex", () => {
     const seo = buildSeo({ pathname: "/a", site, image: "https://x/y.jpg", noindex: true });
     expect(seo).toMatchObject({ image: "https://x/y.jpg", noindex: true });
+  });
+});
+
+describe("slugify", () => {
+  it("makes a clean, lowercase slug", () => {
+    expect(slugify("Ünïcode & Co. — 2026!")).toBe("unicode-and-co-2026");
+    expect(slugify("  --Hello   World--  ")).toBe("hello-world");
+    expect(slugify("")).toBe("");
+  });
+
+  it("caps the length without a trailing hyphen", () => {
+    const slug = slugify(`${"a".repeat(95)} b`);
+    expect(slug.length).toBeLessThanOrEqual(SLUG_MAX_LENGTH);
+    expect(slug).toMatch(SLUG_PATTERN);
+  });
+});
+
+describe("contentSeo", () => {
+  it("prefers the SEO overrides", () => {
+    expect(
+      contentSeo({
+        title: "Acme",
+        excerpt: "Excerpt",
+        seo: { title: " SEO title ", description: "SEO description", noIndex: true },
+      }),
+    ).toEqual({
+      title: "SEO title",
+      description: "SEO description",
+      noindex: true,
+      source: { title: "seo", description: "seo" },
+    });
+  });
+
+  it("falls back to the title and excerpt, then the site default", () => {
+    expect(contentSeo({ title: "Acme", excerpt: "Excerpt", seo: { title: "  " } })).toMatchObject({
+      title: "Acme",
+      description: "Excerpt",
+      noindex: false,
+      source: { title: "title", description: "excerpt" },
+    });
+    expect(contentSeo({})).toMatchObject({
+      title: undefined,
+      description: null,
+      source: { title: "none", description: "default" },
+    });
+  });
+});
+
+describe("contentPath", () => {
+  it("prefixes the content type's path", () => {
+    expect(contentPath("work", "acme")).toBe("/work/acme");
+    expect(contentPath("journal", "hello")).toBe("/journal/hello");
   });
 });

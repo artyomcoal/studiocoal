@@ -1,5 +1,6 @@
 import type { StructureBuilder, StructureResolver } from "sanity/structure";
 import { SERVICES } from "../lib/services";
+import { JOURNAL_NEEDS_ATTENTION_FILTER } from "./schemas/journal";
 import { WORK_NEEDS_ATTENTION_FILTER } from "./schemas/work";
 
 const apiVersion = "2026-11-01";
@@ -14,15 +15,22 @@ const USES_VIDEO = [
   `"video" in content[].right.kind`,
 ].join(" || ");
 
-/** Newest first, the order the site shows projects in. */
-const newestFirst = [
-  { field: "year", direction: "desc" },
-  { field: "_createdAt", direction: "desc" },
-] as const;
+/** Newest first: the order the site lists each type in. */
+const newestFirst = {
+  work: [
+    { field: "year", direction: "desc" },
+    { field: "_createdAt", direction: "desc" },
+  ],
+  journal: [{ field: "publishedAt", direction: "desc" }],
+} as const;
 
-/** A filtered list of Work documents. New documents created from it use `template`. */
-function workList(
+/** Page has SEO › Hide from search engines on. */
+const HIDDEN_FROM_SEARCH = "seo.noIndex == true";
+
+/** A filtered list of one document type. New documents created from it use `template`. */
+function filteredList(
   S: StructureBuilder,
+  type: keyof typeof newestFirst,
   id: string,
   title: string,
   filter: string,
@@ -32,23 +40,33 @@ function workList(
   return S.listItem()
     .id(id)
     .title(title)
-    .schemaType("work")
+    .schemaType(type)
     .child(
       S.documentList()
         .id(id)
         .title(title)
-        .schemaType("work")
+        .schemaType(type)
         .apiVersion(apiVersion)
-        .filter(`_type == "work" && (${filter})`)
-        .params(params)
-        .defaultOrdering([...newestFirst])
+        .filter(`_type == $type && (${filter})`)
+        .params({ ...params, type })
+        .defaultOrdering([...newestFirst[type]])
         .initialValueTemplates(
           template
             ? [S.initialValueTemplateItem(template.id, template.params ?? {})]
-            : [S.initialValueTemplateItem("work")],
+            : [S.initialValueTemplateItem(type)],
         ),
     );
 }
+
+/** A filtered list of Work documents. */
+const workList = (
+  S: StructureBuilder,
+  id: string,
+  title: string,
+  filter: string,
+  params?: Record<string, unknown>,
+  template?: { id: string; params?: Record<string, unknown> },
+) => filteredList(S, "work", id, title, filter, params, template);
 
 /**
  * Work: the full list plus filtered views for the questions editors ask most often
@@ -117,6 +135,39 @@ const work = (S: StructureBuilder) =>
                   workList(S, "work-images-only", "Images only", `!(${USES_VIDEO})`),
                 ]),
             ),
+          S.divider(),
+          workList(S, "work-hidden", "Hidden from search engines", HIDDEN_FROM_SEARCH),
+        ]),
+    );
+
+/** Journal: every post, plus what's featured, what isn't ready yet and what's hidden. */
+const journal = (S: StructureBuilder) =>
+  S.listItem()
+    .id("journal")
+    .title("Journal")
+    .schemaType("journal")
+    .child(
+      S.list()
+        .id("journal")
+        .title("Journal")
+        .items([
+          filteredList(S, "journal", "journal-all", "All posts", "true"),
+          filteredList(S, "journal", "journal-featured", "Featured", "featured == true"),
+          filteredList(
+            S,
+            "journal",
+            "journal-needs-attention",
+            "Needs attention",
+            JOURNAL_NEEDS_ATTENTION_FILTER,
+          ),
+          S.divider(),
+          filteredList(
+            S,
+            "journal",
+            "journal-hidden",
+            "Hidden from search engines",
+            HIDDEN_FROM_SEARCH,
+          ),
         ]),
     );
 
@@ -125,7 +176,7 @@ export const structure: StructureResolver = (S) =>
     .title("Content")
     .items([
       work(S),
-      S.documentTypeListItem("journal").title("Journal"),
+      journal(S),
       S.divider(),
       S.listItem()
         .title("Site settings")

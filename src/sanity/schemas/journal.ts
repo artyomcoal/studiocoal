@@ -1,25 +1,37 @@
 import { defineField, defineType } from "sanity";
+import { slugField } from "./fields";
+import { SEO_TOO_LONG_FILTER } from "./seo";
+
+/** GROQ condition for a post that's missing something the site shows, or has an SEO problem. */
+export const JOURNAL_NEEDS_ATTENTION_FILTER = [
+  "!defined(slug.current)",
+  "!defined(publishedAt)",
+  "!defined(excerpt)",
+  "!defined(coverImage.asset)",
+  "defined(coverImage.asset) && !defined(coverImage.alt)",
+  SEO_TOO_LONG_FILTER,
+].join(" || ");
 
 export const journal = defineType({
   name: "journal",
   title: "Journal",
   type: "document",
+  groups: [
+    { name: "content", title: "Content", default: true },
+    { name: "seo", title: "SEO" },
+  ],
   fields: [
     defineField({
       name: "title",
+      group: "content",
       title: "Title",
       type: "string",
       validation: (rule) => rule.required(),
     }),
-    defineField({
-      name: "slug",
-      title: "Slug",
-      type: "slug",
-      options: { source: "title" },
-      validation: (rule) => rule.required(),
-    }),
+    slugField("journal", "content"),
     defineField({
       name: "publishedAt",
+      group: "content",
       title: "Published at",
       type: "datetime",
       initialValue: () => new Date().toISOString(),
@@ -27,21 +39,36 @@ export const journal = defineType({
     }),
     defineField({
       name: "category",
+      group: "content",
       title: "Category",
       type: "string",
       description: "Shown as a tag on article cards, e.g. News, Insight, Process.",
     }),
-    defineField({ name: "excerpt", title: "Excerpt", type: "text", rows: 3 }),
-    defineField({ name: "coverImage", title: "Cover image", type: "imageWithAlt" }),
-    defineField({ name: "body", title: "Body", type: "richText" }),
+    defineField({
+      name: "excerpt",
+      title: "Excerpt",
+      type: "text",
+      rows: 3,
+      group: "content",
+      description:
+        "Shown on article cards, and used for search results unless SEO › Search description is set.",
+    }),
+    defineField({
+      name: "coverImage",
+      title: "Cover image",
+      type: "imageWithAlt",
+      group: "content",
+    }),
+    defineField({ name: "body", title: "Body", type: "richText", group: "content" }),
     defineField({
       name: "featured",
+      group: "content",
       title: "Featured",
       type: "boolean",
       description: "Prefer this post in the Featured Articles section.",
       initialValue: false,
     }),
-    defineField({ name: "seo", title: "SEO", type: "seo" }),
+    defineField({ name: "seo", title: "SEO", type: "seo", group: "seo" }),
   ],
   orderings: [
     {
