@@ -62,7 +62,7 @@ Routes: `/`, `/work`, `/work/[slug]`, `/journal`, `/journal/[slug]`, `/services`
 
 ## Design tokens (most important section)
 
-Token values live **only** in `src/styles/tokens.css` (colors, layout, radius) and `src/styles/typography.css` (type styles). Components never contain raw values.
+Token values live **only** in `src/styles/tokens.css` (neutral palette, semantic colors, layout) and `src/styles/typography.css` (text-style variables + utilities). Components never contain raw values.
 
 ### Hard rules
 1. **No raw hex, rgb, hsl or px values** in components. Use tokens only.
@@ -74,7 +74,14 @@ Token values live **only** in `src/styles/tokens.css` (colors, layout, radius) a
 7. **Never add, rename or change a token without asking.** If a design needs a value that has no token, stop and ask.
 
 ### Colors and themes
-- The Figma semantic names are the source of truth: `bg-primary`, `bg-secondary`, `bg-tertiary`, `bg-translucent`, `fg-primary`, `fg-secondary`, `fg-tertiary`, `fg-on-primary`, `border-subtle`, `interactive-primary`, `interactive-secondary`. In classes they read as `bg-bg-primary` and `text-fg-secondary`. That is intended.
+- **Which Figma variables are in code:** the **Theme** collection's semantic colors (light + dark), the **Custom** collection (layout + text-style variables, per breakpoint) and the custom **neutral palette** (`--color-neutral-50…900`, replaces Tailwind's neutral). The **TailwindCSS** collection is *not* imported: it mirrors Tailwind's own utilities (spacing, sizes, radius, opacity, weights). Theme's radius / breakpoint / container / text-scale variables also equal Tailwind defaults, so use `rounded-*`, `max-w-*` etc. directly. `/styleguide` lists every imported variable with its live value.
+- The Figma semantic names are the source of truth (Figma `colors/background/color-bg-primary` → `--bg-primary`):
+  - background: `bg-primary`, `bg-secondary`, `bg-tertiary`, `bg-elevated`, `bg-overlay`, `bg-translucent`
+  - foreground: `fg-primary`, `fg-secondary`, `fg-tertiary`, `fg-faded`, `fg-link`, `fg-link-hover`, `fg-link-active`, `fg-on-primary`, `fg-on-secondary`, `fg-inverse`
+  - interactive: `interactive-primary(-hover|-active)`, `interactive-secondary(-hover|-active)`, `interactive-focus-ring`, `interactive-focus-inner`
+  - border: `border-strong`, `border-medium`, `border-subtle`
+  
+  In classes they read as `bg-bg-primary`, `text-fg-secondary`, `border-border-subtle`. That is intended.
 - shadcn token names (`background`, `foreground`, `primary`, `muted`, `border`, `ring`, …) exist **only as aliases** that point to the Figma tokens, so that bejamas components work unchanged. Use the Figma names in our own code.
 - **Light and dark themes both ship**, following the OS setting (`prefers-color-scheme`). There is no toggle. Dark is the default: `:root` holds dark values, `@media (prefers-color-scheme: light)` overrides the semantic variables, and `color-scheme: light dark` is set. Primitives never change between themes; only the semantic mapping does (Figma `Theme` collection, Light/Dark modes).
 - Check every component in both themes.

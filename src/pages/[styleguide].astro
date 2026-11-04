@@ -1,7 +1,8 @@
 ---
 /**
- * Styleguide — dev-only QA page. Lists every token and component state.
- * Not available in production builds.
+ * Styleguide — dev-only QA page. Lists every design token imported from Figma and every
+ * component state. Values shown are computed live, so they reflect the current breakpoint
+ * (resize the window) and theme (OS setting, or DevTools › Rendering › prefers-color-scheme).
  */
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { Button } from "@/ui/button";
@@ -14,91 +15,230 @@ export function getStaticPaths() {
   return import.meta.env.DEV ? [{ params: { styleguide: "styleguide" } }] : [];
 }
 
-const colors = [
-  ["bg-primary", "bg-bg-primary"],
-  ["bg-secondary", "bg-bg-secondary"],
-  ["bg-tertiary", "bg-bg-tertiary"],
-  ["bg-translucent", "bg-bg-translucent"],
-  ["fg-primary", "bg-fg-primary"],
-  ["fg-secondary", "bg-fg-secondary"],
-  ["fg-tertiary", "bg-fg-tertiary"],
-  ["fg-faded", "bg-fg-faded"],
-  ["fg-on-primary", "bg-fg-on-primary"],
-  ["fg-on-secondary", "bg-fg-on-secondary"],
-  ["border-subtle", "bg-border-subtle"],
-  ["interactive-primary", "bg-interactive-primary"],
-  ["interactive-primary-hover", "bg-interactive-primary-hover"],
-  ["interactive-primary-active", "bg-interactive-primary-active"],
-  ["interactive-secondary", "bg-interactive-secondary"],
-  ["interactive-secondary-hover", "bg-interactive-secondary-hover"],
-  ["interactive-focus-ring", "bg-interactive-focus-ring"],
+const neutrals = ["50", "100", "200", "300", "400", "450", "500", "600", "700", "800", "900"];
+
+// [css variable, Figma variable] — Figma Theme collection, colors/*
+const semantic: Record<string, [string, string][]> = {
+  Background: [
+    ["bg-primary", "colors/background/color-bg-primary"],
+    ["bg-secondary", "colors/background/color-bg-secondary"],
+    ["bg-tertiary", "colors/background/color-bg-tertiary"],
+    ["bg-elevated", "colors/background/color-bg-elevated"],
+    ["bg-overlay", "colors/background/color-bg-overlay"],
+    ["bg-translucent", "colors/background/color-bg-translucent"],
+  ],
+  Foreground: [
+    ["fg-primary", "colors/foreground/color-fg-primary"],
+    ["fg-secondary", "colors/foreground/color-fg-secondary"],
+    ["fg-tertiary", "colors/foreground/color-fg-tertiary"],
+    ["fg-faded", "colors/foreground/color-fg-faded"],
+    ["fg-link", "colors/foreground/color-fg-link"],
+    ["fg-link-hover", "colors/foreground/color-fg-link-hover"],
+    ["fg-link-active", "colors/foreground/color-fg-link-active"],
+    ["fg-on-primary", "colors/foreground/color-fg-on-primary"],
+    ["fg-on-secondary", "colors/foreground/color-fg-on-secondary"],
+    ["fg-inverse", "colors/foreground/color-fg-inverse"],
+  ],
+  Interactive: [
+    ["interactive-primary", "colors/interactive/color-interactive-primary"],
+    ["interactive-primary-hover", "colors/interactive/color-interactive-primary-hover"],
+    ["interactive-primary-active", "colors/interactive/color-interactive-primary-active"],
+    ["interactive-secondary", "colors/interactive/color-interactive-secondary"],
+    ["interactive-secondary-hover", "colors/interactive/color-interactive-secondary-hover"],
+    ["interactive-secondary-active", "colors/interactive/color-interactive-secondary-active"],
+    ["interactive-focus-ring", "colors/interactive/focus-ring"],
+    ["interactive-focus-inner", "colors/interactive/focus-inner"],
+  ],
+  Border: [
+    ["border-strong", "colors/border/color-border-strong"],
+    ["border-medium", "colors/border/color-border-medium"],
+    ["border-subtle", "colors/border/color-border-subtle"],
+  ],
+};
+
+// [css variable, Figma variable, utility] — Figma Custom collection, layout/*
+const layout: [string, string, string][] = [
+  ["--grid-column-count", "layout/grid-column-count", "grid-cols-layout"],
+  ["--grid-gutter", "layout/grid-gutter", "gap-gutter"],
+  ["--container-max-width", "layout/container-max-width", "max-w-container"],
+  ["--container-padding-x", "layout/container-padding-x", "px-container"],
+  ["--section-padding-y", "layout/section-padding-y", "py-section"],
+  ["--hero-padding-top", "layout/hero-padding-top", "pt-hero"],
 ];
 
-const type = [
-  ["text-headline-xxl", "text-headline-xxl"],
-  ["text-headline-xl", "text-headline-xl"],
-  ["text-headline-lg", "text-headline-lg"],
-  ["text-headline-md", "text-headline-md"],
-  ["text-headline-sm", "text-headline-sm"],
-  ["text-headline-xs", "text-headline-xs"],
-  ["text-body-lg", "text-body-lg"],
-  ["text-body-md", "text-body-md"],
-  ["text-body-sm", "text-body-sm"],
-  ["text-body-xs", "text-body-xs"],
-  ["text-label", "text-label"],
-  ["text-caption-md", "text-caption-md"],
-  ["text-caption-sm", "text-caption-sm"],
-  ["text-eyebrow", "text-eyebrow"],
+// [utility, Figma text style, size var, line-height var]
+const textStyles: [string, string, string, string][] = [
+  ["text-headline-xxl", "Headline/Headline XXL", "--fontsize-headline-xxl", "--lineheight-headline-xxl"],
+  ["text-headline-xl", "Headline/Headline XL", "--fontsize-headline-xl", "--lineheight-headline-xl"],
+  ["text-headline-lg", "Headline/Headline LG", "--fontsize-headline-lg", "--lineheight-headline-lg"],
+  ["text-headline-md", "Headline/Headline MD", "--fontsize-headline-md", "--lineheight-headline-md"],
+  ["text-headline-sm", "Headline/Headline SM", "--fontsize-headline-sm", "--lineheight-headline-sm"],
+  ["text-headline-xs", "Headline/Headline XS", "--fontsize-headline-xs", "--lineheight-headline-xs"],
+  ["text-body-lg", "Body/Body LG Medium", "--fontsize-body-lg", "--lineheight-body-lg"],
+  ["text-body-md", "Body/Body MD Medium", "--fontsize-body-md", "--lineheight-body-md"],
+  ["text-body-sm", "Body/Body SM Medium", "--fontsize-body-sm", "--lineheight-body-sm"],
+  ["text-body-xs", "Body/Body XS Medium", "--fontsize-body-xs", "--lineheight-body-xs"],
+  ["text-label", "Labels/Label M Medium", "--fontsize-label-sm", "--lineheight-label-sm"],
+  ["text-caption-md", "Caption/Caption M", "--fontsize-caption-m", "--lineheight-caption-m"],
+  ["text-caption-sm", "Caption/Caption S", "--fontsize-caption-s", "--lineheight-caption-s"],
+  ["text-eyebrow", "Eyebrow/Eyebrow", "--fontsize-eyebrow-md", "--lineheight-eyebrow-md"],
 ];
+
+// Remaining text-style variables (families, weights, unused sizes)
+const textVars = [
+  "--headline-font-family", "--headline-font-weight",
+  "--body-font-family", "--body-font-weight-medium",
+  "--label-font-family", "--label-font-weight", "--fontsize-label-md", "--lineheight-label-md",
+  "--caption-font-family", "--caption-font-weight",
+  "--eyebrow-font-family", "--eyebrow-font-weight",
+];
+
+const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
 ---
 
 <BaseLayout title="Styleguide — Studio Coal">
-  <main class="px-container py-section flex flex-col gap-12">
+  <main class="flex flex-col gap-16 px-container py-section">
     <header class="flex flex-col gap-2">
       <p class="text-eyebrow text-fg-tertiary">STYLEGUIDE</p>
-      <h1 class="text-headline-xxl">Tokens</h1>
-      <p class="text-body-md text-fg-secondary">
-        Dev-only page for visual QA against Figma. Resize to check base, md (768) and xl (1024).
+      <h1 class="text-headline-xxl">Studio Coal tokens & components</h1>
+      <p class="max-w-2xl text-body-md text-fg-secondary">
+        Every variable imported from Figma (Theme + Custom collections and the neutral palette),
+        every text style and every component state. Values are computed live.
+      </p>
+      <p class="text-body-sm text-fg-tertiary">
+        Breakpoint: <strong class="text-fg-primary" data-breakpoint></strong> · Theme:
+        <strong class="text-fg-primary" data-theme></strong>
       </p>
     </header>
 
-    <section class="flex flex-col gap-4">
-      <h2 class="text-headline-lg">Colors</h2>
-      <ul class="grid grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-6">
-        {
-          colors.map(([name, cls]) => (
-            <li class="flex flex-col gap-2">
-              <div class={`h-16 rounded-sm border border-border-subtle ${cls}`} />
-              <span class="text-body-xs text-fg-secondary">{name}</span>
-            </li>
-          ))
-        }
-      </ul>
-    </section>
-
-    <section class="flex flex-col gap-4">
-      <h2 class="text-headline-lg">Typography</h2>
-      <ul class="flex flex-col gap-4">
-        {
-          type.map(([name, cls]) => (
-            <li class="flex flex-col gap-1 border-b border-border-subtle pb-4">
-              <span class="text-caption-md text-fg-tertiary">{name}</span>
-              <span class={cls}>Brands built with purpose and precision</span>
-            </li>
-          ))
-        }
-      </ul>
-    </section>
-
-    <section class="flex flex-col gap-4">
-      <h2 class="text-headline-lg">Layout</h2>
+    <section class="flex flex-col gap-6">
+      <h2 class="text-headline-lg">Neutral palette</h2>
       <p class="text-body-sm text-fg-secondary">
-        px-container, py-section, pt-hero, gap-gutter and grid-cols-layout switch at md and xl.
-        The 12-column grid below uses grid-cols-layout.
+        Figma TailwindCSS › colors/neutral/*. Replaces Tailwind's neutral palette
+        (<code>bg-neutral-500</code>…). Same in both themes.
       </p>
+      <ul class="grid grid-cols-3 gap-4 md:grid-cols-6 xl:grid-cols-11">
+        {
+          neutrals.map((n) => (
+            <li class="flex flex-col gap-2">
+              <div class="h-16 rounded-sm border border-border-subtle" style={`background: var(--color-neutral-${n})`} />
+              <span class="text-body-xs">neutral-{n}</span>
+              <span class="text-caption-sm text-fg-tertiary" data-var={`--color-neutral-${n}`} />
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section class="flex flex-col gap-6">
+      <h2 class="text-headline-lg">Semantic colors</h2>
+      <p class="text-body-sm text-fg-secondary">
+        Figma Theme › colors/*. Utilities: <code>bg-bg-primary</code>, <code>text-fg-secondary</code>,
+        <code>border-border-subtle</code>, <code>bg-interactive-primary</code>…
+      </p>
+      {
+        Object.entries(semantic).map(([group, tokens]) => (
+          <div class="flex flex-col gap-3">
+            <h3 class="text-headline-xs">{group}</h3>
+            <ul class="grid grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-6">
+              {tokens.map(([name, figma]) => (
+                <li class="flex flex-col gap-2">
+                  <div
+                    class="h-16 rounded-sm border border-border-subtle bg-[repeating-conic-gradient(var(--bg-tertiary)_0_25%,transparent_0_50%)] bg-size-[16px_16px]"
+                  >
+                    {/* checkerboard shows transparency; arbitrary values allowed: dev-only page */}
+                    <div class="size-full rounded-sm" style={`background: var(--${name})`} />
+                  </div>
+                  <span class="text-body-xs">{name}</span>
+                  <span class="text-caption-sm text-fg-tertiary">{figma.split("/").pop()}</span>
+                  <span class="text-caption-sm text-fg-tertiary" data-var={`--${name}`} />
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </section>
+
+    <section class="flex flex-col gap-6">
+      <h2 class="text-headline-lg">Layout</h2>
+      <p class="text-body-sm text-fg-secondary">Figma Custom › layout/*. Switches at md and xl.</p>
+      <table class="w-full text-left text-body-sm">
+        <thead class="text-caption-md text-fg-tertiary">
+          <tr><th class="py-2">Variable</th><th>Figma</th><th>Utility</th><th>Now</th></tr>
+        </thead>
+        <tbody>
+          {
+            layout.map(([v, figma, util]) => (
+              <tr class="border-t border-border-subtle">
+                <td class="py-2"><code>{v}</code></td>
+                <td class="text-fg-secondary">{figma}</td>
+                <td><code>{util}</code></td>
+                <td data-var={v} />
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
       <div class="grid-cols-layout">
-        {Array.from({ length: 12 }, (_, i) => <div class="h-12 bg-bg-secondary" data-col={i + 1} />)}
+        {Array.from({ length: 12 }, () => <div class="h-12 bg-bg-secondary" />)}
       </div>
+    </section>
+
+    <section class="flex flex-col gap-6">
+      <h2 class="text-headline-lg">Text styles</h2>
+      <p class="text-body-sm text-fg-secondary">
+        Figma text styles → utilities. Size and line height come from the Custom › text styles/*
+        variables and switch at md and xl.
+      </p>
+      <ul class="flex flex-col">
+        {
+          textStyles.map(([util, figma, size, lh]) => (
+            <li class="grid gap-2 border-t border-border-subtle py-4 xl:grid-cols-[16rem_1fr]">
+              {/* fixed label column: dev-only page */}
+              <div class="flex flex-col gap-1">
+                <code class="text-body-xs">{util}</code>
+                <span class="text-caption-sm text-fg-tertiary">{figma}</span>
+                <span class="text-caption-sm text-fg-tertiary">
+                  <span data-var={size} /> / <span data-var={lh} /> · {size}
+                </span>
+              </div>
+              <span class={util}>Brands built with purpose and precision</span>
+            </li>
+          ))
+        }
+      </ul>
+      <h3 class="text-headline-xs">Other text-style variables</h3>
+      <table class="w-full text-left text-body-sm">
+        <tbody>
+          {
+            textVars.map((v) => (
+              <tr class="border-t border-border-subtle">
+                <td class="py-2"><code>{v}</code></td>
+                <td data-var={v} />
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </section>
+
+    <section class="flex flex-col gap-6">
+      <h2 class="text-headline-lg">Radius</h2>
+      <p class="text-body-sm text-fg-secondary">
+        Figma Theme › radius/* equals Tailwind's default scale: use <code>rounded-*</code>.
+      </p>
+      <ul class="flex flex-wrap gap-4">
+        {
+          radii.map((r) => (
+            <li class="flex flex-col items-center gap-2">
+              <div class={`size-16 border border-border-medium bg-bg-secondary rounded-${r}`} />
+              <span class="text-body-xs">rounded-{r}</span>
+              <span class="text-caption-sm text-fg-tertiary" data-var={`--radius-${r}`} />
+            </li>
+          ))
+        }
+      </ul>
     </section>
 
     <section class="flex flex-col gap-6">
@@ -178,3 +318,39 @@ const type = [
     </section>
   </main>
 </BaseLayout>
+
+<script>
+  // Dev-only: print computed token values and the active breakpoint / theme.
+  function update() {
+    const root = getComputedStyle(document.documentElement);
+    document.querySelectorAll<HTMLElement>("[data-var]").forEach((el) => {
+      const name = el.dataset.var!;
+      let value = root.getPropertyValue(name).trim();
+      const probe = document.createElement("div");
+      probe.style.position = "absolute";
+      document.body.append(probe);
+      if (/color|bg-|fg-|border-|interactive-/.test(name)) {
+        probe.style.color = `var(${name})`;
+        const c = getComputedStyle(probe).color;
+        const m = c.match(/color\(srgb ([\d.]+) ([\d.]+) ([\d.]+)(?: \/ ([\d.]+))?\)/);
+        value = m
+          ? `rgba(${[m[1], m[2], m[3]].map((x) => Math.round(+x * 255)).join(", ")}, ${m[4] ?? 1})`
+          : c;
+      } else if (/rem|calc/.test(value)) {
+        probe.style.width = `var(${name})`;
+        value = `${parseFloat(getComputedStyle(probe).width)}px`;
+      }
+      probe.remove();
+      el.textContent = value || "—";
+    });
+    const w = window.innerWidth;
+    document.querySelector("[data-breakpoint]")!.textContent =
+      w >= 1024 ? `xl (${w}px)` : w >= 768 ? `md (${w}px)` : `base (${w}px)`;
+    document.querySelector("[data-theme]")!.textContent = matchMedia("(prefers-color-scheme: light)").matches
+      ? "light"
+      : "dark";
+  }
+  update();
+  addEventListener("resize", update);
+  matchMedia("(prefers-color-scheme: light)").addEventListener("change", update);
+</script>
