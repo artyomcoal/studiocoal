@@ -40,7 +40,9 @@ const resolved = resolveMedia(media);
 const base: AspectName = aspect === "hero" ? "portrait" : aspect;
 const ratio = ASPECT[base];
 // Intrinsic size for width/height attributes (no layout shift); the CSS aspect box wins.
-const width = { portrait: 1600, landscape: 1920, square: 1600, thumbnail: 800 }[base];
+const width = { portrait: 1600, landscape: 1920, square: 1600, thumbnail: 800, gallery: 2048 }[
+  base
+];
 const height = Math.round(width / ratio);
 
 const image = resolved?.kind === "image" ? resolved.image : resolved?.video.poster;
@@ -66,6 +68,7 @@ const playerPoster =
       landscape: "aspect-video",
       square: "aspect-square",
       thumbnail: "aspect-4/3",
+      gallery: "aspect-3/2",
       hero: "aspect-4/5 md:aspect-video",
     }[aspect],
     className,

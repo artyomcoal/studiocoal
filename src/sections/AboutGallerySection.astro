@@ -1,0 +1,44 @@
+---
+/**
+ * About Gallery Section
+ * A horizontal strip of studio photos (3:2) under the About hero, scrollable at every
+ * breakpoint: 320px wide at base, 576px at md, 1024px at xl, 8px apart, flush with the
+ * left edge as in Figma. Photos come from Site settings › About page.
+ * Figma: About / breakpoint=xl (frame 5044:17639), "Track"
+ * Renders nothing until photos are added.
+ */
+import Media from "@/components/Media.astro";
+import { cn } from "@/lib/utils";
+import type { MediaData } from "@/sanity/media";
+import type { ABOUT_MEDIA_QUERY_RESULT } from "@/sanity/types";
+
+interface Props {
+  photos: NonNullable<ABOUT_MEDIA_QUERY_RESULT>["gallery"];
+  class?: string;
+}
+
+const { photos, class: className } = Astro.props;
+---
+
+{photos && photos.length > 0 && (
+  <section aria-label="Studio photos" class={cn("pb-section", className)}>
+    {/* eslint-disable astro/jsx-a11y/no-noninteractive-tabindex -- scrollable region must be focusable (axe scrollable-region-focusable) */}
+    <ul
+      tabindex="0"
+      aria-label="Studio photos"
+      class="flex snap-x snap-mandatory gap-2 overflow-x-auto overscroll-x-contain scrollbar-none outline-none focus-visible:ring-2 focus-visible:ring-interactive-focus-ring focus-visible:ring-inset motion-safe:scroll-smooth *:shrink-0 *:snap-start"
+    >
+      {photos.map((photo) => (
+        <li class="w-80 md:w-144 xl:w-256">
+          <Media
+            media={{ kind: "image", image: photo, video: null } as MediaData}
+            aspect="gallery"
+            sizes="(min-width: 64rem) 1024px, (min-width: 48rem) 576px, 320px"
+            class="rounded-none"
+          />
+        </li>
+      ))}
+    </ul>
+    {/* eslint-enable astro/jsx-a11y/no-noninteractive-tabindex */}
+  </section>
+)}

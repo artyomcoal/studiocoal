@@ -1,0 +1,42 @@
+---
+/**
+ * About page: hero, studio photos, our why, principles, capabilities, clients, services CTA
+ * and recent work.
+ * Figma: About / breakpoint=xl|md|base (frames 5044:17639, 53346:10376, 53347:10697)
+ */
+import { sanityClient } from "sanity:client";
+import PageLayout from "@/layouts/PageLayout.astro";
+import { ABOUT_MEDIA_QUERY, CLIENTS_QUERY, FEATURED_WORK_QUERY } from "@/sanity/queries";
+import AboutGallerySection from "@/sections/AboutGallerySection.astro";
+import AboutPrinciplesSection from "@/sections/AboutPrinciplesSection.astro";
+import AboutWhySection from "@/sections/AboutWhySection.astro";
+import CapabilitiesSection from "@/sections/CapabilitiesSection.astro";
+import ClientsSection from "@/sections/ClientsSection.astro";
+import FeaturedWorkSection from "@/sections/FeaturedWorkSection.astro";
+import ServicesCtaSection from "@/sections/ServicesCtaSection.astro";
+
+const [aboutMedia, clients, recentWork] = await Promise.all([
+  sanityClient.fetch(ABOUT_MEDIA_QUERY),
+  sanityClient.fetch(CLIENTS_QUERY),
+  sanityClient.fetch(FEATURED_WORK_QUERY, { limit: 3 }),
+]);
+---
+
+<PageLayout
+  title="About"
+  description="Studio Coal is a design partner for founders at a turning point. Senior, curious and particular about the details."
+>
+  <section class="px-container pt-hero pb-12">
+    <h1 class="text-headline-xxl text-fg-primary">
+      <span class="text-fg-tertiary">About.</span> Studio Coal is a design partner for founders at a
+      turning point. Senior, curious and particular about the details.
+    </h1>
+  </section>
+  <AboutGallerySection photos={aboutMedia?.gallery ?? null} />
+  <AboutWhySection />
+  <AboutPrinciplesSection image={aboutMedia?.principlesImage} />
+  <CapabilitiesSection />
+  <ClientsSection clients={clients} />
+  <ServicesCtaSection />
+  <FeaturedWorkSection works={recentWork} />
+</PageLayout>

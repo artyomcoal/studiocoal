@@ -12,6 +12,9 @@ import NavItem from "@/components/NavItem.astro";
 import BlogListCard from "@/components/BlogListCard.astro";
 import WorkArchiveCard from "@/components/WorkArchiveCard.astro";
 import WorkListCard from "@/components/WorkListCard.astro";
+import AboutPrinciplesSection from "@/sections/AboutPrinciplesSection.astro";
+import AboutWhySection from "@/sections/AboutWhySection.astro";
+import CapabilitiesSection from "@/sections/CapabilitiesSection.astro";
 import ClientsSection from "@/sections/ClientsSection.astro";
 import FeaturedArticlesSection from "@/sections/FeaturedArticlesSection.astro";
 import FeaturedWorkSection from "@/sections/FeaturedWorkSection.astro";
@@ -795,6 +798,12 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
     <HowWeWorkSection />
     <h2 class="px-container pb-6 text-headline-lg">ServicesCtaSection</h2>
     <ServicesCtaSection />
+    <h2 class="px-container pb-6 text-headline-lg">
+      AboutWhySection, AboutPrinciplesSection (no photo), CapabilitiesSection
+    </h2>
+    <AboutWhySection />
+    <AboutPrinciplesSection image={null} />
+    <CapabilitiesSection />
     <h2 class="px-container pb-6 text-headline-lg">ClientsSection (logos need Sanity assets)</h2>
     <ClientsSection clients={demoClients} />
     <h2 class="px-container pt-section pb-6 text-headline-lg">

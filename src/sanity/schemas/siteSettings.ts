@@ -4,6 +4,7 @@ export const siteSettings = defineType({
   name: "siteSettings",
   title: "Site settings",
   type: "document",
+  groups: [{ name: "about", title: "About page" }],
   fields: [
     defineField({
       name: "title",
@@ -50,6 +51,22 @@ export const siteSettings = defineType({
           preview: { select: { title: "name", media: "logo" } },
         }),
       ],
+    }),
+    defineField({
+      name: "aboutGallery",
+      title: "About: studio photos",
+      description:
+        "The horizontal photo strip under the About hero, left to right. Cropped to 3:2.",
+      type: "array",
+      group: "about",
+      of: [defineArrayMember({ type: "imageWithAlt" })],
+    }),
+    defineField({
+      name: "aboutPrinciplesImage",
+      title: "About: principles image",
+      description: "Next to the principles on the About page. Cropped square.",
+      type: "imageWithAlt",
+      group: "about",
     }),
     defineField({
       name: "footerLinks",

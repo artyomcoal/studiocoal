@@ -1,0 +1,67 @@
+---
+/**
+ * About Why Section
+ * "Our why": two paragraphs and four figures, in columns 7–12 at xl, full width below.
+ * Figma: About / breakpoint=xl (frame 5044:17639), "our why"
+ */
+import { cn } from "@/lib/utils";
+
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+
+const figures = [
+  { label: "Partnerships", value: "25+" },
+  { label: "Our team", value: "4" },
+  { label: "Years building", value: "7+" },
+  { label: "Awards", value: "11" },
+];
+---
+
+<section aria-labelledby="our-why" class={cn("px-container pb-section", className)}>
+  <h2
+    id="our-why"
+    class="border-t border-border-subtle py-6 text-eyebrow text-fg-primary uppercase"
+  >
+    Our why
+  </h2>
+  <div class="grid-cols-layout pt-12">
+    <div class="col-span-full flex flex-col gap-12 text-fg-primary xl:col-span-6 xl:col-start-7">
+      <div class="flex flex-col gap-12 text-body-md text-pretty md:flex-row *:flex-1">
+        <div class="flex flex-col gap-5">
+          <p>
+            Every company has a few moments that decide how it's seen: the day it comes out of
+            stealth, the round it raises, the product it launches. Too often those moments arrive
+            with a brand that doesn't fit, a site that lists features but doesn't make a case, and a
+            product that shows off its complexity instead of resolving it. We started Studio Coal to
+            help founders meet those moments properly.
+          </p>
+          <p>
+            We kept it small on purpose. Small means the senior people stay on the work, decisions
+            are quick, and nothing gets lost in a handoff. When a project needs more, we bring in
+            specialists we've worked with for years.
+          </p>
+        </div>
+        <div class="flex flex-col gap-5">
+          <p>
+            We're curious by nature. We try new tools early and use them to explore more than a
+            small team otherwise could. But the more options there are, the more the work comes down
+            to judgment: knowing what's right for this company at this moment, and making it with
+            care.
+          </p>
+          <p>We'd rather do fewer things properly. That's the Studio Coal.</p>
+        </div>
+      </div>
+      <dl class="grid animate-enter-stagger grid-cols-2 gap-2 md:grid-cols-4">
+        {figures.map((figure) => (
+          <div class="flex flex-col gap-6 rounded-sm bg-bg-secondary p-4">
+            <dt class="text-body-sm">{figure.label}</dt>
+            <dd class="text-headline-xxl text-fg-tertiary">{figure.value}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </div>
+</section>

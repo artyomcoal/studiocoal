@@ -141,6 +141,12 @@ export type SiteSettings = {
     _type: "client";
     _key: string;
   }>;
+  aboutGallery?: Array<
+    {
+      _key: string;
+    } & ImageWithAlt
+  >;
+  aboutPrinciplesImage?: ImageWithAlt;
   footerLinks?: Array<
     {
       _key: string;
@@ -621,6 +627,43 @@ export type SERVICE_THUMBNAILS_QUERY_RESULT = {
 };
 
 // Source: src/sanity/queries.ts
+// Variable: ABOUT_MEDIA_QUERY
+// Query: *[_type == "siteSettings" && _id == "siteSettings"][0]{    "gallery": aboutGallery[defined(asset)]{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }},    "principlesImage": aboutPrinciplesImage{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }}  }
+export type ABOUT_MEDIA_QUERY_RESULT = {
+  gallery: Array<{
+    _key: string;
+    _type: "imageWithAlt";
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    caption?: string;
+    lqip: string | null;
+    dimensions: {
+      width: number;
+      height: number;
+      aspectRatio: number;
+    } | null;
+  }> | null;
+  principlesImage: {
+    _type: "imageWithAlt";
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    caption?: string;
+    lqip: string | null;
+    dimensions: {
+      width: number;
+      height: number;
+      aspectRatio: number;
+    } | null;
+  } | null;
+} | null;
+
+// Source: src/sanity/queries.ts
 // Variable: SITE_SETTINGS_QUERY
 // Query: *[_type == "siteSettings" && _id == "siteSettings"][0]
 export type SITE_SETTINGS_QUERY_RESULT = {
@@ -656,6 +699,12 @@ export type SITE_SETTINGS_QUERY_RESULT = {
     _type: "client";
     _key: string;
   }>;
+  aboutGallery?: Array<
+    {
+      _key: string;
+    } & ImageWithAlt
+  >;
+  aboutPrinciplesImage?: ImageWithAlt;
   footerLinks?: Array<
     {
       _key: string;
@@ -1639,6 +1688,7 @@ declare global {
   interface SanityQueries {
     '*[_type == "siteSettings" && _id == "siteSettings"][0].clients[defined(logo.asset)]{ _key, name, logo }': CLIENTS_QUERY_RESULT;
     '{\n    "brand": *[_type == "work" && "brand" in services && defined(slug.current)] | order(year desc) [0].listingMedia{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n},\n    "web": *[_type == "work" && "web" in services && defined(slug.current)] | order(year desc) [0].listingMedia{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n},\n    "digital-products": *[_type == "work" && "digital-products" in services && defined(slug.current)] | order(year desc) [0].listingMedia{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n}\n  }': SERVICE_THUMBNAILS_QUERY_RESULT;
+    '*[_type == "siteSettings" && _id == "siteSettings"][0]{\n    "gallery": aboutGallery[defined(asset)]{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n},\n    "principlesImage": aboutPrinciplesImage{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n}\n  }': ABOUT_MEDIA_QUERY_RESULT;
     '*[_type == "siteSettings" && _id == "siteSettings"][0]': SITE_SETTINGS_QUERY_RESULT;
     '*[_type == "work" && defined(slug.current)] | order(coalesce(featured, false) desc, year desc, _createdAt desc) [0...$limit] {\n  _id,\n  title,\n  "slug": slug.current,\n  client,\n  year,\n  services,\n  excerpt,\n  listingMedia{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n}\n}': FEATURED_WORK_QUERY_RESULT;
     '*[_type == "work" && defined(slug.current) && slug.current != $slug] | order(year desc, _createdAt desc) [0...$limit] {\n  _id,\n  title,\n  "slug": slug.current,\n  client,\n  year,\n  services,\n  excerpt,\n  listingMedia{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n}\n}': RECENT_WORK_QUERY_RESULT;

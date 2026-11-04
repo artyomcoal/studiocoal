@@ -6,4 +6,5 @@ export const routes = [
   { path: "/journal", name: "journal" },
   { path: "/services", name: "services" },
   { path: "/process", name: "process" },
+  { path: "/about", name: "about" },
 ] as const;

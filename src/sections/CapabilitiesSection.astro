@@ -1,0 +1,99 @@
+---
+/**
+ * Capabilities Section
+ * "Our capabilities": four disciplines with a description and what they include.
+ * Cards: 4 columns at xl, 2 × 2 at md, stacked at base.
+ * Figma: About / breakpoint=xl (frame 5044:17639), "OUR capabilities"
+ */
+import { cn } from "@/lib/utils";
+
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+
+const capabilities = [
+  {
+    title: "Strategy",
+    text: "We define what makes you different and how to say it, before anything gets designed. It isn't a deck that gets filed away; it's the brief every later decision is checked against.",
+    items: [
+      "Brand strategy",
+      "Positioning & messaging",
+      "Product strategy",
+      "Digital strategy",
+      "Content & SEO strategy",
+      "Research & discovery",
+    ],
+  },
+  {
+    title: "Brand & Communication",
+    text: "Distinct brands that make complex companies easy to understand and hard to forget. Identity, voice and motion, built as one system that holds and scales from pitch deck to product.",
+    items: [
+      "Visual identity",
+      "Verbal identity",
+      "Art direction",
+      "Motion systems",
+      "2D & 3D design",
+      "Brand systems",
+      "Launch campaigns",
+    ],
+  },
+  {
+    title: "Digital Experience",
+    text: "Websites and products that are clear, considered and a pleasure to use. We design every state and breakpoint with the same care, not just the hero screen.",
+    items: [
+      "Architecture & UX",
+      "UI & UX design",
+      "Visual design",
+      "Design systems",
+      "User research & testing",
+      "Journeys & jobs to be done",
+      "Motion & interactions",
+    ],
+  },
+  {
+    title: "Development & Technology",
+    text: "We build what we design, so nothing gets lost between the design file and the browser. Fast, accessible, AI-ready sites and documented systems your team can keep building on.",
+    items: [
+      "Framer development",
+      "Webflow development",
+      "CMS implementation",
+      "Front-end development",
+      "Back-end development",
+      "Custom integrations",
+      "QA & launch",
+    ],
+  },
+];
+---
+
+<section aria-labelledby="capabilities" class={cn("px-container pb-section", className)}>
+  <p class="border-t border-border-subtle py-6 text-eyebrow text-fg-primary uppercase">
+    Our capabilities
+  </p>
+  <div class="flex flex-col gap-20 pt-20">
+    <div class="grid-cols-layout">
+      <h2
+        id="capabilities"
+        class="col-span-full text-headline-xl text-balance text-fg-primary md:col-span-8 xl:col-span-5"
+      >
+        Thinking, making and building, without handoffs.
+      </h2>
+    </div>
+    <ul class="grid animate-enter-stagger gap-2 md:grid-cols-2 xl:grid-cols-4">
+      {capabilities.map((capability) => (
+        <li class="flex flex-col gap-6 rounded-sm bg-bg-secondary p-5 text-fg-primary">
+          <h3 class="text-headline-sm">{capability.title}</h3>
+          <p class="text-body-sm text-pretty">{capability.text}</p>
+          <hr class="border-border-subtle" />
+          <ul class="text-body-sm">
+            {capability.items.map((item) => (
+              <li>{item}</li>
+            ))}
+          </ul>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>

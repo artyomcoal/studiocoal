@@ -70,6 +70,14 @@ export const SERVICE_THUMBNAILS_QUERY = defineQuery(
   }`,
 );
 
+/** About page photos from site settings. */
+export const ABOUT_MEDIA_QUERY = defineQuery(
+  `*[_type == "siteSettings" && _id == "siteSettings"][0]{
+    "gallery": aboutGallery[defined(asset)]${image},
+    "principlesImage": aboutPrinciplesImage${image}
+  }`,
+);
+
 export const SITE_SETTINGS_QUERY = defineQuery(
   `*[_type == "siteSettings" && _id == "siteSettings"][0]`,
 );
