@@ -69,7 +69,7 @@ Token values live **only** in `src/styles/tokens.css` (colors, layout, radius) a
 2. **No arbitrary Tailwind values** (`w-[347px]`, `text-[#fff]`). The only exception is a value with an inline comment explaining why no token fits. Prefer asking first.
 3. **Spacing** comes only from the Tailwind `spacing` scale (`p-4`, `gap-6`), which matches Figma `spacing/N`.
 4. **Section layout** uses the semantic utilities only: `px-container`, `py-section`, `pt-hero`, `gap-gutter`, `max-w-container`, `grid-cols-layout`.
-5. **Text** uses the type utilities only: `text-headline-xxl|xl|lg|sm|xs`, `text-body-md|sm|xs`, `text-label`, `text-caption-md|sm`, `text-eyebrow`. Never compose `text-2xl font-medium leading-…` by hand.
+5. **Text** uses the type utilities only: `text-headline-xxl|xl|lg|md|sm|xs`, `text-body-lg|md|sm|xs`, `text-label`, `text-caption-md|sm`, `text-eyebrow`. Never compose `text-2xl font-medium leading-…` by hand.
 6. **Variants** use `class-variance-authority` (`cva`), as bejamas components do. Merge classes with `cn()` from `src/lib/utils.ts`.
 7. **Never add, rename or change a token without asking.** If a design needs a value that has no token, stop and ask.
 
@@ -91,6 +91,7 @@ Token values live **only** in `src/styles/tokens.css` (colors, layout, radius) a
 ### Typography
 - Graphik for headline, body and label; Geist Mono for eyebrow. All styles use weight Medium (500) unless Figma says otherwise.
 - Letter-spacing is in percent in Figma. Convert to `em`: -4% → `-0.04em` (headlines), -3% → `-0.03em` (body), +2% → `0.02em` (eyebrow).
+- **New type utility?** Add it to `typography.css` *and* to the `font-size` list in `src/lib/utils.ts`, otherwise `cn()` (tailwind-merge) drops it when a text color class is present.
 - Graphik is self-hosted WOFF2 (`public/fonts/graphik/Graphik-Medium.woff2`, git-ignored until the licence is bought). Its `@font-face` is declared inline in `BaseLayout.astro` so Vite doesn't try to resolve the missing file. Geist Mono comes from Astro's fonts API (`astro.config.mjs`). The "Graphik Fallback" face still needs metric tuning (`size-adjust`, `ascent-override`) once the real files exist.
 
 ## bejamas/ui
@@ -99,7 +100,9 @@ Token values live **only** in `src/styles/tokens.css` (colors, layout, radius) a
 - **Edit copied files directly** to match Figma. Don't wrap them in extra layers. At the top of the file, record what you changed from upstream (upstream updates won't apply automatically).
 - Use bejamas for: **Button, Accordion, Dialog** (Get in touch modal), **Input / Textarea, Badge**.
 - Build by hand: **Navbar** (with mobile menu), **Footer**, **cards** (WorkListCard, WorkArchiveCard, BlogListCard).
-- **Don't make a component for something one utility class covers.** Divider → `<hr class="border-border-subtle">`; aspect ratio → `aspect-4/5` and similar. Tag: plain markup with classes, unless Figma gives it variants or states, in which case it becomes a component.
+- **Don't make a component for something one utility class covers.** Divider → `<hr class="border-border-subtle">` (vertical: `<div role="separator" aria-orientation="vertical" class="w-px self-stretch bg-border-subtle">`); aspect ratio → `aspect-4/5` and similar. Text styles are utilities (`text-headline-*` etc.), never components.
+- The Figma **"Tag"** component is our **`Badge`** (`variant`: secondary | tertiary, `size`: sm | default).
+- **Accordion trigger size** follows the Figma text style: `<AccordionTrigger size="xs">` (Headline XS, default) or `size="md"` (Headline MD, About page).
 - If bejamas lacks something, check the shadcn registry (`@shadcn/...`) next. Build it yourself only if neither has it.
 
 ## JavaScript

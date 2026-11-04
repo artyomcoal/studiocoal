@@ -1,0 +1,71 @@
+---
+/**
+ * @component Accordion
+ * @description Figma "AccordionItem" (node 672:1702). Behaviour from @data-slot/accordion.
+ * Trigger size: xs (Headline XS, Services / Work Single) | md (Headline MD, About).
+ * @usage
+ * <Accordion>
+ *   <AccordionItem value="brand">
+ *     <AccordionTrigger size="md">Brand</AccordionTrigger>
+ *     <AccordionContent>…</AccordionContent>
+ *   </AccordionItem>
+ * </Accordion>
+ */
+
+import { cn } from "@/lib/utils";
+import type { HTMLAttributes } from "astro/types";
+
+interface Props extends HTMLAttributes<"div"> {
+  class?: string;
+  multiple?: boolean;
+  defaultValue?: string | string[];
+  collapsible?: boolean;
+}
+
+const {
+  class: className = "",
+  multiple = false,
+  defaultValue,
+  collapsible = true,
+  ...rest
+} = Astro.props as Props;
+
+const rootDefaultValue = Array.isArray(defaultValue)
+  ? JSON.stringify(defaultValue)
+  : defaultValue;
+---
+
+<div
+  {...rest}
+  data-slot="accordion"
+  data-multiple={multiple ? "true" : undefined}
+  data-default-value={rootDefaultValue}
+  data-collapsible={collapsible ? undefined : "false"}
+  class={cn("flex w-full flex-col", className)}
+>
+  <slot />
+</div>
+
+<script>
+  import { createAccordion } from "@data-slot/accordion";
+
+  // Bind on load and after every ClientRouter navigation, and release the
+  // controllers of roots the navigation removed.
+  const controllers = new Map<Element, { destroy(): void }>();
+
+  function bind() {
+    controllers.forEach((controller, root) => {
+      if (root.isConnected) return;
+      controller.destroy();
+      controllers.delete(root);
+    });
+    document
+      .querySelectorAll('[data-slot="accordion"]')
+      .forEach((root) => {
+        if (!controllers.has(root)) controllers.set(root, createAccordion(root));
+      });
+  }
+
+  bind();
+  document.addEventListener("astro:page-load", bind);
+</script>

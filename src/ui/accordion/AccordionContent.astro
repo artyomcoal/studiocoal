@@ -1,0 +1,34 @@
+---
+// Studio Coal: Figma AccordionContent: body-sm, fg-primary, max-w-xl (576px), pr-6, 16px below the
+// trigger text (trigger has py-5, so the content pulls up by -mt-1), 20px bottom padding.
+import { cn } from "@/lib/utils";
+import type { HTMLAttributes } from "astro/types";
+
+interface Props extends HTMLAttributes<"div"> {
+  class?: string;
+}
+
+const { class: className = "", ...rest } = Astro.props as Props;
+---
+
+<div
+  {...rest}
+  data-slot="accordion-content"
+  hidden
+  class="data-open:animate-accordion-down data-closed:animate-accordion-up overflow-hidden"
+>
+  <div
+    class={cn(
+      "h-(--accordion-panel-height) data-ending-style:h-0 data-starting-style:h-0",
+    )}
+  >
+    <div
+      class={cn(
+        "-mt-1 max-w-xl pr-6 pb-5 text-body-sm text-fg-primary [&_a]:underline [&_a]:underline-offset-3 [&_p:not(:last-child)]:mb-4",
+        className,
+      )}
+    >
+      <slot />
+    </div>
+  </div>
+</div>
