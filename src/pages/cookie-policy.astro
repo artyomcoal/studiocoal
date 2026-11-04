@@ -1,0 +1,149 @@
+---
+/**
+ * Cookie policy page.
+ * Figma: Cookie Policy / breakpoint=xl|md|base (frames 5002:22070, 53500:9561, 53500:9677)
+ *
+ * Copy from Figma. Headings in columns 1–6, text in 7–11 at xl; stacked below.
+ */
+import PageLayout from "@/layouts/PageLayout.astro";
+
+const link = "underline underline-offset-2 text-fg-link hover:text-fg-link-hover";
+---
+
+<PageLayout
+  title="Cookie Policy"
+  description="What cookies studiocoal.com uses, why, and how to switch them off."
+>
+  <section class="grid-cols-layout px-container pt-hero pb-12">
+    <h1 class="col-span-full text-headline-xxl text-fg-primary xl:col-span-6 xl:col-start-7">
+      Cookie Policy
+    </h1>
+  </section>
+
+  <section aria-label="Cookie policy" class="px-container pb-section">
+    <div class="animate-enter-stagger text-fg-primary">
+      <div class="grid-cols-layout gap-y-4 border-b border-border-subtle pt-12 pb-24">
+        <h2 class="col-span-full text-headline-md md:col-span-6">What are cookies</h2>
+        <div class="col-span-full flex flex-col gap-5 text-body-sm md:col-span-5 md:col-start-7">
+          <p>
+            Like most professional websites, this site uses cookies: small files that are downloaded
+            to your device to improve your experience. This page explains what information they
+            collect, how we use it and why we sometimes need to store them. It also explains how you
+            can stop cookies from being stored, although this may stop parts of the site from
+            working properly.
+          </p>
+          <p>
+            For more general information about cookies, see the
+            <a class={link} href="https://en.wikipedia.org/wiki/HTTP_cookie">
+              Wikipedia article on HTTP cookies
+            </a>
+            .
+          </p>
+        </div>
+      </div>
+
+      <div class="grid-cols-layout gap-y-4 border-b border-border-subtle pt-12 pb-24">
+        <h2 class="col-span-full text-headline-md md:col-span-6">How we use cookies</h2>
+        <div class="col-span-full flex flex-col gap-5 text-body-sm md:col-span-5 md:col-start-7">
+          <p>
+            We use cookies for the reasons set out below. In most cases there is no
+            industry-standard way to disable cookies without also disabling the features they
+            support. If you are not sure whether you need a cookie, we recommend leaving it on in
+            case it supports a service you use.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid-cols-layout gap-y-4 border-b border-border-subtle pt-12 pb-24">
+        <h2 class="col-span-full text-headline-md md:col-span-6">Disabling cookies</h2>
+        <div class="col-span-full flex flex-col gap-5 text-body-sm md:col-span-5 md:col-start-7">
+          <p>
+            You can stop cookies from being set by changing your browser settings (see your
+            browser's Help section for how to do this). Disabling cookies will affect how this site
+            and many other websites work.
+          </p>
+          <p>
+            It will usually also disable some features of this site, so we recommend that you do not
+            disable cookies.
+          </p>
+          <p>To learn how to manage cookies, see the cookie guide for your browser.</p>
+        </div>
+      </div>
+
+      <div class="grid-cols-layout gap-y-4 border-b border-border-subtle pt-12 pb-24">
+        <h2 class="col-span-full text-headline-md md:col-span-6">The cookies we set</h2>
+        <div class="col-span-full flex flex-col gap-5 text-body-sm md:col-span-5 md:col-start-7">
+          <h3>Newsletter cookies</h3>
+          <p>
+            This site offers a newsletter subscription. Cookies may be used to remember whether you
+            are already subscribed and whether to show notifications that only apply to subscribed
+            or unsubscribed visitors.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid-cols-layout gap-y-4 border-b border-border-subtle pt-12 pb-24">
+        <h2 class="col-span-full text-headline-md md:col-span-6">Third party cookies</h2>
+        <div class="col-span-full flex flex-col gap-5 text-body-sm md:col-span-5 md:col-start-7">
+          <p>
+            In some cases we also use cookies provided by trusted third parties. This section
+            explains which third-party cookies you may encounter on this site.
+          </p>
+          <ul class="list-disc pl-5">
+            <li>
+              This site uses Google Analytics, one of the most widely used and trusted analytics
+              tools on the web, to help us understand how you use the site and how we can improve
+              your experience. These cookies may track things such as how long you spend on the site
+              and which pages you visit, so we can keep producing useful content. For more
+              information about Google Analytics cookies, see the
+              <a class={link} href="https://support.google.com/analytics/answer/11397207">
+                official Google Analytics page
+              </a>
+              .
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="grid-cols-layout gap-y-4 border-b border-border-subtle pt-12 pb-24">
+        <h2 class="col-span-full text-headline-md md:col-span-6">More information</h2>
+        <div class="col-span-full flex flex-col gap-5 text-body-sm md:col-span-5 md:col-start-7">
+          <p>
+            We hope this has clarified things for you. As mentioned above, if you are not sure
+            whether you need a cookie, it is usually safer to leave cookies enabled in case they
+            support a feature you use on this site.
+          </p>
+          <p>
+            If you have any questions, contact us at
+            <a class={link} href="mailto:hello@studiocoal.com">
+              hello@studiocoal.com
+            </a>
+            .
+          </p>
+          <p>
+            We use cookies to personalise content, to provide social media features and to analyse
+            our traffic. We also share information about your use of our site with our social media
+            and analytics partners, who may combine it with other information that you have provided
+            to them or that they have collected from your use of their services.
+          </p>
+          <p>
+            The law states that we can store cookies on your device if they are strictly necessary
+            for this site to work. For all other types of cookies we need your permission.
+          </p>
+          <p>
+            Some cookies are placed by third-party services that appear on our pages. You can change
+            or withdraw your consent at any time.
+          </p>
+          <p>
+            To learn more about who we are, how you can contact us and how we process personal data,
+            see our Privacy Policy.
+          </p>
+          <p>
+            When you contact us about your consent, please include your consent ID and the date.
+            Your consent applies to the following domain: studiocoal.com.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+</PageLayout>

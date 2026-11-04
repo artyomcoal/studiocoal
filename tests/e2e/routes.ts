@@ -7,4 +7,5 @@ export const routes = [
   { path: "/services", name: "services" },
   { path: "/process", name: "process" },
   { path: "/about", name: "about" },
+  { path: "/cookie-policy", name: "cookie-policy" },
 ] as const;
