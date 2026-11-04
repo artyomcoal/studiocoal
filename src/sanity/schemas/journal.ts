@@ -25,6 +25,12 @@ export const journal = defineType({
       initialValue: () => new Date().toISOString(),
       validation: (rule) => rule.required(),
     }),
+    defineField({
+      name: "category",
+      title: "Category",
+      type: "string",
+      description: "Shown as a tag on article cards, e.g. News, Insight, Process.",
+    }),
     defineField({ name: "excerpt", title: "Excerpt", type: "text", rows: 3 }),
     defineField({ name: "coverImage", title: "Cover image", type: "imageWithAlt" }),
     defineField({ name: "body", title: "Body", type: "richText" }),

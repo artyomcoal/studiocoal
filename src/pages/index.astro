@@ -1,10 +1,14 @@
 ---
 import { sanityClient } from "sanity:client";
 import PageLayout from "@/layouts/PageLayout.astro";
-import { FEATURED_WORK_QUERY } from "@/sanity/queries";
+import { FEATURED_JOURNAL_QUERY, FEATURED_WORK_QUERY } from "@/sanity/queries";
+import FeaturedArticlesSection from "@/sections/FeaturedArticlesSection.astro";
 import FeaturedWorkSection from "@/sections/FeaturedWorkSection.astro";
 
-const featuredWork = await sanityClient.fetch(FEATURED_WORK_QUERY, { limit: 6 });
+const [featuredWork, featuredPosts] = await Promise.all([
+  sanityClient.fetch(FEATURED_WORK_QUERY, { limit: 6 }),
+  sanityClient.fetch(FEATURED_JOURNAL_QUERY, { limit: 4 }),
+]);
 ---
 
 <PageLayout>
@@ -13,4 +17,5 @@ const featuredWork = await sanityClient.fetch(FEATURED_WORK_QUERY, { limit: 6 })
     <h1 class="text-headline-xxl text-fg-primary">Site under construction.</h1>
   </section>
   <FeaturedWorkSection works={featuredWork} columns="2" />
+  <FeaturedArticlesSection posts={featuredPosts} />
 </PageLayout>

@@ -14,6 +14,7 @@
  * it covers the text only, so swiping the visuals never starts a navigation.
  */
 import Media from "@/components/Media.astro";
+import SwipeTrack from "@/components/SwipeTrack.astro";
 import { serviceTitle } from "@/lib/services";
 import { cn } from "@/lib/utils";
 import type { WORK_ARCHIVE_QUERY_RESULT } from "@/sanity/types";
@@ -59,21 +60,12 @@ const visuals = Array.from({ length: 3 }, (_, i) => work.archiveMedia?.[i] ?? nu
     ) : null}
   </div>
 
-  <!-- Base: the track bleeds into the container padding (-mx / px with the container token),
-       so cards scroll edge to edge, and scroll-padding keeps snapped cards aligned with the
-       text. No utility exists for these, hence the token references. -->
-  <!-- tabindex: a scrollable region must be focusable so keyboard users can scroll it (axe
-       scrollable-region-focusable); the script below drops it from the tab order when the
-       track doesn't scroll. The <ul> keeps its list semantics, so it isn't role="region". -->
-  {/* eslint-disable astro/jsx-a11y/no-noninteractive-tabindex -- see the comment above */}
-  <ul
-    data-slot="archive-track"
-    tabindex="0"
-    aria-label={`${work.title} visuals`}
-    class="-mx-(--container-padding-x) flex snap-x snap-mandatory scroll-px-(--container-padding-x) gap-2 overflow-x-auto overscroll-x-contain px-container scrollbar-none outline-none focus-visible:ring-2 focus-visible:ring-interactive-focus-ring focus-visible:ring-inset motion-safe:scroll-smooth md:col-span-full md:mx-0 md:grid md:snap-none md:grid-cols-3 md:overflow-visible md:px-0 xl:col-span-3"
+  <SwipeTrack
+    label={`${work.title} visuals`}
+    class="md:col-span-full md:grid md:grid-cols-3 xl:col-span-3"
   >
     {visuals.map((media) => (
-      <li class="w-64 shrink-0 snap-start last:snap-end md:w-auto">
+      <li class="w-64 md:w-auto">
         <Media
           media={media}
           aspect="portrait"
@@ -82,19 +74,5 @@ const visuals = Array.from({ length: 3 }, (_, i) => work.archiveMedia?.[i] ?? nu
         />
       </li>
     ))}
-  </ul>
-  {/* eslint-enable astro/jsx-a11y/no-noninteractive-tabindex */}
+  </SwipeTrack>
 </article>
-
-<script>
-  // The track only scrolls below md. Keep it in the tab order only while it can scroll,
-  // so keyboard users can scroll it on mobile but don't hit a dead tab stop on desktop.
-  const tracks = document.querySelectorAll<HTMLElement>("[data-slot=archive-track]");
-  const sync = (track: HTMLElement) => {
-    track.tabIndex = track.scrollWidth > track.clientWidth ? 0 : -1;
-  };
-  const observer = new ResizeObserver((entries) =>
-    entries.forEach((e) => sync(e.target as HTMLElement)),
-  );
-  tracks.forEach((track) => observer.observe(track));
-</script>

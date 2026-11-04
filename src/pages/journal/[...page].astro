@@ -1,0 +1,43 @@
+---
+/**
+ * Journal archive: 12 articles per page at /journal, /journal/2, …
+ * Figma: Blog Collection / breakpoint=xl|md|base (frames 5059:8300, 53350:13119, 53350:13394)
+ */
+import type { GetStaticPaths } from "astro";
+import { sanityClient } from "sanity:client";
+import PageLayout from "@/layouts/PageLayout.astro";
+import { ALL_JOURNAL_QUERY } from "@/sanity/queries";
+import type { ALL_JOURNAL_QUERY_RESULT } from "@/sanity/types";
+import JournalArchiveSection from "@/sections/JournalArchiveSection.astro";
+
+export const getStaticPaths = (async ({ paginate }) => {
+  const posts = await sanityClient.fetch(ALL_JOURNAL_QUERY);
+  // Always build /journal, even before the first post.
+  return posts.length > 0
+    ? paginate(posts, { pageSize: 12 })
+    : [{ params: { page: undefined }, props: { page: { data: [], currentPage: 1, url: {} } } }];
+}) satisfies GetStaticPaths;
+
+interface Props {
+  page: {
+    data: ALL_JOURNAL_QUERY_RESULT;
+    currentPage: number;
+    url: { next?: string | undefined };
+  };
+}
+
+const { page } = Astro.props;
+---
+
+<PageLayout
+  title={page.currentPage > 1 ? `Journal, page ${page.currentPage}` : "Journal"}
+  description="Notes from Studio Coal: work in progress, things we've learned, and what's on our minds."
+>
+  <section class="px-container pt-hero pb-12">
+    <h1 class="text-headline-xxl text-fg-primary">
+      <span class="text-fg-tertiary">Journal.</span> Notes from the studio: work in progress, things
+      we've learned, and what's on our minds.
+    </h1>
+  </section>
+  <JournalArchiveSection posts={page.data} nextUrl={page.url.next} />
+</PageLayout>

@@ -146,6 +146,7 @@ export type Journal = {
   title: string;
   slug: Slug;
   publishedAt: string;
+  category?: string;
   excerpt?: string;
   coverImage?: ImageWithAlt;
   body?: RichText;
@@ -1208,12 +1209,13 @@ export type WORK_QUERY_RESULT = {
 
 // Source: src/sanity/queries.ts
 // Variable: FEATURED_JOURNAL_QUERY
-// Query: *[_type == "journal" && defined(slug.current)] | order(coalesce(featured, false) desc, publishedAt desc) [0...$limit] {  _id,  title,  "slug": slug.current,  publishedAt,  excerpt,  coverImage{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }}}
+// Query: *[_type == "journal" && defined(slug.current)] | order(coalesce(featured, false) desc, publishedAt desc) [0...$limit] {  _id,  title,  "slug": slug.current,  publishedAt,  category,  excerpt,  coverImage{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }}}
 export type FEATURED_JOURNAL_QUERY_RESULT = Array<{
   _id: string;
   title: string;
   slug: string;
   publishedAt: string;
+  category: string | null;
   excerpt: string | null;
   coverImage: {
     _type: "imageWithAlt";
@@ -1234,12 +1236,13 @@ export type FEATURED_JOURNAL_QUERY_RESULT = Array<{
 
 // Source: src/sanity/queries.ts
 // Variable: ALL_JOURNAL_QUERY
-// Query: *[_type == "journal" && defined(slug.current)] | order(publishedAt desc) {  _id,  title,  "slug": slug.current,  publishedAt,  excerpt,  coverImage{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }}}
+// Query: *[_type == "journal" && defined(slug.current)] | order(publishedAt desc) {  _id,  title,  "slug": slug.current,  publishedAt,  category,  excerpt,  coverImage{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }}}
 export type ALL_JOURNAL_QUERY_RESULT = Array<{
   _id: string;
   title: string;
   slug: string;
   publishedAt: string;
+  category: string | null;
   excerpt: string | null;
   coverImage: {
     _type: "imageWithAlt";
@@ -1275,6 +1278,7 @@ export type JOURNAL_QUERY_RESULT = {
   title: string;
   slug: string;
   publishedAt: string;
+  category?: string;
   excerpt?: string;
   coverImage: {
     _type: "imageWithAlt";
@@ -1341,8 +1345,8 @@ declare global {
     '*[_type == "work" && $service in services && defined(slug.current)] | order(year desc) [0...2] {\n  _id,\n  title,\n  "slug": slug.current,\n  client,\n  year,\n  services,\n  excerpt,\n  listingMedia{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n}\n}': WORK_BY_SERVICE_QUERY_RESULT;
     '*[_type == "work" && defined(slug.current)].slug.current': WORK_SLUGS_QUERY_RESULT;
     '*[_type == "work" && slug.current == $slug][0]{\n    _id,\n    title,\n    "slug": slug.current,\n    client,\n    year,\n    services,\n    excerpt,\n    seo,\n    body[]{ ..., _type == "imageWithAlt" => {\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n    listingMedia{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n},\n    heroMedia{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n},\n    content[]{\n      _key,\n      _type,\n      _type == "mediaFullWidth" => { "media": media{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n} },\n      _type == "mediaPair" => { "left": left{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n}, "right": right{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n} }\n    }\n  }': WORK_QUERY_RESULT;
-    '*[_type == "journal" && defined(slug.current)] | order(coalesce(featured, false) desc, publishedAt desc) [0...$limit] {\n  _id,\n  title,\n  "slug": slug.current,\n  publishedAt,\n  excerpt,\n  coverImage{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n}\n}': FEATURED_JOURNAL_QUERY_RESULT;
-    '*[_type == "journal" && defined(slug.current)] | order(publishedAt desc) {\n  _id,\n  title,\n  "slug": slug.current,\n  publishedAt,\n  excerpt,\n  coverImage{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n}\n}': ALL_JOURNAL_QUERY_RESULT;
+    '*[_type == "journal" && defined(slug.current)] | order(coalesce(featured, false) desc, publishedAt desc) [0...$limit] {\n  _id,\n  title,\n  "slug": slug.current,\n  publishedAt,\n  category,\n  excerpt,\n  coverImage{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n}\n}': FEATURED_JOURNAL_QUERY_RESULT;
+    '*[_type == "journal" && defined(slug.current)] | order(publishedAt desc) {\n  _id,\n  title,\n  "slug": slug.current,\n  publishedAt,\n  category,\n  excerpt,\n  coverImage{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n}\n}': ALL_JOURNAL_QUERY_RESULT;
     '*[_type == "journal" && defined(slug.current)].slug.current': JOURNAL_SLUGS_QUERY_RESULT;
     '*[_type == "journal" && slug.current == $slug][0]{\n    ...,\n    "slug": slug.current,\n    coverImage{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n},\n    body[]{ ..., _type == "imageWithAlt" => {\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }': JOURNAL_QUERY_RESULT;
   }

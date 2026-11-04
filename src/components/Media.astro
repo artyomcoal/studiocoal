@@ -24,7 +24,7 @@ import { resolveMedia, type MediaData } from "@/sanity/media";
 
 interface Props {
   media: MediaData | null | undefined;
-  /** Crop ratio: portrait = 4:5, landscape = 16:9, hero = 4:5 below md and 16:9 from md. */
+  /** Crop: portrait 4:5, landscape 16:9, square 1:1, hero = 4:5 below md and 16:9 from md. */
   aspect: AspectName | "hero";
   /** The `sizes` attribute: how wide the visual renders at each breakpoint. */
   sizes: string;
@@ -40,7 +40,7 @@ const resolved = resolveMedia(media);
 const base: AspectName = aspect === "hero" ? "portrait" : aspect;
 const ratio = ASPECT[base];
 // Intrinsic size for width/height attributes (no layout shift); the CSS aspect box wins.
-const width = base === "portrait" ? 1600 : 1920;
+const width = { portrait: 1600, landscape: 1920, square: 1600 }[base];
 const height = Math.round(width / ratio);
 
 const image = resolved?.kind === "image" ? resolved.image : resolved?.video.poster;
@@ -50,7 +50,7 @@ const playerPoster =
   video?.playback === "player" && image?.asset
     ? urlFor(image)
         .width(1920)
-        .height(Math.round(1920 / (aspect === "portrait" ? ASPECT.portrait : ASPECT.landscape)))
+        .height(Math.round(1920 / (aspect === "hero" ? ASPECT.landscape : ASPECT[aspect])))
         .fit("crop")
         .url()
     : undefined;
@@ -64,6 +64,7 @@ const playerPoster =
     {
       portrait: "aspect-4/5",
       landscape: "aspect-video",
+      square: "aspect-square",
       hero: "aspect-4/5 md:aspect-video",
     }[aspect],
     className,

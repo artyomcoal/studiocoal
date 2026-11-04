@@ -51,6 +51,7 @@ const journalCard = /* groq */ `{
   title,
   "slug": slug.current,
   publishedAt,
+  category,
   excerpt,
   coverImage${image}
 }`;
