@@ -1,0 +1,71 @@
+---
+/**
+ * Work List Card
+ * Project card with the 4:5 listing visual, name, description and project type tags.
+ * Used by the Featured Work sections (home, project pages, services, about).
+ * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=5005-6780
+ *
+ * The whole card is clickable (stretched title link); on hover or keyboard focus a
+ * "View work" label fades in over the visual.
+ */
+import Media from "@/components/Media.astro";
+import { serviceTitle } from "@/lib/services";
+import { cn } from "@/lib/utils";
+import type { FEATURED_WORK_QUERY_RESULT } from "@/sanity/types";
+import { Badge } from "@/ui/badge";
+
+interface Props {
+  work: FEATURED_WORK_QUERY_RESULT[number];
+  /** Heading level of the project name. h3 under a section heading (default). */
+  as?: "h2" | "h3" | "h4";
+  /** `sizes` for the visual. Defaults to the Featured Work grid (3 / 2 / 1 columns). */
+  sizes?: string;
+  /** Load the visual eagerly (first row above the fold). */
+  priority?: boolean;
+  class?: string;
+}
+
+const {
+  work,
+  as: Heading = "h3",
+  sizes = "(min-width: 64rem) 32vw, (min-width: 48rem) 49vw, 100vw",
+  priority = false,
+  class: className,
+} = Astro.props;
+---
+
+<article
+  class={cn(
+    "group/card relative flex flex-col gap-3 rounded-sm text-fg-primary has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-interactive-focus-ring has-[a:focus-visible]:ring-offset-2 has-[a:focus-visible]:ring-offset-bg-primary",
+    className,
+  )}
+>
+  <div class="relative">
+    <Media media={work.listingMedia} aspect="portrait" sizes={sizes} priority={priority} />
+    <span
+      aria-hidden="true"
+      class="pointer-events-none absolute top-1/2 left-1/2 flex h-6 -translate-1/2 items-center rounded-xs bg-bg-media-label px-2 text-eyebrow text-neutral-50 uppercase opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover/card:opacity-100 group-has-[a:focus-visible]/card:opacity-100"
+    >
+      View work
+    </span>
+  </div>
+  <div class="flex flex-col gap-3">
+    <div class="flex flex-col gap-1">
+      <Heading class="text-headline-sm text-balance">
+        <a href={`/work/${work.slug}`} class="outline-none after:absolute after:inset-0">
+          {work.title}
+        </a>
+      </Heading>
+      {work.excerpt && <p class="text-body-sm text-pretty">{work.excerpt}</p>}
+    </div>
+    {work.services?.length ? (
+      <ul class="flex flex-wrap gap-1" aria-label="Project type">
+        {work.services.map((service) => (
+          <li>
+            <Badge>{serviceTitle(service)}</Badge>
+          </li>
+        ))}
+      </ul>
+    ) : null}
+  </div>
+</article>

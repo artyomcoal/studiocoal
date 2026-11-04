@@ -8,7 +8,10 @@ import Footer from "@/components/Footer.astro";
 import GetInTouchModal from "@/components/GetInTouchModal.astro";
 import Media from "@/components/Media.astro";
 import NavItem from "@/components/NavItem.astro";
+import WorkArchiveCard from "@/components/WorkArchiveCard.astro";
+import WorkListCard from "@/components/WorkListCard.astro";
 import type { MediaData } from "@/sanity/media";
+import type { FEATURED_WORK_QUERY_RESULT, WORK_ARCHIVE_QUERY_RESULT } from "@/sanity/types";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { Button } from "@/ui/button";
 import { Badge } from "@/ui/badge";
@@ -157,6 +160,36 @@ const demoVideo = (playback: "ambient" | "player"): MediaData => ({
     poster: { _type: "image", lqip: null, dimensions: null },
   },
 });
+
+// An image slot with no asset yet: renders the bg-secondary placeholder.
+const emptyMedia: MediaData = { kind: "image", image: null, video: null };
+
+// Work fixtures (Figma copy), for the cards.
+const demoWork = {
+  _id: "demo",
+  title: "Modal",
+  slug: "modal",
+  services: ["brand", "web", "digital-products"],
+  excerpt:
+    "Developer-first platform changing the computing paradigm with a fully serverless cloud infrastructure for AI, ML, and data applications.",
+};
+const demoListWork: FEATURED_WORK_QUERY_RESULT[number] = {
+  ...demoWork,
+  client: "Modal",
+  year: 2026,
+  listingMedia: emptyMedia,
+};
+const demoListWorkVideo: FEATURED_WORK_QUERY_RESULT[number] = {
+  ...demoListWork,
+  _id: "demo-video",
+  title: "Company AI",
+  excerpt: "Explain what company does and how we helped",
+  listingMedia: demoVideo("ambient"),
+};
+const demoArchiveWork: WORK_ARCHIVE_QUERY_RESULT[number] = {
+  ...demoWork,
+  archiveMedia: [emptyMedia, demoVideo("ambient"), emptyMedia],
+};
 
 const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
 ---
@@ -541,6 +574,28 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
           <Media media={demoVideo("player")} aspect="landscape" sizes="50vw" />
         </div>
       </div>
+    </section>
+
+    <section class="flex flex-col gap-6">
+      <h2 class="text-headline-lg">WorkListCard</h2>
+      <p class="text-body-sm text-fg-secondary">
+        Card / Work Featured. Hover or Tab to a card for the "View work" label; the whole card is
+        the link.
+      </p>
+      <div class="grid gap-x-2 gap-y-12 md:grid-cols-2 xl:grid-cols-3">
+        <WorkListCard work={demoListWork} />
+        <WorkListCard work={demoListWorkVideo} />
+        <WorkListCard work={{ ...demoListWork, _id: "demo-bare", services: null, excerpt: null }} />
+      </div>
+    </section>
+
+    <section class="flex flex-col gap-6">
+      <h2 class="text-headline-lg">WorkArchiveCard</h2>
+      <p class="text-body-sm text-fg-secondary">
+        Card / Work Archive Item. Below md the visuals are a swipe track (fixed 256px cards, no
+        scrollbar, snaps per card, bleeds to the screen edges).
+      </p>
+      <WorkArchiveCard work={demoArchiveWork} as="h3" />
     </section>
 
     <section class="flex flex-col gap-6">
