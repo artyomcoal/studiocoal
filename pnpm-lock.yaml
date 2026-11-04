@@ -178,6 +178,9 @@ importers:
       '@data-slot/accordion':
         specifier: ^1.1.2
         version: 1.1.2
+      '@data-slot/dialog':
+        specifier: ^1.1.2
+        version: 1.1.2
       '@lucide/astro':
         specifier: ^1.47.0
         version: 1.67.0(astro@7.4.5(@types/node@22.20.5)(jiti@2.7.0)(yaml@2.9.1))
@@ -1184,6 +1187,9 @@ packages:
 
   '@data-slot/core@1.1.2':
     resolution: {integrity: sha512-xcxdiWJ/fPUqobE2PZdi96FIT/xASSsmtRtlyTWOro/mh5ZSJ8blB7t2anV12J7irNSKMov2+WpWFvAeikR5Vw==}
+
+  '@data-slot/dialog@1.1.2':
+    resolution: {integrity: sha512-u8wYx8TtrV3Vaum+o685KCMZ1y+PciADIF1NgqAkupIe+0PVe7gyhlMtMhQxiCnurWZ6v3h1PRCTBlNWEaWhdQ==}
 
   '@date-fns/tz@1.5.0':
     resolution: {integrity: sha512-lwYN/vDPeNRULcepoE/LO2Pgx+7/RV+S9ARfbc9lr2DtGkOD7pAiruHvbR1RX3Qyf6ja47EWJDMsNK5vK08DJg==}
@@ -8391,6 +8397,10 @@ snapshots:
       '@data-slot/core': 1.1.2
 
   '@data-slot/core@1.1.2': {}
+
+  '@data-slot/dialog@1.1.2':
+    dependencies:
+      '@data-slot/core': 1.1.2
 
   '@date-fns/tz@1.5.0': {}
 
