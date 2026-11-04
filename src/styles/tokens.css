@@ -83,6 +83,10 @@
   --border-strong: var(--color-neutral-300);
   --border-medium: var(--color-neutral-500);
   --border-subtle: var(--color-neutral-700);
+
+  /* media overlays: labels and controls that sit on imagery (Figma: Button "View work" on
+   * Card / Work Featured). Same in both themes, because the imagery doesn't change. */
+  --bg-media-label: color-mix(in srgb, var(--color-neutral-500) 35%, transparent);
 }
 
 @media (prefers-color-scheme: light) {
@@ -152,6 +156,8 @@
   --color-border-strong: var(--border-strong);
   --color-border-medium: var(--border-medium);
   --color-border-subtle: var(--border-subtle);
+
+  --color-bg-media-label: var(--bg-media-label);
 }
 
 /* ---------- Radius ----------

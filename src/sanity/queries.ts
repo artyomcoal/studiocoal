@@ -12,6 +12,19 @@ const image = /* groq */ `{
   "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }
 }`;
 
+/**
+ * Shared media object (src/sanity/schemas/media.ts): an image or a Bunny HLS video.
+ * Only the branch for the chosen kind is returned, so a stale hidden field never leaks through.
+ */
+const media = /* groq */ `{
+  kind,
+  kind == "image" => { "image": image${image} },
+  kind == "video" => {
+    "video": video{ playlistUrl, alt, caption, playback, poster${image} }
+  }
+}`;
+
+// Project cards (WorkListCard): listing visual only.
 const workCard = /* groq */ `{
   _id,
   title,
@@ -20,7 +33,17 @@ const workCard = /* groq */ `{
   year,
   services,
   excerpt,
-  coverImage${image}
+  listingMedia${media}
+}`;
+
+// Work Archive rows (WorkArchiveCard): the three archive visuals.
+const workArchiveCard = /* groq */ `{
+  _id,
+  title,
+  "slug": slug.current,
+  services,
+  excerpt,
+  archiveMedia[]${media}
 }`;
 
 const journalCard = /* groq */ `{
@@ -36,12 +59,19 @@ export const SITE_SETTINGS_QUERY = defineQuery(
   `*[_type == "siteSettings" && _id == "siteSettings"][0]`,
 );
 
+/** FeaturedWorkSection on the home page: featured projects first, then the newest. */
 export const FEATURED_WORK_QUERY = defineQuery(
-  `*[_type == "work" && featured == true && defined(slug.current)] | order(year desc) ${workCard}`,
+  `*[_type == "work" && defined(slug.current)] | order(featured desc, year desc, _createdAt desc) [0...$limit] ${workCard}`,
 );
 
-export const ALL_WORK_QUERY = defineQuery(
-  `*[_type == "work" && defined(slug.current)] | order(year desc) ${workCard}`,
+/** FeaturedWorkSection on a project page: the newest other projects. */
+export const RECENT_WORK_QUERY = defineQuery(
+  `*[_type == "work" && defined(slug.current) && slug.current != $slug] | order(year desc, _createdAt desc) [0...$limit] ${workCard}`,
+);
+
+/** WorkArchiveSection on /work: every project, newest first. */
+export const WORK_ARCHIVE_QUERY = defineQuery(
+  `*[_type == "work" && defined(slug.current)] | order(year desc, _createdAt desc) ${workArchiveCard}`,
 );
 
 /** ServiceOfferingSection: related work for one service, max 2 items (CLAUDE.md). */
@@ -55,10 +85,23 @@ export const WORK_SLUGS_QUERY = defineQuery(
 
 export const WORK_QUERY = defineQuery(
   `*[_type == "work" && slug.current == $slug][0]{
-    ...,
+    _id,
+    title,
     "slug": slug.current,
-    coverImage${image},
-    body[]{ ..., _type == "imageWithAlt" => ${image} }
+    client,
+    year,
+    services,
+    excerpt,
+    seo,
+    body[]{ ..., _type == "imageWithAlt" => ${image} },
+    listingMedia${media},
+    heroMedia${media},
+    content[]{
+      _key,
+      _type,
+      _type == "mediaFullWidth" => { "media": media${media} },
+      _type == "mediaPair" => { "left": left${media}, "right": right${media} }
+    }
   }`,
 );
 
