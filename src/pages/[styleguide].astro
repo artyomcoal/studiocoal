@@ -68,12 +68,42 @@ const layout: [string, string, string][] = [
 
 // [utility, Figma text style, size var, line-height var]
 const textStyles: [string, string, string, string][] = [
-  ["text-headline-xxl", "Headline/Headline XXL", "--fontsize-headline-xxl", "--lineheight-headline-xxl"],
-  ["text-headline-xl", "Headline/Headline XL", "--fontsize-headline-xl", "--lineheight-headline-xl"],
-  ["text-headline-lg", "Headline/Headline LG", "--fontsize-headline-lg", "--lineheight-headline-lg"],
-  ["text-headline-md", "Headline/Headline MD", "--fontsize-headline-md", "--lineheight-headline-md"],
-  ["text-headline-sm", "Headline/Headline SM", "--fontsize-headline-sm", "--lineheight-headline-sm"],
-  ["text-headline-xs", "Headline/Headline XS", "--fontsize-headline-xs", "--lineheight-headline-xs"],
+  [
+    "text-headline-xxl",
+    "Headline/Headline XXL",
+    "--fontsize-headline-xxl",
+    "--lineheight-headline-xxl",
+  ],
+  [
+    "text-headline-xl",
+    "Headline/Headline XL",
+    "--fontsize-headline-xl",
+    "--lineheight-headline-xl",
+  ],
+  [
+    "text-headline-lg",
+    "Headline/Headline LG",
+    "--fontsize-headline-lg",
+    "--lineheight-headline-lg",
+  ],
+  [
+    "text-headline-md",
+    "Headline/Headline MD",
+    "--fontsize-headline-md",
+    "--lineheight-headline-md",
+  ],
+  [
+    "text-headline-sm",
+    "Headline/Headline SM",
+    "--fontsize-headline-sm",
+    "--lineheight-headline-sm",
+  ],
+  [
+    "text-headline-xs",
+    "Headline/Headline XS",
+    "--fontsize-headline-xs",
+    "--lineheight-headline-xs",
+  ],
   ["text-body-lg", "Body/Body LG Medium", "--fontsize-body-lg", "--lineheight-body-lg"],
   ["text-body-md", "Body/Body MD Medium", "--fontsize-body-md", "--lineheight-body-md"],
   ["text-body-sm", "Body/Body SM Medium", "--fontsize-body-sm", "--lineheight-body-sm"],
@@ -86,11 +116,18 @@ const textStyles: [string, string, string, string][] = [
 
 // Remaining text-style variables (families, weights, unused sizes)
 const textVars = [
-  "--headline-font-family", "--headline-font-weight",
-  "--body-font-family", "--body-font-weight-medium",
-  "--label-font-family", "--label-font-weight", "--fontsize-label-md", "--lineheight-label-md",
-  "--caption-font-family", "--caption-font-weight",
-  "--eyebrow-font-family", "--eyebrow-font-weight",
+  "--headline-font-family",
+  "--headline-font-weight",
+  "--body-font-family",
+  "--body-font-weight-medium",
+  "--label-font-family",
+  "--label-font-weight",
+  "--fontsize-label-md",
+  "--lineheight-label-md",
+  "--caption-font-family",
+  "--caption-font-weight",
+  "--eyebrow-font-family",
+  "--eyebrow-font-weight",
 ];
 
 const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
@@ -114,50 +151,48 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
     <section class="flex flex-col gap-6">
       <h2 class="text-headline-lg">Neutral palette</h2>
       <p class="text-body-sm text-fg-secondary">
-        Figma TailwindCSS › colors/neutral/*. Replaces Tailwind's neutral palette
-        (<code>bg-neutral-500</code>…). Same in both themes.
+        Figma TailwindCSS › colors/neutral/*. Replaces Tailwind's neutral palette (
+        <code>bg-neutral-500</code>…). Same in both themes.
       </p>
       <ul class="grid grid-cols-3 gap-4 md:grid-cols-6 xl:grid-cols-11">
-        {
-          neutrals.map((n) => (
-            <li class="flex flex-col gap-2">
-              <div class="h-16 rounded-sm border border-border-subtle" style={`background: var(--color-neutral-${n})`} />
-              <span class="text-body-xs">neutral-{n}</span>
-              <span class="text-caption-sm text-fg-tertiary" data-var={`--color-neutral-${n}`} />
-            </li>
-          ))
-        }
+        {neutrals.map((n) => (
+          <li class="flex flex-col gap-2">
+            <div
+              class="h-16 rounded-sm border border-border-subtle"
+              style={`background: var(--color-neutral-${n})`}
+            />
+            <span class="text-body-xs">neutral-{n}</span>
+            <span class="text-caption-sm text-fg-tertiary" data-var={`--color-neutral-${n}`} />
+          </li>
+        ))}
       </ul>
     </section>
 
     <section class="flex flex-col gap-6">
       <h2 class="text-headline-lg">Semantic colors</h2>
       <p class="text-body-sm text-fg-secondary">
-        Figma Theme › colors/*. Utilities: <code>bg-bg-primary</code>, <code>text-fg-secondary</code>,
-        <code>border-border-subtle</code>, <code>bg-interactive-primary</code>…
+        Figma Theme › colors/*. Utilities: <code>bg-bg-primary</code>,{" "}
+        <code>text-fg-secondary</code>,<code>border-border-subtle</code>,{" "}
+        <code>bg-interactive-primary</code>…
       </p>
-      {
-        Object.entries(semantic).map(([group, tokens]) => (
-          <div class="flex flex-col gap-3">
-            <h3 class="text-headline-xs">{group}</h3>
-            <ul class="grid grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-6">
-              {tokens.map(([name, figma]) => (
-                <li class="flex flex-col gap-2">
-                  <div
-                    class="h-16 rounded-sm border border-border-subtle bg-[repeating-conic-gradient(var(--bg-tertiary)_0_25%,transparent_0_50%)] bg-size-[16px_16px]"
-                  >
-                    {/* checkerboard shows transparency; arbitrary values allowed: dev-only page */}
-                    <div class="size-full rounded-sm" style={`background: var(--${name})`} />
-                  </div>
-                  <span class="text-body-xs">{name}</span>
-                  <span class="text-caption-sm text-fg-tertiary">{figma.split("/").pop()}</span>
-                  <span class="text-caption-sm text-fg-tertiary" data-var={`--${name}`} />
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))
-      }
+      {Object.entries(semantic).map(([group, tokens]) => (
+        <div class="flex flex-col gap-3">
+          <h3 class="text-headline-xs">{group}</h3>
+          <ul class="grid grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-6">
+            {tokens.map(([name, figma]) => (
+              <li class="flex flex-col gap-2">
+                <div class="h-16 rounded-sm border border-border-subtle bg-[repeating-conic-gradient(var(--bg-tertiary)_0_25%,transparent_0_50%)] bg-size-[16px_16px]">
+                  {/* checkerboard shows transparency; arbitrary values allowed: dev-only page */}
+                  <div class="size-full rounded-sm" style={`background: var(--${name})`} />
+                </div>
+                <span class="text-body-xs">{name}</span>
+                <span class="text-caption-sm text-fg-tertiary">{figma.split("/").pop()}</span>
+                <span class="text-caption-sm text-fg-tertiary" data-var={`--${name}`} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
     </section>
 
     <section class="flex flex-col gap-6">
@@ -165,23 +200,32 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
       <p class="text-body-sm text-fg-secondary">Figma Custom › layout/*. Switches at md and xl.</p>
       <table class="w-full text-left text-body-sm">
         <thead class="text-caption-md text-fg-tertiary">
-          <tr><th class="py-2">Variable</th><th>Figma</th><th>Utility</th><th>Now</th></tr>
+          <tr>
+            <th class="py-2">Variable</th>
+            <th>Figma</th>
+            <th>Utility</th>
+            <th>Now</th>
+          </tr>
         </thead>
         <tbody>
-          {
-            layout.map(([v, figma, util]) => (
-              <tr class="border-t border-border-subtle">
-                <td class="py-2"><code>{v}</code></td>
-                <td class="text-fg-secondary">{figma}</td>
-                <td><code>{util}</code></td>
-                <td data-var={v} />
-              </tr>
-            ))
-          }
+          {layout.map(([v, figma, util]) => (
+            <tr class="border-t border-border-subtle">
+              <td class="py-2">
+                <code>{v}</code>
+              </td>
+              <td class="text-fg-secondary">{figma}</td>
+              <td>
+                <code>{util}</code>
+              </td>
+              <td data-var={v} />
+            </tr>
+          ))}
         </tbody>
       </table>
       <div class="grid-cols-layout">
-        {Array.from({ length: 12 }, () => <div class="h-12 bg-bg-secondary" />)}
+        {Array.from({ length: 12 }, () => (
+          <div class="h-12 bg-bg-secondary" />
+        ))}
       </div>
     </section>
 
@@ -192,33 +236,31 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
         variables and switch at md and xl.
       </p>
       <ul class="flex flex-col">
-        {
-          textStyles.map(([util, figma, size, lh]) => (
-            <li class="grid gap-2 border-t border-border-subtle py-4 xl:grid-cols-[16rem_1fr]">
-              {/* fixed label column: dev-only page */}
-              <div class="flex flex-col gap-1">
-                <code class="text-body-xs">{util}</code>
-                <span class="text-caption-sm text-fg-tertiary">{figma}</span>
-                <span class="text-caption-sm text-fg-tertiary">
-                  <span data-var={size} /> / <span data-var={lh} /> · {size}
-                </span>
-              </div>
-              <span class={util}>Brands built with purpose and precision</span>
-            </li>
-          ))
-        }
+        {textStyles.map(([util, figma, size, lh]) => (
+          <li class="grid gap-2 border-t border-border-subtle py-4 xl:grid-cols-[16rem_1fr]">
+            {/* fixed label column: dev-only page */}
+            <div class="flex flex-col gap-1">
+              <code class="text-body-xs">{util}</code>
+              <span class="text-caption-sm text-fg-tertiary">{figma}</span>
+              <span class="text-caption-sm text-fg-tertiary">
+                <span data-var={size} /> / <span data-var={lh} /> · {size}
+              </span>
+            </div>
+            <span class={util}>Brands built with purpose and precision</span>
+          </li>
+        ))}
       </ul>
       <h3 class="text-headline-xs">Other text-style variables</h3>
       <table class="w-full text-left text-body-sm">
         <tbody>
-          {
-            textVars.map((v) => (
-              <tr class="border-t border-border-subtle">
-                <td class="py-2"><code>{v}</code></td>
-                <td data-var={v} />
-              </tr>
-            ))
-          }
+          {textVars.map((v) => (
+            <tr class="border-t border-border-subtle">
+              <td class="py-2">
+                <code>{v}</code>
+              </td>
+              <td data-var={v} />
+            </tr>
+          ))}
         </tbody>
       </table>
     </section>
@@ -229,15 +271,13 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
         Figma Theme › radius/* equals Tailwind's default scale: use <code>rounded-*</code>.
       </p>
       <ul class="flex flex-wrap gap-4">
-        {
-          radii.map((r) => (
-            <li class="flex flex-col items-center gap-2">
-              <div class={`size-16 border border-border-medium bg-bg-secondary rounded-${r}`} />
-              <span class="text-body-xs">rounded-{r}</span>
-              <span class="text-caption-sm text-fg-tertiary" data-var={`--radius-${r}`} />
-            </li>
-          ))
-        }
+        {radii.map((r) => (
+          <li class="flex flex-col items-center gap-2">
+            <div class={`size-16 border border-border-medium bg-bg-secondary rounded-${r}`} />
+            <span class="text-body-xs">rounded-{r}</span>
+            <span class="text-caption-sm text-fg-tertiary" data-var={`--radius-${r}`} />
+          </li>
+        ))}
       </ul>
     </section>
 
@@ -249,9 +289,13 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
       <div class="flex flex-wrap items-center gap-4">
         <Button>Primary</Button>
         <Button variant="secondary">Secondary</Button>
-        <Button as="a" href="#">Link as button</Button>
+        <Button as="a" href="#">
+          Link as button
+        </Button>
         <Button disabled>Disabled</Button>
-        <Button variant="secondary" disabled>Disabled</Button>
+        <Button variant="secondary" disabled>
+          Disabled
+        </Button>
       </div>
     </section>
 
@@ -261,7 +305,9 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
         <Badge>Small secondary</Badge>
         <Badge variant="tertiary">Small tertiary</Badge>
         <Badge size="default">Default secondary</Badge>
-        <Badge variant="tertiary" size="default">Default tertiary</Badge>
+        <Badge variant="tertiary" size="default">
+          Default tertiary
+        </Badge>
       </div>
     </section>
 
@@ -292,7 +338,9 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
           <Accordion defaultValue="craft">
             <AccordionItem value="craft">
               <AccordionTrigger size="md">Craft over volume</AccordionTrigger>
-              <AccordionContent>We take on few projects so each one gets senior attention.</AccordionContent>
+              <AccordionContent>
+                We take on few projects so each one gets senior attention.
+              </AccordionContent>
             </AccordionItem>
             <AccordionItem value="partners">
               <AccordionTrigger size="md">Partners, not vendors</AccordionTrigger>
@@ -306,13 +354,22 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
     <section class="flex flex-col gap-6">
       <h2 class="text-headline-lg">Divider</h2>
       <p class="text-body-sm text-fg-secondary">
-        No component: horizontal is <code>&lt;hr class="border-border-subtle"&gt;</code>; vertical is
-        <code>&lt;div role="separator" aria-orientation="vertical" class="w-px self-stretch bg-border-subtle"&gt;</code>.
+        No component: horizontal is <code>&lt;hr class="border-border-subtle"&gt;</code>; vertical
+        is
+        <code>
+          &lt;div role="separator" aria-orientation="vertical" class="w-px self-stretch
+          bg-border-subtle"&gt;
+        </code>
+        .
       </p>
       <hr class="border-border-subtle" />
       <div class="flex h-16 items-center gap-4 text-body-sm">
         <span>Left</span>
-        <div role="separator" aria-orientation="vertical" class="w-px self-stretch bg-border-subtle"></div>
+        <div
+          role="separator"
+          aria-orientation="vertical"
+          class="w-px self-stretch bg-border-subtle"
+        ></div>
         <span>Right</span>
       </div>
     </section>
@@ -346,7 +403,9 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
     const w = window.innerWidth;
     document.querySelector("[data-breakpoint]")!.textContent =
       w >= 1024 ? `xl (${w}px)` : w >= 768 ? `md (${w}px)` : `base (${w}px)`;
-    document.querySelector("[data-theme]")!.textContent = matchMedia("(prefers-color-scheme: light)").matches
+    document.querySelector("[data-theme]")!.textContent = matchMedia(
+      "(prefers-color-scheme: light)",
+    ).matches
       ? "light"
       : "dark";
   }

@@ -30,9 +30,7 @@ const {
   ...rest
 } = Astro.props as Props;
 
-const rootDefaultValue = Array.isArray(defaultValue)
-  ? JSON.stringify(defaultValue)
-  : defaultValue;
+const rootDefaultValue = Array.isArray(defaultValue) ? JSON.stringify(defaultValue) : defaultValue;
 ---
 
 <div
@@ -59,11 +57,9 @@ const rootDefaultValue = Array.isArray(defaultValue)
       controller.destroy();
       controllers.delete(root);
     });
-    document
-      .querySelectorAll('[data-slot="accordion"]')
-      .forEach((root) => {
-        if (!controllers.has(root)) controllers.set(root, createAccordion(root));
-      });
+    document.querySelectorAll('[data-slot="accordion"]').forEach((root) => {
+      if (!controllers.has(root)) controllers.set(root, createAccordion(root));
+    });
   }
 
   bind();

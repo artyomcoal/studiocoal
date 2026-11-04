@@ -17,8 +17,20 @@ const { title, description } = Astro.props;
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
     <!-- Self-hosted fonts (public/fonts/). Both are used above the fold, so preload them. -->
-    <link rel="preload" href="/fonts/graphik/Graphik_Medium.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="/fonts/geist/GeistMono-Medium.woff2" as="font" type="font/woff2" crossorigin />
+    <link
+      rel="preload"
+      href="/fonts/graphik/Graphik_Medium.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/geist/GeistMono-Medium.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
     <!-- Graphik is licensed: public/fonts/graphik/ is git-ignored until the licence is bought. -->
     <style is:inline>
       @font-face {

@@ -1,0 +1,12 @@
+# Git hooks (CLAUDE.md: lint and format run in pre-commit and CI).
+# Installed automatically by lefthook's postinstall on `pnpm install`.
+pre-commit:
+  parallel: true
+  jobs:
+    - name: prettier
+      glob: "*.{astro,ts,js,mjs,cjs,json,css,yml,yaml}"
+      run: pnpm exec prettier --write --ignore-unknown {staged_files}
+      stage_fixed: true
+    - name: eslint
+      glob: "*.{astro,ts,js,mjs,cjs}"
+      run: pnpm exec eslint --no-warn-ignored {staged_files}

@@ -62,19 +62,11 @@ const Tag = as;
 const classes = cn(badgeVariants({ variant, size, className }));
 ---
 
-{
-  /*
+{/*
   As in Button: the public Props are strict (href only with as="a"), but JSX
   wants every tag's attributes at once for a dynamic intrinsic Tag.
-*/
-}
+*/}
 <!-- @ts-expect-error – union Props + dynamic Tag confuse JSX typing (see comment above) -->
-<Tag
-  data-slot="badge"
-  data-variant={variant}
-  data-size={size}
-  class={classes}
-  {...props}
->
+<Tag data-slot="badge" data-variant={variant} data-size={size} class={classes} {...props}>
   <slot />
 </Tag>

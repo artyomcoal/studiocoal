@@ -68,23 +68,18 @@ const {
 } = Astro.props as Props;
 ---
 
-{
-  /*
+{/*
   TS can't reconcile our discriminated union props with a dynamic intrinsic Tag.
   The public Props type *is* strict (href only allowed when as="a"),
   but JSX wants an intersection of button+anchor attributes here.
   We deliberately suppress this internal error and rely on Props for caller safety.
-*/
-}
+*/}
 <!-- @ts-expect-error – union Props + dynamic Tag confuse JSX typing (see comment above) -->
 <Tag
   data-slot="button"
   data-variant={variant}
   data-size={size}
-  class={cn(
-    buttonVariants({ variant, size }),
-    className,
-  )}
+  class={cn(buttonVariants({ variant, size }), className)}
   {...rest}
 >
   <slot />

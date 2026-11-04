@@ -17,11 +17,7 @@ const { class: className = "", ...rest } = Astro.props as Props;
   hidden
   class="data-open:animate-accordion-down data-closed:animate-accordion-up overflow-hidden"
 >
-  <div
-    class={cn(
-      "h-(--accordion-panel-height) data-ending-style:h-0 data-starting-style:h-0",
-    )}
-  >
+  <div class={cn("h-(--accordion-panel-height) data-ending-style:h-0 data-starting-style:h-0")}>
     <div
       class={cn(
         "-mt-1 max-w-xl pr-6 pb-5 text-body-sm text-fg-primary [&_a]:underline [&_a]:underline-offset-3 [&_p:not(:last-child)]:mb-4",
