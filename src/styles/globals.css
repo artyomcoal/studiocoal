@@ -2,6 +2,7 @@
 @import "tw-animate-css";
 @import "./tokens.css";
 @import "./typography.css";
+@import "./motion.css";
 @import "bejamas/tailwind.css";
 
 /* Dark is the default theme; light follows prefers-color-scheme. Tokens switch by themselves,
