@@ -32,7 +32,9 @@ const journalCard = /* groq */ `{
   coverImage${image}
 }`;
 
-export const SITE_SETTINGS_QUERY = defineQuery(`*[_id == "siteSettings"][0]`);
+export const SITE_SETTINGS_QUERY = defineQuery(
+  `*[_type == "siteSettings" && _id == "siteSettings"][0]`,
+);
 
 export const FEATURED_WORK_QUERY = defineQuery(
   `*[_type == "work" && featured == true && defined(slug.current)] | order(year desc) ${workCard}`,

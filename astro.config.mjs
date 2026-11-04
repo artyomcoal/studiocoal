@@ -1,5 +1,6 @@
 // @ts-check
 import react from "@astrojs/react";
+import sitemap from "@astrojs/sitemap";
 import sanity from "@sanity/astro";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "astro/config";
@@ -20,7 +21,11 @@ if (!PUBLIC_SANITY_PROJECT_ID || !PUBLIC_SANITY_DATASET) {
 
 // https://astro.build/config
 export default defineConfig({
+  // Canonical production origin. Used for canonical URLs, Open Graph URLs and the sitemap.
+  site: "https://studiocoal.com",
   integrations: [
+    // Match on the path: the full URL (https://studiocoal.com/…) itself contains "/studio".
+    sitemap({ filter: (page) => !new URL(page).pathname.startsWith("/studio") }),
     sanity({
       projectId: PUBLIC_SANITY_PROJECT_ID,
       dataset: PUBLIC_SANITY_DATASET,

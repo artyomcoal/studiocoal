@@ -22,6 +22,11 @@ for (const route of routes) {
     expect(response?.status()).toBe(200);
     await expect(page).toHaveTitle(/\S/);
     await expect(page.locator("h1")).toHaveCount(1);
+    await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", /\S/);
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+      "href",
+      new RegExp(`^https://studiocoal\\.com${route.path}$`),
+    );
 
     // Console errors for the ignored requests are reported without a URL, so filter on the
     // generic resource message only when such a request actually failed.

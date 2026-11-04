@@ -280,112 +280,35 @@ export type AllSanitySchemaTypes =
 
 // Source: src/sanity/queries.ts
 // Variable: SITE_SETTINGS_QUERY
-// Query: *[_id == "siteSettings"][0]
-export type SITE_SETTINGS_QUERY_RESULT =
-  | {
-      _id: "siteSettings";
-      _type: "journal";
-      _createdAt: string;
-      _updatedAt: string;
-      _rev: string;
-      title: string;
-      slug: Slug;
-      publishedAt: string;
-      excerpt?: string;
-      coverImage?: ImageWithAlt;
-      body?: RichText;
-      featured?: boolean;
-      seo?: Seo;
-    }
-  | {
-      _id: "siteSettings";
-      _type: "sanity.fileAsset";
-      _createdAt: string;
-      _updatedAt: string;
-      _rev: string;
-      originalFilename?: string;
-      label?: string;
-      title?: string;
-      description?: string;
-      altText?: string;
-      sha1hash: string;
-      extension: string;
-      mimeType: string;
-      size: number;
-      assetId: string;
-      uploadId?: string;
-      path: string;
-      url: string;
-      source?: SanityAssetSourceData;
-    }
-  | {
-      _id: "siteSettings";
-      _type: "sanity.imageAsset";
-      _createdAt: string;
-      _updatedAt: string;
-      _rev: string;
-      originalFilename?: string;
-      label?: string;
-      title?: string;
-      description?: string;
-      altText?: string;
-      sha1hash: string;
-      extension: string;
-      mimeType: string;
-      size: number;
-      assetId: string;
-      uploadId?: string;
-      path: string;
-      url: string;
-      metadata?: SanityImageMetadata;
-      source?: SanityAssetSourceData;
-    }
-  | {
-      _id: "siteSettings";
-      _type: "siteSettings";
-      _createdAt: string;
-      _updatedAt: string;
-      _rev: string;
-      title: string;
-      description?: string;
-      navigation?: Array<
-        {
-          _key: string;
-        } & Link
-      >;
-      email?: string;
-      phone?: string;
-      address?: string;
-      social?: Array<
-        {
-          _key: string;
-        } & Link
-      >;
-      footerLinks?: Array<
-        {
-          _key: string;
-        } & Link
-      >;
-      seo?: Seo;
-    }
-  | {
-      _id: "siteSettings";
-      _type: "work";
-      _createdAt: string;
-      _updatedAt: string;
-      _rev: string;
-      title: string;
-      slug: Slug;
-      client?: string;
-      year?: number;
-      services?: Array<string>;
-      excerpt?: string;
-      coverImage: ImageWithAlt;
-      body?: RichText;
-      featured?: boolean;
-      seo?: Seo;
-    }
-  | null;
+// Query: *[_type == "siteSettings" && _id == "siteSettings"][0]
+export type SITE_SETTINGS_QUERY_RESULT = {
+  _id: "siteSettings";
+  _type: "siteSettings";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  title: string;
+  description?: string;
+  navigation?: Array<
+    {
+      _key: string;
+    } & Link
+  >;
+  email?: string;
+  phone?: string;
+  address?: string;
+  social?: Array<
+    {
+      _key: string;
+    } & Link
+  >;
+  footerLinks?: Array<
+    {
+      _key: string;
+    } & Link
+  >;
+  seo?: Seo;
+} | null;
 
 // Source: src/sanity/queries.ts
 // Variable: FEATURED_WORK_QUERY
@@ -674,7 +597,7 @@ export type JOURNAL_QUERY_RESULT = {
 // Query TypeMap
 declare global {
   interface SanityQueries {
-    '*[_id == "siteSettings"][0]': SITE_SETTINGS_QUERY_RESULT;
+    '*[_type == "siteSettings" && _id == "siteSettings"][0]': SITE_SETTINGS_QUERY_RESULT;
     '*[_type == "work" && featured == true && defined(slug.current)] | order(year desc) {\n  _id,\n  title,\n  "slug": slug.current,\n  client,\n  year,\n  services,\n  excerpt,\n  coverImage{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n}\n}': FEATURED_WORK_QUERY_RESULT;
     '*[_type == "work" && defined(slug.current)] | order(year desc) {\n  _id,\n  title,\n  "slug": slug.current,\n  client,\n  year,\n  services,\n  excerpt,\n  coverImage{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n}\n}': ALL_WORK_QUERY_RESULT;
     '*[_type == "work" && $service in services && defined(slug.current)] | order(year desc) [0...2] {\n  _id,\n  title,\n  "slug": slug.current,\n  client,\n  year,\n  services,\n  excerpt,\n  coverImage{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n}\n}': WORK_BY_SERVICE_QUERY_RESULT;
