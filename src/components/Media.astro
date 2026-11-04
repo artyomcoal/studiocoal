@@ -1,0 +1,214 @@
+---
+/**
+ * Media
+ * One Work visual from the shared Sanity `media` object: a responsive Sanity image or a
+ * Bunny Stream HLS video, cropped to 4:5 (portrait) or 16:9 (landscape) around the hotspot.
+ * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=2743-34179
+ *
+ * Images: srcset/sizes from the URL builder, LQIP blur behind the image, explicit dimensions.
+ * Videos: the poster is a regular responsive <img>; the <video> sits on top.
+ * - Safari (and other browsers with native HLS) get the playlist as `src`.
+ * - Everywhere else, hls.js/light is dynamic-imported, only once a video is within one
+ *   viewport of the screen. Pages without video, and native-HLS browsers, never load it.
+ * - "ambient" videos autoplay muted and looped while on screen, have a pause button
+ *   (WCAG 2.2.2) and don't autoplay under prefers-reduced-motion.
+ * - "player" videos show native controls and only load segments once played.
+ */
+import Pause from "@lucide/astro/icons/pause";
+import Play from "@lucide/astro/icons/play";
+import { ASPECT, type AspectName } from "@/lib/media";
+import { cn } from "@/lib/utils";
+import { imageSrcSet, urlFor } from "@/sanity/image";
+import { resolveMedia, type MediaData } from "@/sanity/media";
+
+interface Props {
+  media: MediaData | null | undefined;
+  /** Crop ratio: portrait = 4:5, landscape = 16:9. */
+  aspect: AspectName;
+  /** The `sizes` attribute: how wide the visual renders at each breakpoint. */
+  sizes: string;
+  /** LCP visual: load eagerly with high fetch priority. */
+  priority?: boolean;
+  class?: string;
+}
+
+const { media, aspect, sizes, priority = false, class: className } = Astro.props;
+
+const resolved = resolveMedia(media);
+const ratio = ASPECT[aspect];
+// Intrinsic size for width/height attributes (no layout shift); the CSS aspect box wins.
+const width = aspect === "portrait" ? 1600 : 1920;
+const height = Math.round(width / ratio);
+
+const image = resolved?.kind === "image" ? resolved.image : resolved?.video.poster;
+const video = resolved?.kind === "video" ? resolved.video : null;
+const alt = resolved?.kind === "image" ? (resolved.image.alt ?? "") : "";
+const playerPoster =
+  video?.playback === "player" && image?.asset
+    ? urlFor(image).width(width).height(height).fit("crop").url()
+    : undefined;
+---
+
+<div
+  data-slot="media"
+  data-playback={video?.playback}
+  class={cn(
+    "group/media relative overflow-hidden rounded-sm bg-bg-secondary",
+    aspect === "portrait" ? "aspect-4/5" : "aspect-video",
+    className,
+  )}
+>
+  {image?.asset && (
+    <img
+      src={urlFor(image)
+        .width(1024)
+        .height(Math.round(1024 / ratio))
+        .fit("crop")
+        .url()}
+      srcset={imageSrcSet(image, ratio)}
+      sizes={sizes}
+      width={width}
+      height={height}
+      alt={alt}
+      loading={priority ? "eager" : "lazy"}
+      decoding={priority ? "sync" : "async"}
+      fetchpriority={priority ? "high" : "auto"}
+      class="absolute inset-0 size-full bg-cover object-cover"
+      style={image.lqip ? `background-image: url(${image.lqip})` : undefined}
+    />
+  )}
+  {video && (
+    <>
+      {/* eslint-disable-next-line astro/jsx-a11y/media-has-caption -- ambient videos are muted
+            and silent; player videos carry captions as subtitle tracks in the HLS playlist. */}
+      <video
+        data-src={video.playlistUrl}
+        data-playback={video.playback}
+        class:list={[
+          "absolute inset-0 size-full object-cover",
+          video.playback === "ambient" &&
+            "opacity-0 transition-opacity duration-300 group-data-playing/media:opacity-100",
+        ]}
+        poster={playerPoster}
+        preload="none"
+        playsinline
+        muted={video.playback === "ambient"}
+        loop={video.playback === "ambient"}
+        controls={video.playback === "player"}
+        aria-label={video.alt || undefined}
+        aria-hidden={!video.alt && video.playback === "ambient" ? "true" : undefined}
+      />
+      {video.playback === "ambient" && (
+        <button
+          type="button"
+          data-slot="media-toggle"
+          aria-label="Pause video"
+          class="absolute right-2 bottom-2 flex size-6 cursor-pointer items-center justify-center rounded-xs bg-bg-media-label text-neutral-50 opacity-0 backdrop-blur-sm transition-opacity group-hover/media:opacity-100 group-data-paused/media:opacity-100 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interactive-focus-ring pointer-coarse:opacity-100"
+        >
+          <Pause class="size-3 group-data-paused/media:hidden" aria-hidden="true" />
+          <Play class="hidden size-3 group-data-paused/media:block" aria-hidden="true" />
+        </button>
+      )}
+    </>
+  )}
+</div>
+
+<script>
+  const HLS_TYPE = "application/vnd.apple.mpegurl";
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  /** Gives the <video> its source: native HLS when supported, hls.js/light otherwise. */
+  async function attach(video: HTMLVideoElement) {
+    const src = video.dataset.src;
+    if (!src || video.dataset.attached !== undefined) return;
+    video.dataset.attached = "";
+
+    if (video.canPlayType(HLS_TYPE)) {
+      video.src = src;
+      return;
+    }
+    const { default: Hls } = await import("hls.js/light");
+    if (!Hls.isSupported()) {
+      video.src = src; // Let the browser try; the poster stays visible if it can't.
+      return;
+    }
+    const player = video.dataset.playback === "player";
+    const hls = new Hls({ capLevelToPlayerSize: true, autoStartLoad: !player });
+    if (player) video.addEventListener("play", () => hls.startLoad(), { once: true });
+    hls.loadSource(src);
+    hls.attachMedia(video);
+    // Play may have been requested before the source existed.
+    if (video.dataset.wantsPlay !== undefined) void video.play().catch(() => {});
+  }
+
+  function root(video: HTMLVideoElement) {
+    return video.closest<HTMLElement>("[data-slot=media]")!;
+  }
+
+  function play(video: HTMLVideoElement) {
+    video.dataset.wantsPlay = "";
+    if (video.currentSrc || video.src) void video.play().catch(() => {});
+    else void attach(video).then(() => video.play().catch(() => {}));
+  }
+
+  function pause(video: HTMLVideoElement) {
+    delete video.dataset.wantsPlay;
+    video.pause();
+  }
+
+  /** User pause (button) or reduced motion: shows the Play state on the toggle. */
+  function setPaused(video: HTMLVideoElement, paused: boolean) {
+    const el = root(video);
+    el.toggleAttribute("data-paused", paused);
+    el.querySelector("[data-slot=media-toggle]")?.setAttribute(
+      "aria-label",
+      paused ? "Play video" : "Pause video",
+    );
+  }
+
+  const videos = [...document.querySelectorAll<HTMLVideoElement>("video[data-src]")];
+  if (videos.length) {
+    // Attach (and, with hls.js, start buffering) one viewport ahead of the screen.
+    const nearby = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          nearby.unobserve(entry.target);
+          void attach(entry.target as HTMLVideoElement);
+        }
+      },
+      { rootMargin: "100% 0px" },
+    );
+
+    // Ambient videos play only while visible and not paused by the user.
+    const visible = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          const video = entry.target as HTMLVideoElement;
+          const userPaused = root(video).hasAttribute("data-paused");
+          if (entry.isIntersecting && !userPaused) play(video);
+          else pause(video);
+        }
+      },
+      { threshold: 0.25 },
+    );
+
+    for (const video of videos) {
+      nearby.observe(video);
+      if (video.dataset.playback !== "ambient") continue;
+
+      video.addEventListener("playing", () => root(video).setAttribute("data-playing", ""));
+      if (reducedMotion.matches) setPaused(video, true);
+      visible.observe(video);
+
+      root(video)
+        .querySelector("[data-slot=media-toggle]")
+        ?.addEventListener("click", () => {
+          const paused = !root(video).hasAttribute("data-paused");
+          setPaused(video, paused);
+          if (paused) pause(video);
+          else play(video);
+        });
+    }
+  }
+</script>

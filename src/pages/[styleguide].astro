@@ -6,7 +6,9 @@
  */
 import Footer from "@/components/Footer.astro";
 import GetInTouchModal from "@/components/GetInTouchModal.astro";
+import Media from "@/components/Media.astro";
 import NavItem from "@/components/NavItem.astro";
+import type { MediaData } from "@/sanity/media";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { Button } from "@/ui/button";
 import { Badge } from "@/ui/badge";
@@ -58,6 +60,7 @@ const semantic: Record<string, [string, string][]> = {
     ["border-medium", "colors/border/color-border-medium"],
     ["border-subtle", "colors/border/color-border-subtle"],
   ],
+  "Media (code only)": [["bg-media-label", 'Button "View work" fill on Card / Work Featured']],
 };
 
 // [css variable, Figma variable, utility] — Figma Custom collection, layout/*
@@ -141,6 +144,19 @@ const motion: [string, string][] = [
   ["--motion-ease-enter", "entrance easing"],
   ["--motion-blur-enter", "starting blur"],
 ];
+
+// Media fixtures. The dataset has no assets yet, so images show the empty (bg-secondary) state.
+// The video is a public HLS test stream, standing in for a Bunny playlist in this dev-only page.
+const demoVideo = (playback: "ambient" | "player"): MediaData => ({
+  kind: "video",
+  video: {
+    playlistUrl: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
+    alt: "Demo video",
+    caption: null,
+    playback,
+    poster: { _type: "image", lqip: null, dimensions: null },
+  },
+});
 
 const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
 ---
@@ -499,6 +515,30 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
               <AccordionContent>We work inside your team, in your tools.</AccordionContent>
             </AccordionItem>
           </Accordion>
+        </div>
+      </div>
+    </section>
+
+    <section class="flex flex-col gap-6">
+      <h2 class="text-headline-lg">Media</h2>
+      <p class="text-body-sm text-fg-secondary">
+        <code>&lt;Media aspect="portrait|landscape"&gt;</code>: a Sanity image or a Bunny HLS video
+        from the shared <code>media</code> object. Hover an ambient video for its pause button; with
+        reduced motion it starts paused. Firefox loads hls.js only when a video is near the screen
+        (Network tab).
+      </p>
+      <div class="grid grid-cols-2 gap-2 xl:grid-cols-4">
+        <div class="flex flex-col gap-2">
+          <p class="text-caption-md text-fg-tertiary">Portrait, empty</p>
+          <Media media={null} aspect="portrait" sizes="25vw" />
+        </div>
+        <div class="flex flex-col gap-2">
+          <p class="text-caption-md text-fg-tertiary">Portrait, ambient video</p>
+          <Media media={demoVideo("ambient")} aspect="portrait" sizes="25vw" />
+        </div>
+        <div class="col-span-2 flex flex-col gap-2">
+          <p class="text-caption-md text-fg-tertiary">Landscape, player video</p>
+          <Media media={demoVideo("player")} aspect="landscape" sizes="50vw" />
         </div>
       </div>
     </section>
