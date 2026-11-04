@@ -205,3 +205,15 @@
   grid-template-columns: repeat(var(--grid-column-count), minmax(0, 1fr));
   column-gap: var(--grid-gutter);
 }
+
+/* ---------- Motion (not a Figma collection; values approved by the owner) ----------
+ * Page transitions and entrance animations, modelled on the permanent.is timing.
+ * Used by src/styles/motion.css. All motion is disabled under prefers-reduced-motion.
+ */
+:root {
+  --motion-duration-enter: 950ms; /* section fade-in from blur */
+  --motion-duration-exit: 300ms; /* old page fade-out (View Transition) */
+  --motion-stagger: 110ms; /* delay between sections / list items */
+  --motion-ease-enter: cubic-bezier(0.45, 0.05, 0.25, 1);
+  --motion-blur-enter: 12px; /* starting blur of the entrance */
+}

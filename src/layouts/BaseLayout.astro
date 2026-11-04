@@ -67,6 +67,17 @@ const seo = buildSeo({
         font-display: swap;
       }
     </style>
+    <!-- Entrance animation only after an in-site navigation (src/styles/motion.css).
+         Runs before first paint; direct visits stay static so LCP isn't delayed. -->
+    <script is:inline>
+      try {
+        if (document.referrer && new URL(document.referrer).origin === location.origin) {
+          document.documentElement.classList.add("nav-entered");
+        }
+      } catch {
+        /* Malformed referrer: no entrance. */
+      }
+    </script>
     <title>{seo.title}</title>
     <meta name="description" content={seo.description} />
     <link rel="canonical" href={seo.canonical} />

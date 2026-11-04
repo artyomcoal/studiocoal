@@ -130,6 +130,14 @@ const textVars = [
   "--eyebrow-font-weight",
 ];
 
+const motion: [string, string][] = [
+  ["--motion-duration-enter", "section fade-in from blur"],
+  ["--motion-duration-exit", "old page fade-out (View Transition)"],
+  ["--motion-stagger", "delay between sections / list items"],
+  ["--motion-ease-enter", "entrance easing"],
+  ["--motion-blur-enter", "starting blur"],
+];
+
 const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
 ---
 
@@ -282,6 +290,40 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
     </section>
 
     <section class="flex flex-col gap-6">
+      <h2 class="text-headline-lg">Motion</h2>
+      <p class="max-w-2xl text-body-sm text-fg-secondary">
+        Page transitions (src/styles/motion.css). After an in-site navigation, children of{" "}
+        <code>animate-enter-stagger</code> fade in from blur one after another;{" "}
+        <code>animate-enter</code> does the same for one element. The header gets{" "}
+        <code>view-transition-header</code> and stays pinned. Off under reduced motion.
+      </p>
+      <ul class="flex flex-col gap-2">
+        {motion.map(([name, use]) => (
+          <li class="flex flex-wrap gap-x-4 text-body-xs">
+            <code>{name}</code>
+            <span class="text-fg-tertiary" data-var={name} />
+            <span class="text-fg-secondary">{use}</span>
+          </li>
+        ))}
+      </ul>
+      <div class="flex flex-wrap gap-4">
+        <Button type="button" data-replay-entrance>
+          Replay entrance
+        </Button>
+        <Button as="a" href="/" variant="secondary">
+          Navigate to home (View Transition)
+        </Button>
+      </div>
+      <div data-entrance-demo>
+        <ul class="grid animate-enter-stagger grid-cols-2 gap-gutter md:grid-cols-3 xl:grid-cols-6">
+          {[1, 2, 3, 4, 5, 6].map((n) => (
+            <li class="flex aspect-4/5 items-end rounded-sm bg-bg-secondary p-4 text-label">{n}</li>
+          ))}
+        </ul>
+      </div>
+    </section>
+
+    <section class="flex flex-col gap-6">
       <h2 class="text-headline-lg">Button</h2>
       <p class="text-body-sm text-fg-secondary">
         Hover, press and Tab to check states. Focus = hover fill + 2px gap + 2px focus ring.
@@ -411,5 +453,13 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
   }
   update();
   addEventListener("resize", update);
+
+  // Motion demo: toggle the trigger class on the demo wrapper only, so the page itself stays.
+  const demo = document.querySelector<HTMLElement>("[data-entrance-demo]")!;
+  document.querySelector("[data-replay-entrance]")!.addEventListener("click", () => {
+    demo.classList.remove("nav-entered");
+    void demo.offsetWidth; // restart the animations
+    demo.classList.add("nav-entered");
+  });
   matchMedia("(prefers-color-scheme: light)").addEventListener("change", update);
 </script>
