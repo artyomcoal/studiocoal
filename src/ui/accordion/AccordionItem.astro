@@ -1,0 +1,21 @@
+---
+// Studio Coal: top border (border-subtle) per Figma "AccordionItem" (node 672:1702), was border-b.
+import { cn } from "@/lib/utils";
+import type { HTMLAttributes } from "astro/types";
+
+interface Props extends HTMLAttributes<"div"> {
+  value: string;
+  class?: string;
+}
+
+const { value, class: className = "", ...rest } = Astro.props as Props;
+---
+
+<div
+  {...rest}
+  data-value={value}
+  data-slot="accordion-item"
+  class={cn("border-t border-border-subtle", className)}
+>
+  <slot />
+</div>

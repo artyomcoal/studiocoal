@@ -1,0 +1,80 @@
+---
+/**
+ * @component Badge
+ * @description Figma "Tag" component (frame 53325:8511). variant: secondary | tertiary, size: sm | default.
+ * @usage
+ * <Badge>Branding</Badge>
+ * <Badge variant="tertiary" size="default">Web</Badge>
+ */
+
+import type { HTMLAttributes, HTMLTag } from "astro/types";
+import { cva } from "class-variance-authority";
+import { cn } from "@/lib/utils";
+
+// Studio Coal: restyled to the Figma "Tag" component (frame 53325:8511). Changes from upstream:
+// - variant = Figma `background`: secondary | tertiary; size = Figma `size`: sm | default
+// - fg-primary text, caption type styles, rounded-xs, px-2; shape prop removed
+type BadgeOwnProps = {
+  variant?: "secondary" | "tertiary";
+  class?: string;
+  size?: "default" | "sm";
+};
+
+type BadgeAsElement = {
+  as?: Exclude<HTMLTag, "a">;
+} & HTMLAttributes<"span">;
+
+type BadgeAsAnchor = {
+  as: "a";
+} & HTMLAttributes<"a">;
+
+export type Props = (BadgeAsElement | BadgeAsAnchor) & BadgeOwnProps;
+
+const {
+  as = "span",
+  variant = "secondary",
+  class: className = "",
+  size = "sm",
+  ...props
+} = Astro.props as Props;
+
+const badgeVariants = cva(
+  "inline-flex w-fit shrink-0 items-center gap-1 whitespace-nowrap rounded-xs px-2 text-fg-primary [&>svg]:pointer-events-none [&>svg]:size-3",
+  {
+    variants: {
+      variant: {
+        secondary: "bg-bg-secondary",
+        tertiary: "bg-bg-tertiary",
+      },
+      size: {
+        sm: "py-1 text-caption-sm capitalize",
+        default: "py-1.5 text-caption-md",
+      },
+    },
+    defaultVariants: {
+      variant: "secondary",
+      size: "sm",
+    },
+  },
+);
+
+const Tag = as;
+const classes = cn(badgeVariants({ variant, size, className }));
+---
+
+{
+  /*
+  As in Button: the public Props are strict (href only with as="a"), but JSX
+  wants every tag's attributes at once for a dynamic intrinsic Tag.
+*/
+}
+<!-- @ts-expect-error – union Props + dynamic Tag confuse JSX typing (see comment above) -->
+<Tag
+  data-slot="badge"
+  data-variant={variant}
+  data-size={size}
+  class={classes}
+  {...props}
+>
+  <slot />
+</Tag>

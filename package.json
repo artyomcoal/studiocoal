@@ -10,10 +10,11 @@
     "astro": "astro"
   },
   "dependencies": {
-    "bejamas": "^0.6.1",
+    "@data-slot/accordion": "^1.1.2",
     "@lucide/astro": "^1.47.0",
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.3.4",
+    "bejamas": "^0.6.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "tailwind-merge": "^3.7.0"

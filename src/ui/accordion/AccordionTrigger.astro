@@ -1,0 +1,92 @@
+---
+import { cva } from "class-variance-authority";
+import { cn } from "@/lib/utils";
+import type { HTMLAttributes } from "astro/types";
+
+interface Props extends HTMLAttributes<"button"> {
+  class?: string;
+  /** Radix-like: render wrapper so the child can be the interactive element */
+  asChild?: boolean;
+  /**
+   * Trigger text style. Figma uses Headline XS (Services, Work Single) and
+   * Headline MD (About: 18px base/md, 20px xl).
+   */
+  size?: "xs" | "md";
+}
+
+const {
+  class: className = "",
+  asChild = false,
+  size = "xs",
+  type = "button",
+  ...rest
+} = Astro.props as Props;
+
+// Studio Coal: restyled to Figma "AccordionItem" (node 672:1702). Changes from upstream:
+// - text from headline styles via `size`, interactive-primary color, hover/expanded/focus use -hover
+// - 20px vertical padding (py-5), Figma focus ring, plus icon in a 24px box (bg-secondary,
+//   bg-tertiary on hover/press) instead of chevrons
+const triggerVariants = cva(
+  [
+    "group/accordion-trigger relative flex flex-1 items-center justify-between gap-4 py-5 text-left",
+    "text-interactive-primary transition-colors duration-150 ease-out outline-none",
+    "hover:text-interactive-primary-hover aria-expanded:text-interactive-primary-hover focus-visible:text-interactive-primary-hover",
+    "focus-visible:ring-2 focus-visible:ring-interactive-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg-primary",
+    "aria-disabled:pointer-events-none aria-disabled:opacity-50",
+  ],
+  {
+    variants: {
+      size: {
+        xs: "text-headline-xs",
+        md: "text-headline-md",
+      },
+    },
+    defaultVariants: { size: "xs" },
+  },
+);
+---
+
+{
+  asChild ? (
+    <div class="flex">
+      <div
+        data-slot="accordion-trigger"
+        data-as-child
+        class={cn(triggerVariants({ size }), className)}
+      >
+        <slot />
+      </div>
+    </div>
+  ) : (
+    <div class="flex">
+      <button
+        {...rest}
+        type={type}
+        data-slot="accordion-trigger"
+        class={cn(triggerVariants({ size }), className)}
+      >
+        <slot />
+        {
+          Astro.slots.has("icon") ? (
+            <span
+              data-slot="accordion-trigger-icon"
+              class="pointer-events-none shrink-0"
+            >
+              <slot name="icon" />
+            </span>
+          ) : (
+            <span
+              data-slot="accordion-trigger-icon"
+              aria-hidden="true"
+              class="pointer-events-none grid size-6 shrink-0 place-items-center rounded-xs bg-bg-secondary text-fg-primary transition-colors group-hover/accordion-trigger:bg-bg-tertiary group-active/accordion-trigger:bg-bg-tertiary"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M12 8V16M8 12H16" stroke="currentColor" stroke-width="1.25" />
+              </svg>
+            </span>
+          )
+        }
+      </button>
+    </div>
+  )
+}

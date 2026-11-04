@@ -5,6 +5,8 @@
  */
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { Button } from "@/ui/button";
+import { Badge } from "@/ui/badge";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/ui/accordion";
 
 // Dynamic route with a single path in dev and none in production, so /styleguide
 // is never emitted by `astro build`. Explicit pages always take priority over this route.
@@ -36,8 +38,10 @@ const type = [
   ["text-headline-xxl", "text-headline-xxl"],
   ["text-headline-xl", "text-headline-xl"],
   ["text-headline-lg", "text-headline-lg"],
+  ["text-headline-md", "text-headline-md"],
   ["text-headline-sm", "text-headline-sm"],
   ["text-headline-xs", "text-headline-xs"],
+  ["text-body-lg", "text-body-lg"],
   ["text-body-md", "text-body-md"],
   ["text-body-sm", "text-body-sm"],
   ["text-body-xs", "text-body-xs"],
@@ -97,12 +101,79 @@ const type = [
       </div>
     </section>
 
-    <section class="flex flex-col gap-4">
-      <h2 class="text-headline-lg">Button (bejamas default, not yet restyled)</h2>
-      <div class="flex flex-wrap gap-2">
-        <Button>Default</Button>
+    <section class="flex flex-col gap-6">
+      <h2 class="text-headline-lg">Button</h2>
+      <p class="text-body-sm text-fg-secondary">
+        Hover, press and Tab to check states. Focus = hover fill + 2px gap + 2px focus ring.
+      </p>
+      <div class="flex flex-wrap items-center gap-4">
+        <Button>Primary</Button>
         <Button variant="secondary">Secondary</Button>
-        <Button variant="outline">Outline</Button>
+        <Button as="a" href="#">Link as button</Button>
+        <Button disabled>Disabled</Button>
+        <Button variant="secondary" disabled>Disabled</Button>
+      </div>
+    </section>
+
+    <section class="flex flex-col gap-6">
+      <h2 class="text-headline-lg">Badge</h2>
+      <div class="flex flex-wrap items-center gap-2">
+        <Badge>Small secondary</Badge>
+        <Badge variant="tertiary">Small tertiary</Badge>
+        <Badge size="default">Default secondary</Badge>
+        <Badge variant="tertiary" size="default">Default tertiary</Badge>
+      </div>
+    </section>
+
+    <section class="flex flex-col gap-6">
+      <h2 class="text-headline-lg">Accordion</h2>
+      <div class="grid gap-12 md:grid-cols-2">
+        <div class="flex flex-col gap-2">
+          <p class="text-caption-md text-fg-tertiary">size="xs" (Services, Work Single)</p>
+          <Accordion>
+            <AccordionItem value="brand">
+              <AccordionTrigger>Brand strategy</AccordionTrigger>
+              <AccordionContent>
+                Positioning, naming and messaging that give your company a clear voice.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="identity">
+              <AccordionTrigger>Visual identity</AccordionTrigger>
+              <AccordionContent>Logo, type, colour and a system that scales.</AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="guidelines">
+              <AccordionTrigger>Brand guidelines</AccordionTrigger>
+              <AccordionContent>Rules and examples your team can use without us.</AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </div>
+        <div class="flex flex-col gap-2">
+          <p class="text-caption-md text-fg-tertiary">size="md" (About)</p>
+          <Accordion defaultValue="craft">
+            <AccordionItem value="craft">
+              <AccordionTrigger size="md">Craft over volume</AccordionTrigger>
+              <AccordionContent>We take on few projects so each one gets senior attention.</AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="partners">
+              <AccordionTrigger size="md">Partners, not vendors</AccordionTrigger>
+              <AccordionContent>We work inside your team, in your tools.</AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </div>
+      </div>
+    </section>
+
+    <section class="flex flex-col gap-6">
+      <h2 class="text-headline-lg">Divider</h2>
+      <p class="text-body-sm text-fg-secondary">
+        No component: horizontal is <code>&lt;hr class="border-border-subtle"&gt;</code>; vertical is
+        <code>&lt;div role="separator" aria-orientation="vertical" class="w-px self-stretch bg-border-subtle"&gt;</code>.
+      </p>
+      <hr class="border-border-subtle" />
+      <div class="flex h-16 items-center gap-4 text-body-sm">
+        <span>Left</span>
+        <div role="separator" aria-orientation="vertical" class="w-px self-stretch bg-border-subtle"></div>
+        <span>Right</span>
       </div>
     </section>
   </main>
