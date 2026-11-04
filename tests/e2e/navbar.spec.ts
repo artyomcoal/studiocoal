@@ -24,16 +24,19 @@ test.describe("navbar", () => {
     await expect(nav.locator("[data-slot=nav-item][aria-current]")).toHaveCount(0);
   });
 
-  test("keeps every link inside the pill", async ({ page }) => {
-    const pill = await page.getByRole("navigation", { name: "Main" }).boundingBox();
-    const items = await page.locator("[data-slot=nav-item]").all();
-    for (const item of items) {
-      const box = await item.boundingBox();
-      expect(box!.x + box!.width).toBeLessThanOrEqual(pill!.x + pill!.width);
-    }
+  test("never overflows the viewport, and every link is reachable", async ({ page }) => {
+    const viewport = page.viewportSize()!;
+    const pill = (await page.getByRole("navigation", { name: "Main" }).boundingBox())!;
+    expect(pill.x).toBeGreaterThanOrEqual(0);
+    expect(pill.x + pill.width).toBeLessThanOrEqual(viewport.width);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
-      page.viewportSize()!.width,
+      viewport.width,
     );
+    // Links that don't fit scroll inside the pill: the last one can be scrolled into view.
+    const last = page.locator("[data-slot=nav-item]").last();
+    await last.scrollIntoViewIfNeeded();
+    const box = (await last.boundingBox())!;
+    expect(box.x + box.width).toBeLessThanOrEqual(pill.x + pill.width);
   });
 
   test("places Get in touch per breakpoint", async ({ page }) => {

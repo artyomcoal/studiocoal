@@ -52,7 +52,7 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
 >
   <nav
     aria-label="Main"
-    class="pointer-events-auto flex items-center gap-1 rounded-sm bg-bg-translucent py-1 pr-2 pl-1 backdrop-blur-md xl:backdrop-blur-xs"
+    class="pointer-events-auto flex max-w-full min-w-0 items-center gap-1 rounded-sm bg-bg-translucent py-1 pr-2 pl-1 backdrop-blur-md xl:backdrop-blur-xs"
   >
     <a
       href="/"
@@ -67,7 +67,9 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
         class="block size-8 rounded-xs"
       />
     </a>
-    <ul class="flex items-center gap-0.5">
+    <!-- When the links don't fit (narrow phones, wider font rendering on Android/Linux) they
+         scroll sideways inside the pill instead of overflowing it. Scrollbar hidden: no utility. -->
+    <ul class="flex min-w-0 items-center gap-0.5 overflow-x-auto [scrollbar-width:none]">
       {items.map((item) => (
         <li>
           <NavItem href={item.href} active={isActive(item.href)}>
