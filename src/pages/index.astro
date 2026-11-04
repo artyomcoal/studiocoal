@@ -1,21 +1,40 @@
 ---
+/**
+ * Home page.
+ * Figma: Homepage / breakpoint=xl|md|base (frames 5039:7455, 53333:8604, 53335:9144)
+ */
 import { sanityClient } from "sanity:client";
 import PageLayout from "@/layouts/PageLayout.astro";
-import { FEATURED_JOURNAL_QUERY, FEATURED_WORK_QUERY } from "@/sanity/queries";
+import {
+  CLIENTS_QUERY,
+  FEATURED_JOURNAL_QUERY,
+  FEATURED_WORK_QUERY,
+  SERVICE_THUMBNAILS_QUERY,
+} from "@/sanity/queries";
+import ClientsSection from "@/sections/ClientsSection.astro";
 import FeaturedArticlesSection from "@/sections/FeaturedArticlesSection.astro";
 import FeaturedWorkSection from "@/sections/FeaturedWorkSection.astro";
+import ServicesOverviewSection from "@/sections/ServicesOverviewSection.astro";
 
-const [featuredWork, featuredPosts] = await Promise.all([
+const [featuredWork, thumbnails, clients, featuredPosts] = await Promise.all([
   sanityClient.fetch(FEATURED_WORK_QUERY, { limit: 6 }),
+  sanityClient.fetch(SERVICE_THUMBNAILS_QUERY),
+  sanityClient.fetch(CLIENTS_QUERY),
   sanityClient.fetch(FEATURED_JOURNAL_QUERY, { limit: 4 }),
 ]);
 ---
 
 <PageLayout>
-  <section class="px-container pt-hero py-section">
-    <p class="text-eyebrow text-fg-primary">STUDIO COAL</p>
-    <h1 class="text-headline-xxl text-fg-primary">Site under construction.</h1>
+  <section class="px-container pt-hero pb-12">
+    <h1 class="text-headline-xxl text-balance text-fg-primary">
+      Studio Coal helps technology companies go from zero to{" "}
+      <span class="font-mono tracking-normal text-fg-tertiary">launch</span> by designing{" "}
+      <span class="font-mono tracking-normal text-fg-tertiary">brands</span> people remember, trust
+      and use.
+    </h1>
   </section>
   <FeaturedWorkSection works={featuredWork} columns="2" />
+  <ServicesOverviewSection thumbnails={thumbnails} />
+  <ClientsSection clients={clients} />
   <FeaturedArticlesSection posts={featuredPosts} />
 </PageLayout>

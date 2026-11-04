@@ -42,7 +42,7 @@ export const work = defineType({
       type: "array",
       group: "details",
       of: [{ type: "string" }],
-      options: { list: [...SERVICES] },
+      options: { list: SERVICES.map(({ title, value }) => ({ title, value })) },
     }),
     defineField({
       name: "excerpt",

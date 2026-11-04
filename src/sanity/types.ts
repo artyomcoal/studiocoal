@@ -129,12 +129,40 @@ export type SiteSettings = {
       _key: string;
     } & Link
   >;
+  clients?: Array<{
+    name: string;
+    logo: {
+      asset?: SanityImageAssetReference;
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    };
+    _type: "client";
+    _key: string;
+  }>;
   footerLinks?: Array<
     {
       _key: string;
     } & Link
   >;
   seo?: Seo;
+};
+
+export type SanityImageCrop = {
+  _type: "sanity.imageCrop";
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
+};
+
+export type SanityImageHotspot = {
+  _type: "sanity.imageHotspot";
+  x: number;
+  y: number;
+  height: number;
+  width: number;
 };
 
 export type Journal = {
@@ -190,22 +218,6 @@ export type Work = {
       } & MediaPair)
   >;
   seo?: Seo;
-};
-
-export type SanityImageCrop = {
-  _type: "sanity.imageCrop";
-  top: number;
-  bottom: number;
-  left: number;
-  right: number;
-};
-
-export type SanityImageHotspot = {
-  _type: "sanity.imageHotspot";
-  x: number;
-  y: number;
-  height: number;
-  width: number;
 };
 
 export type SanityImagePaletteSwatch = {
@@ -316,11 +328,11 @@ export type AllSanitySchemaTypes =
   | ImageWithAlt
   | RichText
   | SiteSettings
+  | SanityImageCrop
+  | SanityImageHotspot
   | Journal
   | Slug
   | Work
-  | SanityImageCrop
-  | SanityImageHotspot
   | SanityImagePaletteSwatch
   | SanityImagePalette
   | SanityImageDimensions
@@ -329,6 +341,273 @@ export type AllSanitySchemaTypes =
   | SanityAssetSourceData
   | SanityImageAsset
   | Geopoint;
+
+// Source: src/sanity/queries.ts
+// Variable: CLIENTS_QUERY
+// Query: *[_type == "siteSettings" && _id == "siteSettings"][0].clients[defined(logo.asset)]{ _key, name, logo }
+export type CLIENTS_QUERY_RESULT = Array<{
+  _key: string;
+  name: string;
+  logo: {
+    asset: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+}> | null;
+
+// Source: src/sanity/queries.ts
+// Variable: SERVICE_THUMBNAILS_QUERY
+// Query: {    "brand": *[_type == "work" && "brand" in services && defined(slug.current)] | order(year desc) [0].listingMedia{  kind,  kind == "image" => { "image": image{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} },  kind == "video" => {    "video": video{ playlistUrl, alt, caption, playback, poster{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} }  }},    "web": *[_type == "work" && "web" in services && defined(slug.current)] | order(year desc) [0].listingMedia{  kind,  kind == "image" => { "image": image{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} },  kind == "video" => {    "video": video{ playlistUrl, alt, caption, playback, poster{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} }  }},    "digital-products": *[_type == "work" && "digital-products" in services && defined(slug.current)] | order(year desc) [0].listingMedia{  kind,  kind == "image" => { "image": image{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} },  kind == "video" => {    "video": video{ playlistUrl, alt, caption, playback, poster{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} }  }}  }
+export type SERVICE_THUMBNAILS_QUERY_RESULT = {
+  brand:
+    | {
+        kind: "image" | "video";
+        image: {
+          _type: "imageWithAlt";
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          alt?: string;
+          caption?: string;
+          lqip: string | null;
+          dimensions: {
+            width: number;
+            height: number;
+            aspectRatio: number;
+          } | null;
+        } | null;
+        video: {
+          playlistUrl: string;
+          alt: string | null;
+          caption: string | null;
+          playback: "ambient" | "player";
+          poster: {
+            asset?: SanityImageAssetReference;
+            media?: unknown;
+            hotspot?: SanityImageHotspot;
+            crop?: SanityImageCrop;
+            _type: "image";
+            lqip: string | null;
+            dimensions: {
+              width: number;
+              height: number;
+              aspectRatio: number;
+            } | null;
+          };
+        } | null;
+      }
+    | {
+        kind: "image" | "video";
+        image: {
+          _type: "imageWithAlt";
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          alt?: string;
+          caption?: string;
+          lqip: string | null;
+          dimensions: {
+            width: number;
+            height: number;
+            aspectRatio: number;
+          } | null;
+        } | null;
+      }
+    | {
+        kind: "image" | "video";
+        video: {
+          playlistUrl: string;
+          alt: string | null;
+          caption: string | null;
+          playback: "ambient" | "player";
+          poster: {
+            asset?: SanityImageAssetReference;
+            media?: unknown;
+            hotspot?: SanityImageHotspot;
+            crop?: SanityImageCrop;
+            _type: "image";
+            lqip: string | null;
+            dimensions: {
+              width: number;
+              height: number;
+              aspectRatio: number;
+            } | null;
+          };
+        } | null;
+      }
+    | {
+        kind: "image" | "video";
+      }
+    | null;
+  web:
+    | {
+        kind: "image" | "video";
+        image: {
+          _type: "imageWithAlt";
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          alt?: string;
+          caption?: string;
+          lqip: string | null;
+          dimensions: {
+            width: number;
+            height: number;
+            aspectRatio: number;
+          } | null;
+        } | null;
+        video: {
+          playlistUrl: string;
+          alt: string | null;
+          caption: string | null;
+          playback: "ambient" | "player";
+          poster: {
+            asset?: SanityImageAssetReference;
+            media?: unknown;
+            hotspot?: SanityImageHotspot;
+            crop?: SanityImageCrop;
+            _type: "image";
+            lqip: string | null;
+            dimensions: {
+              width: number;
+              height: number;
+              aspectRatio: number;
+            } | null;
+          };
+        } | null;
+      }
+    | {
+        kind: "image" | "video";
+        image: {
+          _type: "imageWithAlt";
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          alt?: string;
+          caption?: string;
+          lqip: string | null;
+          dimensions: {
+            width: number;
+            height: number;
+            aspectRatio: number;
+          } | null;
+        } | null;
+      }
+    | {
+        kind: "image" | "video";
+        video: {
+          playlistUrl: string;
+          alt: string | null;
+          caption: string | null;
+          playback: "ambient" | "player";
+          poster: {
+            asset?: SanityImageAssetReference;
+            media?: unknown;
+            hotspot?: SanityImageHotspot;
+            crop?: SanityImageCrop;
+            _type: "image";
+            lqip: string | null;
+            dimensions: {
+              width: number;
+              height: number;
+              aspectRatio: number;
+            } | null;
+          };
+        } | null;
+      }
+    | {
+        kind: "image" | "video";
+      }
+    | null;
+  "digital-products":
+    | {
+        kind: "image" | "video";
+        image: {
+          _type: "imageWithAlt";
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          alt?: string;
+          caption?: string;
+          lqip: string | null;
+          dimensions: {
+            width: number;
+            height: number;
+            aspectRatio: number;
+          } | null;
+        } | null;
+        video: {
+          playlistUrl: string;
+          alt: string | null;
+          caption: string | null;
+          playback: "ambient" | "player";
+          poster: {
+            asset?: SanityImageAssetReference;
+            media?: unknown;
+            hotspot?: SanityImageHotspot;
+            crop?: SanityImageCrop;
+            _type: "image";
+            lqip: string | null;
+            dimensions: {
+              width: number;
+              height: number;
+              aspectRatio: number;
+            } | null;
+          };
+        } | null;
+      }
+    | {
+        kind: "image" | "video";
+        image: {
+          _type: "imageWithAlt";
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          alt?: string;
+          caption?: string;
+          lqip: string | null;
+          dimensions: {
+            width: number;
+            height: number;
+            aspectRatio: number;
+          } | null;
+        } | null;
+      }
+    | {
+        kind: "image" | "video";
+        video: {
+          playlistUrl: string;
+          alt: string | null;
+          caption: string | null;
+          playback: "ambient" | "player";
+          poster: {
+            asset?: SanityImageAssetReference;
+            media?: unknown;
+            hotspot?: SanityImageHotspot;
+            crop?: SanityImageCrop;
+            _type: "image";
+            lqip: string | null;
+            dimensions: {
+              width: number;
+              height: number;
+              aspectRatio: number;
+            } | null;
+          };
+        } | null;
+      }
+    | {
+        kind: "image" | "video";
+      }
+    | null;
+};
 
 // Source: src/sanity/queries.ts
 // Variable: SITE_SETTINGS_QUERY
@@ -354,6 +633,18 @@ export type SITE_SETTINGS_QUERY_RESULT = {
       _key: string;
     } & Link
   >;
+  clients?: Array<{
+    name: string;
+    logo: {
+      asset?: SanityImageAssetReference;
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    };
+    _type: "client";
+    _key: string;
+  }>;
   footerLinks?: Array<
     {
       _key: string;
@@ -1338,6 +1629,8 @@ export type JOURNAL_QUERY_RESULT = {
 // Query TypeMap
 declare global {
   interface SanityQueries {
+    '*[_type == "siteSettings" && _id == "siteSettings"][0].clients[defined(logo.asset)]{ _key, name, logo }': CLIENTS_QUERY_RESULT;
+    '{\n    "brand": *[_type == "work" && "brand" in services && defined(slug.current)] | order(year desc) [0].listingMedia{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n},\n    "web": *[_type == "work" && "web" in services && defined(slug.current)] | order(year desc) [0].listingMedia{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n},\n    "digital-products": *[_type == "work" && "digital-products" in services && defined(slug.current)] | order(year desc) [0].listingMedia{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n}\n  }': SERVICE_THUMBNAILS_QUERY_RESULT;
     '*[_type == "siteSettings" && _id == "siteSettings"][0]': SITE_SETTINGS_QUERY_RESULT;
     '*[_type == "work" && defined(slug.current)] | order(coalesce(featured, false) desc, year desc, _createdAt desc) [0...$limit] {\n  _id,\n  title,\n  "slug": slug.current,\n  client,\n  year,\n  services,\n  excerpt,\n  listingMedia{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n}\n}': FEATURED_WORK_QUERY_RESULT;
     '*[_type == "work" && defined(slug.current) && slug.current != $slug] | order(year desc, _createdAt desc) [0...$limit] {\n  _id,\n  title,\n  "slug": slug.current,\n  client,\n  year,\n  services,\n  excerpt,\n  listingMedia{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n}\n}': RECENT_WORK_QUERY_RESULT;

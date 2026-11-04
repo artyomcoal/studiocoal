@@ -1,0 +1,51 @@
+---
+/**
+ * Clients Section
+ * Eyebrow, header and a grid of client logo tiles (8 / 4 / 2 columns).
+ * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=53474-5619
+ *
+ * Logos come from Site settings › Clients in Sanity. Each logo is used as a CSS mask and
+ * filled with fg-secondary, so any single-colour SVG matches both themes.
+ * Renders nothing until logos are added.
+ */
+import { cn } from "@/lib/utils";
+import { urlFor } from "@/sanity/image";
+import type { CLIENTS_QUERY_RESULT } from "@/sanity/types";
+
+interface Props {
+  clients: CLIENTS_QUERY_RESULT;
+  class?: string;
+}
+
+const { clients, class: className } = Astro.props;
+---
+
+{clients && clients.length > 0 && (
+  <section aria-labelledby="clients" class={cn("px-container pb-section", className)}>
+    <h2
+      id="clients"
+      class="border-t border-border-subtle py-6 text-eyebrow text-fg-primary uppercase"
+    >
+      Selected clients
+    </h2>
+    <div class="flex flex-col gap-20 pt-20 xl:gap-12">
+      <div class="grid-cols-layout">
+        <p class="col-span-full text-headline-xl text-balance text-fg-primary md:col-span-8 xl:col-span-6">
+          A few of the companies we've worked with over the years.
+        </p>
+      </div>
+      <ul class="grid animate-enter-stagger grid-cols-2 gap-2 md:grid-cols-4 xl:grid-cols-8">
+        {clients.map((client) => (
+          <li class="flex h-20 items-center justify-center rounded-sm bg-bg-secondary md:h-34 xl:h-35">
+            <span
+              role="img"
+              aria-label={client.name}
+              class="aspect-4/1 w-24 bg-fg-secondary mask-contain mask-center mask-no-repeat"
+              style={`mask-image: url(${urlFor(client.logo).url()})`}
+            />
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+)}

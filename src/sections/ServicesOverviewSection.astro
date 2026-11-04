@@ -1,0 +1,74 @@
+---
+/**
+ * Services Overview Section
+ * Home page "Our services": eyebrow, header with an "Explore more" button, and one row per
+ * service (thumbnail, name, description, chevron) linking to its /services anchor.
+ * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=5039-7476
+ *
+ * Thumbnails are the newest project's listing visual for that service (4:3), so they stay
+ * current without separate assets. Rows without a project show the bg-secondary placeholder.
+ */
+import ChevronRight from "@lucide/astro/icons/chevron-right";
+import Media from "@/components/Media.astro";
+import { SERVICES } from "@/lib/services";
+import { cn } from "@/lib/utils";
+import type { SERVICE_THUMBNAILS_QUERY_RESULT } from "@/sanity/types";
+import { Button } from "@/ui/button";
+
+interface Props {
+  thumbnails: SERVICE_THUMBNAILS_QUERY_RESULT;
+  class?: string;
+}
+
+const { thumbnails, class: className } = Astro.props;
+---
+
+<section aria-labelledby="services-overview" class={cn("px-container pb-section", className)}>
+  <h2
+    id="services-overview"
+    class="border-t border-border-subtle py-6 text-eyebrow text-fg-primary uppercase"
+  >
+    Our services
+  </h2>
+  <div class="flex flex-col gap-12 pt-20">
+    <div class="grid-cols-layout">
+      <div class="col-span-8 flex flex-col items-start gap-12 xl:col-span-6">
+        <p class="text-headline-xl text-balance text-fg-primary">
+          Your customers see one company and we design it that way.
+        </p>
+        <Button as="a" href="/services" variant="secondary">
+          Explore more
+        </Button>
+      </div>
+    </div>
+    <ul class="animate-enter-stagger divide-y divide-border-subtle">
+      {SERVICES.map((service) => (
+        <li>
+          <a
+            href={`/services#${service.anchor}`}
+            class="group grid-cols-layout items-center gap-y-2 rounded-sm py-4 text-fg-primary outline-none focus-visible:ring-2 focus-visible:ring-interactive-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg-primary"
+          >
+            <div class="hidden self-start pr-6 md:col-span-3 md:block xl:col-span-2">
+              <Media
+                media={thumbnails[service.value]}
+                aspect="thumbnail"
+                sizes="(min-width: 64rem) 192px, 25vw"
+                class="max-w-48 rounded-none"
+              />
+            </div>
+            <span class="col-span-4 text-headline-lg md:col-span-2">{service.title}</span>
+            <span class="col-span-8 text-body-md text-pretty md:col-span-5 xl:col-span-6 xl:col-start-6">
+              {service.description}
+            </span>
+            <span class="col-start-12 hidden justify-self-end md:flex">
+              <ChevronRight
+                class="size-6 transition-transform duration-300 group-hover:translate-x-1 group-focus-visible:translate-x-1"
+                aria-hidden="true"
+              />
+            </span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
