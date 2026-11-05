@@ -1,6 +1,39 @@
-import { defineField, defineType, type CustomValidator } from "sanity";
+import {
+  defineField,
+  defineType,
+  type CustomValidator,
+  type Path,
+  type ValidationContext,
+} from "sanity";
 import { videoPreviewMedia } from "../components/BunnyThumbnail";
 import { aspectMismatch, isHlsUrl, type AspectName } from "../../lib/media";
+
+/** The value at `path` in the document (array items by _key). */
+function valueAt(document: unknown, path: Path): unknown {
+  let current: unknown = document;
+  for (const segment of path) {
+    if (current == null) return undefined;
+    if (typeof segment === "object" && segment !== null && "_key" in segment) {
+      current = Array.isArray(current)
+        ? current.find((item) => (item as { _key?: string })?._key === segment._key)
+        : undefined;
+    } else {
+      current = (current as Record<string | number, unknown>)[segment as string | number];
+    }
+  }
+  return current;
+}
+
+/**
+ * Whether a bunnyVideo field belongs to a media item set to Video. Its path ends in
+ * …/<media>/video/<field>; the video object also exists on Image items (the playback default
+ * creates it), and Sanity validates hidden fields, so its rules only apply to videos.
+ */
+function isVideoItem(context: ValidationContext): boolean {
+  const media = valueAt(context.document, context.path?.slice(0, -2) ?? []);
+  const kind = (media as { kind?: string } | undefined)?.kind;
+  return kind === undefined || kind === "video";
+}
 
 /**
  * A Bunny Stream video, played over HLS. The poster is optional: without one, the site and
@@ -17,13 +50,14 @@ export const bunnyVideo = defineType({
       type: "url",
       description:
         "Bunny Stream › the video › HLS Playlist URL, e.g. https://vz-….b-cdn.net/<video id>/playlist.m3u8",
+      // Required only on Video items (see isVideoItem). A custom rule, not required(), so
+      // typegen types it as optional, which it is on Image items.
       validation: (rule) =>
-        rule
-          .required()
-          .uri({ scheme: ["https"] })
-          .custom((value) =>
-            !value || isHlsUrl(value) ? true : "Use the HLS playlist URL (ends in .m3u8).",
-          ),
+        rule.uri({ scheme: ["https"] }).custom((value, context) => {
+          if (!isVideoItem(context)) return true;
+          if (!value) return "Add the video's HLS playlist URL.";
+          return isHlsUrl(value) ? true : "Use the HLS playlist URL (ends in .m3u8).";
+        }),
     }),
     defineField({
       name: "poster",
@@ -53,7 +87,10 @@ export const bunnyVideo = defineType({
         layout: "radio",
       },
       initialValue: "ambient",
-      validation: (rule) => rule.required(),
+      validation: (rule) =>
+        rule.custom((value, context) =>
+          !isVideoItem(context) || value ? true : "Choose how the video plays.",
+        ),
     }),
   ],
   preview: {

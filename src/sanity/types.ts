@@ -55,7 +55,7 @@ export type MediaFullWidth = {
 
 export type BunnyVideo = {
   _type: "bunnyVideo";
-  playlistUrl: string;
+  playlistUrl?: string;
   poster?: {
     asset?: SanityImageAssetReference;
     media?: unknown;
@@ -65,7 +65,7 @@ export type BunnyVideo = {
   };
   alt?: string;
   caption?: string;
-  playback: "ambient" | "player";
+  playback?: "ambient" | "player";
 };
 
 export type Media = {
@@ -407,10 +407,10 @@ export type SERVICE_THUMBNAILS_QUERY_RESULT = {
           } | null;
         } | null;
         video: {
-          playlistUrl: string;
+          playlistUrl: string | null;
           alt: string | null;
           caption: string | null;
-          playback: "ambient" | "player";
+          playback: "ambient" | "player" | null;
           poster: {
             asset?: SanityImageAssetReference;
             media?: unknown;
@@ -447,10 +447,10 @@ export type SERVICE_THUMBNAILS_QUERY_RESULT = {
     | {
         kind: "image" | "video";
         video: {
-          playlistUrl: string;
+          playlistUrl: string | null;
           alt: string | null;
           caption: string | null;
-          playback: "ambient" | "player";
+          playback: "ambient" | "player" | null;
           poster: {
             asset?: SanityImageAssetReference;
             media?: unknown;
@@ -489,10 +489,10 @@ export type SERVICE_THUMBNAILS_QUERY_RESULT = {
           } | null;
         } | null;
         video: {
-          playlistUrl: string;
+          playlistUrl: string | null;
           alt: string | null;
           caption: string | null;
-          playback: "ambient" | "player";
+          playback: "ambient" | "player" | null;
           poster: {
             asset?: SanityImageAssetReference;
             media?: unknown;
@@ -529,10 +529,10 @@ export type SERVICE_THUMBNAILS_QUERY_RESULT = {
     | {
         kind: "image" | "video";
         video: {
-          playlistUrl: string;
+          playlistUrl: string | null;
           alt: string | null;
           caption: string | null;
-          playback: "ambient" | "player";
+          playback: "ambient" | "player" | null;
           poster: {
             asset?: SanityImageAssetReference;
             media?: unknown;
@@ -571,10 +571,10 @@ export type SERVICE_THUMBNAILS_QUERY_RESULT = {
           } | null;
         } | null;
         video: {
-          playlistUrl: string;
+          playlistUrl: string | null;
           alt: string | null;
           caption: string | null;
-          playback: "ambient" | "player";
+          playback: "ambient" | "player" | null;
           poster: {
             asset?: SanityImageAssetReference;
             media?: unknown;
@@ -611,10 +611,10 @@ export type SERVICE_THUMBNAILS_QUERY_RESULT = {
     | {
         kind: "image" | "video";
         video: {
-          playlistUrl: string;
+          playlistUrl: string | null;
           alt: string | null;
           caption: string | null;
-          playback: "ambient" | "player";
+          playback: "ambient" | "player" | null;
           poster: {
             asset?: SanityImageAssetReference;
             media?: unknown;
@@ -760,10 +760,10 @@ export type FEATURED_WORK_QUERY_RESULT = Array<{
           } | null;
         } | null;
         video: {
-          playlistUrl: string;
+          playlistUrl: string | null;
           alt: string | null;
           caption: string | null;
-          playback: "ambient" | "player";
+          playback: "ambient" | "player" | null;
           poster: {
             asset?: SanityImageAssetReference;
             media?: unknown;
@@ -800,10 +800,10 @@ export type FEATURED_WORK_QUERY_RESULT = Array<{
     | {
         kind: "image" | "video";
         video: {
-          playlistUrl: string;
+          playlistUrl: string | null;
           alt: string | null;
           caption: string | null;
-          playback: "ambient" | "player";
+          playback: "ambient" | "player" | null;
           poster: {
             asset?: SanityImageAssetReference;
             media?: unknown;
@@ -854,10 +854,10 @@ export type RECENT_WORK_QUERY_RESULT = Array<{
           } | null;
         } | null;
         video: {
-          playlistUrl: string;
+          playlistUrl: string | null;
           alt: string | null;
           caption: string | null;
-          playback: "ambient" | "player";
+          playback: "ambient" | "player" | null;
           poster: {
             asset?: SanityImageAssetReference;
             media?: unknown;
@@ -894,10 +894,10 @@ export type RECENT_WORK_QUERY_RESULT = Array<{
     | {
         kind: "image" | "video";
         video: {
-          playlistUrl: string;
+          playlistUrl: string | null;
           alt: string | null;
           caption: string | null;
-          playback: "ambient" | "player";
+          playback: "ambient" | "player" | null;
           poster: {
             asset?: SanityImageAssetReference;
             media?: unknown;
@@ -946,10 +946,10 @@ export type WORK_ARCHIVE_QUERY_RESULT = Array<{
           } | null;
         } | null;
         video: {
-          playlistUrl: string;
+          playlistUrl: string | null;
           alt: string | null;
           caption: string | null;
-          playback: "ambient" | "player";
+          playback: "ambient" | "player" | null;
           poster: {
             asset?: SanityImageAssetReference;
             media?: unknown;
@@ -986,10 +986,10 @@ export type WORK_ARCHIVE_QUERY_RESULT = Array<{
     | {
         kind: "image" | "video";
         video: {
-          playlistUrl: string;
+          playlistUrl: string | null;
           alt: string | null;
           caption: string | null;
-          playback: "ambient" | "player";
+          playback: "ambient" | "player" | null;
           poster: {
             asset?: SanityImageAssetReference;
             media?: unknown;
@@ -1041,10 +1041,10 @@ export type WORK_BY_SERVICE_QUERY_RESULT = Array<{
           } | null;
         } | null;
         video: {
-          playlistUrl: string;
+          playlistUrl: string | null;
           alt: string | null;
           caption: string | null;
-          playback: "ambient" | "player";
+          playback: "ambient" | "player" | null;
           poster: {
             asset?: SanityImageAssetReference;
             media?: unknown;
@@ -1081,10 +1081,10 @@ export type WORK_BY_SERVICE_QUERY_RESULT = Array<{
     | {
         kind: "image" | "video";
         video: {
-          playlistUrl: string;
+          playlistUrl: string | null;
           alt: string | null;
           caption: string | null;
-          playback: "ambient" | "player";
+          playback: "ambient" | "player" | null;
           poster: {
             asset?: SanityImageAssetReference;
             media?: unknown;
@@ -1153,10 +1153,10 @@ export type WORK_QUERY_RESULT = {
           } | null;
         } | null;
         video: {
-          playlistUrl: string;
+          playlistUrl: string | null;
           alt: string | null;
           caption: string | null;
-          playback: "ambient" | "player";
+          playback: "ambient" | "player" | null;
           poster: {
             asset?: SanityImageAssetReference;
             media?: unknown;
@@ -1193,10 +1193,10 @@ export type WORK_QUERY_RESULT = {
     | {
         kind: "image" | "video";
         video: {
-          playlistUrl: string;
+          playlistUrl: string | null;
           alt: string | null;
           caption: string | null;
-          playback: "ambient" | "player";
+          playback: "ambient" | "player" | null;
           poster: {
             asset?: SanityImageAssetReference;
             media?: unknown;
@@ -1234,10 +1234,10 @@ export type WORK_QUERY_RESULT = {
           } | null;
         } | null;
         video: {
-          playlistUrl: string;
+          playlistUrl: string | null;
           alt: string | null;
           caption: string | null;
-          playback: "ambient" | "player";
+          playback: "ambient" | "player" | null;
           poster: {
             asset?: SanityImageAssetReference;
             media?: unknown;
@@ -1274,10 +1274,10 @@ export type WORK_QUERY_RESULT = {
     | {
         kind: "image" | "video";
         video: {
-          playlistUrl: string;
+          playlistUrl: string | null;
           alt: string | null;
           caption: string | null;
-          playback: "ambient" | "player";
+          playback: "ambient" | "player" | null;
           poster: {
             asset?: SanityImageAssetReference;
             media?: unknown;
@@ -1319,10 +1319,10 @@ export type WORK_QUERY_RESULT = {
                 } | null;
               } | null;
               video: {
-                playlistUrl: string;
+                playlistUrl: string | null;
                 alt: string | null;
                 caption: string | null;
-                playback: "ambient" | "player";
+                playback: "ambient" | "player" | null;
                 poster: {
                   asset?: SanityImageAssetReference;
                   media?: unknown;
@@ -1359,10 +1359,10 @@ export type WORK_QUERY_RESULT = {
           | {
               kind: "image" | "video";
               video: {
-                playlistUrl: string;
+                playlistUrl: string | null;
                 alt: string | null;
                 caption: string | null;
-                playback: "ambient" | "player";
+                playback: "ambient" | "player" | null;
                 poster: {
                   asset?: SanityImageAssetReference;
                   media?: unknown;
@@ -1404,10 +1404,10 @@ export type WORK_QUERY_RESULT = {
                 } | null;
               } | null;
               video: {
-                playlistUrl: string;
+                playlistUrl: string | null;
                 alt: string | null;
                 caption: string | null;
-                playback: "ambient" | "player";
+                playback: "ambient" | "player" | null;
                 poster: {
                   asset?: SanityImageAssetReference;
                   media?: unknown;
@@ -1444,10 +1444,10 @@ export type WORK_QUERY_RESULT = {
           | {
               kind: "image" | "video";
               video: {
-                playlistUrl: string;
+                playlistUrl: string | null;
                 alt: string | null;
                 caption: string | null;
-                playback: "ambient" | "player";
+                playback: "ambient" | "player" | null;
                 poster: {
                   asset?: SanityImageAssetReference;
                   media?: unknown;
@@ -1485,10 +1485,10 @@ export type WORK_QUERY_RESULT = {
                 } | null;
               } | null;
               video: {
-                playlistUrl: string;
+                playlistUrl: string | null;
                 alt: string | null;
                 caption: string | null;
-                playback: "ambient" | "player";
+                playback: "ambient" | "player" | null;
                 poster: {
                   asset?: SanityImageAssetReference;
                   media?: unknown;
@@ -1525,10 +1525,10 @@ export type WORK_QUERY_RESULT = {
           | {
               kind: "image" | "video";
               video: {
-                playlistUrl: string;
+                playlistUrl: string | null;
                 alt: string | null;
                 caption: string | null;
-                playback: "ambient" | "player";
+                playback: "ambient" | "player" | null;
                 poster: {
                   asset?: SanityImageAssetReference;
                   media?: unknown;

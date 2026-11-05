@@ -2,6 +2,8 @@ import { visionTool } from "@sanity/vision";
 import { defineConfig } from "sanity";
 import { structureTool } from "sanity/structure";
 import { withSlugRedirect } from "./src/sanity/actions/publishWithRedirect";
+import { withRevealOnPublish } from "./src/sanity/actions/revealOnPublish";
+import { QuietField } from "./src/sanity/components/QuietField";
 import { schemaTypes, singletonTypes } from "./src/sanity/schemas";
 import { structure } from "./src/sanity/structure";
 import { studioTheme } from "./src/sanity/theme";
@@ -22,6 +24,10 @@ export default defineConfig({
   projectId,
   dataset,
   plugins: [structureTool({ structure }), visionTool()],
+  form: {
+    // Errors appear once a field is filled in or visited, or when Publish is pressed.
+    components: { field: QuietField },
+  },
   schema: {
     types: schemaTypes,
     // Singletons can't be created from the "new document" menu.
@@ -51,18 +57,18 @@ export default defineConfig({
         : options,
     actions: (actions, { schemaType }) => {
       // Singletons can't be duplicated or deleted.
-      if (singletonTypes.has(schemaType)) {
-        return actions.filter(
-          ({ action }) => action && ["publish", "discardChanges", "restore"].includes(action),
-        );
-      }
-      // Pages with a URL keep their old URLs as redirects when it changes.
-      if (redirectingTypes.has(schemaType)) {
-        return actions.map((action) =>
-          action.action === "publish" ? withSlugRedirect(action) : action,
-        );
-      }
-      return actions;
+      const allowed = singletonTypes.has(schemaType)
+        ? actions.filter(
+            ({ action }) => action && ["publish", "discardChanges", "restore"].includes(action),
+          )
+        : actions;
+      return allowed.map((action) => {
+        if (action.action !== "publish") return action;
+        // Pages with a URL keep their old URLs as redirects when it changes.
+        const publish = redirectingTypes.has(schemaType) ? withSlugRedirect(action) : action;
+        // With errors left, Publish reveals them instead of being greyed out.
+        return withRevealOnPublish(publish);
+      });
     },
   },
 });
