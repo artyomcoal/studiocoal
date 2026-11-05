@@ -49,7 +49,7 @@ const { showreels = SHOWREELS, class: className } = Astro.props;
     </div>
     <ul class="group/list animate-enter-stagger divide-y divide-border-subtle">
       {SERVICES.map((service) => (
-        <li class="group relative grid-cols-layout items-center gap-y-2 rounded-sm py-4 text-fg-primary transition-colors duration-150 ease-out group-hover/list:[&:not(:hover)]:text-fg-secondary has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-interactive-focus-ring has-[a:focus-visible]:ring-offset-2 has-[a:focus-visible]:ring-offset-bg-primary">
+        <li class="group relative grid-cols-layout items-center gap-y-2 rounded-sm py-4 text-fg-primary transition-colors duration-300 ease-in-out group-hover/list:[&:not(:hover)]:text-fg-secondary has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-interactive-focus-ring has-[a:focus-visible]:ring-offset-2 has-[a:focus-visible]:ring-offset-bg-primary">
           <div class="hidden self-start pr-6 md:col-span-3 md:block xl:col-span-2">
             <Media
               video={showreels[service.value]}
@@ -68,7 +68,7 @@ const { showreels = SHOWREELS, class: className } = Astro.props;
             {service.description}
           </span>
           <span class="col-start-12 hidden justify-self-end md:flex">
-            <span class="flex size-6 items-center justify-center rounded-xs bg-interactive-secondary transition-colors duration-150 ease-out group-hover:bg-interactive-secondary-hover group-has-[a:focus-visible]:bg-interactive-secondary-hover">
+            <span class="flex size-6 items-center justify-center rounded-xs bg-interactive-secondary transition-colors duration-300 ease-in-out group-hover:bg-interactive-secondary-hover group-has-[a:focus-visible]:bg-interactive-secondary-hover">
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
