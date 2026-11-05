@@ -18,6 +18,7 @@ import CapabilitiesSection from "@/sections/CapabilitiesSection.astro";
 import ClientsSection from "@/sections/ClientsSection.astro";
 import FeaturedArticlesSection from "@/sections/FeaturedArticlesSection.astro";
 import FeaturedWorkSection from "@/sections/FeaturedWorkSection.astro";
+import HomeHeroSection from "@/sections/HomeHeroSection.astro";
 import HowWeWorkSection from "@/sections/HowWeWorkSection.astro";
 import JournalArchiveSection from "@/sections/JournalArchiveSection.astro";
 import ProcessStepsSection from "@/sections/ProcessStepsSection.astro";
@@ -85,7 +86,7 @@ const semantic: Record<string, [string, string][]> = {
     ["border-medium", "colors/border/color-border-medium"],
     ["border-subtle", "colors/border/color-border-subtle"],
   ],
-  "Media (code only)": [["bg-media-label", 'Button "View work" fill on Card / Work Featured']],
+  "Media (code only)": [["bg-media-label", "Media play/pause button fill"]],
 };
 
 // [css variable, Figma variable, utility] — Figma Custom collection, layout/*
@@ -167,6 +168,9 @@ const motion: [string, string][] = [
   ["--motion-duration-exit", "old page fade-out (View Transition)"],
   ["--motion-stagger", "delay between sections / list items"],
   ["--motion-ease-enter", "entrance easing"],
+  ["--motion-word-hold", "rotating headline word hold (home hero)"],
+  ["--motion-duration-word", "rotating headline word roll in / out"],
+  ["--motion-shift-word", "rotating headline word travel (share of its height)"],
 ];
 
 // Media fixtures. The dataset has no assets yet, so images show the empty (bg-secondary) state.
@@ -724,8 +728,8 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
     <section class="flex flex-col gap-6">
       <h2 class="text-headline-lg">WorkListCard</h2>
       <p class="text-body-sm text-fg-secondary">
-        Card / Work Featured. Hover or Tab to a card for the "View work" label; the whole card is
-        the link. Shows the short description; without one, the long description cut to two lines.
+        Card / Work Featured. The whole card is the link. Shows the short description; without one,
+        the long description cut to two lines.
       </p>
       <div class="grid gap-x-2 gap-y-12 md:grid-cols-2 xl:grid-cols-3">
         <WorkListCard work={demoListWork} />
@@ -832,6 +836,10 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
     <AboutWhySection />
     <AboutPrinciplesSection image={null} />
     <CapabilitiesSection />
+    <h2 class="px-container text-headline-lg">
+      HomeHeroSection (rotating words; static under reduced motion)
+    </h2>
+    <HomeHeroSection />
     <h2 class="px-container pb-6 text-headline-lg">ClientsSection (logos need Sanity assets)</h2>
     <ClientsSection clients={demoClients} />
     <h2 class="px-container pt-section pb-6 text-headline-lg">

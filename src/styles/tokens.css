@@ -84,8 +84,8 @@
   --border-medium: var(--color-neutral-500);
   --border-subtle: var(--color-neutral-700);
 
-  /* media overlays: labels and controls that sit on imagery (Figma: Button "View work" on
-   * Card / Work Featured). Same in both themes, because the imagery doesn't change. */
+  /* media overlays: controls that sit on imagery (the Media play/pause button).
+   * Same in both themes, because the imagery doesn't change. */
   --bg-media-label: color-mix(in srgb, var(--color-neutral-500) 35%, transparent);
 }
 
@@ -232,6 +232,9 @@
   /* Soft ease-out: the new page starts showing at once, so there's no blank gap after the
    * old page fades out, then settles slowly. */
   --motion-ease-enter: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --motion-word-hold: 2600ms; /* how long each rotating headline word stays (home hero) */
+  --motion-duration-word: 400ms; /* rotating headline word: roll in / out (home hero) */
+  --motion-shift-word: 50%; /* how far a rotating word travels, share of its own height */
 
   /* Dialogs (Get in touch): scale + fade in from the anchor corner, reversed on close.
    * Values given by the owner, from permanent.is. */
