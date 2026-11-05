@@ -31,6 +31,15 @@ export const structure: StructureResolver = (S) =>
       collection(S, "work", "Work", WorkTable),
       collection(S, "journal", "Journal", JournalTable),
       S.divider(),
+      // The shared list projects pick "Services delivered" from.
+      S.documentTypeListItem("deliverable")
+        .title("Services")
+        .child(
+          S.documentTypeList("deliverable")
+            .title("Services")
+            .apiVersion("2026-11-01")
+            .defaultOrdering([{ field: "title", direction: "asc" }]),
+        ),
       S.listItem()
         .title("Site settings")
         .id("siteSettings")

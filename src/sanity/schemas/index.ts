@@ -1,3 +1,4 @@
+import { deliverable } from "./deliverable";
 import { imageWithAlt } from "./imageWithAlt";
 import { journal } from "./journal";
 import { link } from "./link";
@@ -11,6 +12,7 @@ import { mediaFullWidth, mediaPair } from "./workContent";
 export const schemaTypes = [
   work,
   journal,
+  deliverable,
   siteSettings,
   richText,
   imageWithAlt,
