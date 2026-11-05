@@ -6,7 +6,9 @@
  * - Tabs: All · Featured · On home page (what the home page shows right now) · Needs attention.
  * - Search, and sort by the collection's date, name or date added.
  * - A row opens the document in the pane next to the table. Rows show the draft when there
- *   is one, with its status: Published, Changed (unpublished edits) or Draft.
+ *   is one. Columns: name, the type's own columns, Featured, Status (Published, Changed =
+ *   unpublished edits, or Draft), Published (last published), Created on and Last edited.
+ *   Home / Hidden / Needs attention flags sit under the name, next to the URL.
  * - Updates live as documents change. The tab and sort are remembered per browser.
  *
  * Styles follow the Studio's light / dark theme through its --card-* CSS variables; the
@@ -75,7 +77,7 @@ export interface CollectionTableConfig<T extends TableDoc> {
   searchable: (row: CollectionRow<T>) => (string | null | undefined)[];
   /** Initial value template for new documents from the Featured tab. */
   featuredTemplate: string;
-  /** Columns between the name and the status. */
+  /** The type's own columns, between the name and Featured. */
   columns: Column<T>[];
 }
 
@@ -85,21 +87,24 @@ const STATUS_LABEL: Record<DocStatus, string> = {
   draft: "Draft",
 };
 
-const relativeTime = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
-function updatedAgo(iso: string): string {
-  const seconds = (new Date(iso).getTime() - Date.now()) / 1000;
-  const steps: [Intl.RelativeTimeFormatUnit, number][] = [
-    ["year", 31_536_000],
-    ["month", 2_592_000],
-    ["week", 604_800],
-    ["day", 86_400],
-    ["hour", 3_600],
-    ["minute", 60],
-  ];
-  for (const [unit, size] of steps) {
-    if (Math.abs(seconds) >= size) return relativeTime.format(Math.round(seconds / size), unit);
-  }
-  return "just now";
+const shortDate = new Intl.DateTimeFormat("en-GB", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+const fullDate = new Intl.DateTimeFormat("en-GB", { dateStyle: "full", timeStyle: "short" });
+
+/** A document timestamp ("4 Mar 2026, 11:55"), the full date on hover; an em dash if none. */
+function DateCell({ iso }: { iso: string | null }) {
+  const time = iso ? Date.parse(iso) : NaN;
+  if (Number.isNaN(time)) return <Empty />;
+  return (
+    <time dateTime={iso!} title={fullDate.format(time)}>
+      {shortDate.format(time)}
+    </time>
+  );
 }
 
 /**
@@ -345,9 +350,18 @@ export function CollectionTable<T extends TableDoc>({
                     {column.header}
                   </th>
                 ))}
-                <th scope="col">Status</th>
                 <th scope="col" className="ct-hide-wide">
-                  Updated
+                  Featured
+                </th>
+                <th scope="col">Status</th>
+                <th scope="col" className="ct-hide-medium">
+                  Published
+                </th>
+                <th scope="col" className="ct-hide-wide">
+                  Created on
+                </th>
+                <th scope="col" className="ct-hide-wide">
+                  Last edited
                 </th>
               </tr>
             </thead>
@@ -371,8 +385,20 @@ export function CollectionTable<T extends TableDoc>({
                     )}
                     <span className="ct-name-text">
                       <ChildLink childId={row.id}>{row.title || `Untitled ${noun}`}</ChildLink>
-                      <span className="ct-slug">
-                        {row.slug ? `${CONTENT_PATHS[type]}/${row.slug}` : "No URL yet"}
+                      <span className="ct-meta">
+                        <span className="ct-slug">
+                          {row.slug ? `${CONTENT_PATHS[type]}/${row.slug}` : "No URL yet"}
+                        </span>
+                        {row.onHome ? <span className="ct-badge ct-home">Home</span> : null}
+                        {row.noIndex ? <span className="ct-badge">Hidden</span> : null}
+                        {row.needsAttention ? (
+                          <span
+                            className="ct-badge ct-attention"
+                            title={(issues.get(row.id) ?? []).join("\n")}
+                          >
+                            Needs attention
+                          </span>
+                        ) : null}
                       </span>
                     </span>
                   </td>
@@ -384,31 +410,24 @@ export function CollectionTable<T extends TableDoc>({
                       {column.cell(row)}
                     </td>
                   ))}
-                  <td>
-                    <span className="ct-badges">
-                      <span className={`ct-badge ct-${row.status}`}>
-                        {STATUS_LABEL[row.status]}
-                      </span>
-                      {row.featured ? <span className="ct-badge ct-featured">Featured</span> : null}
-                      {row.onHome ? <span className="ct-badge ct-home">Home</span> : null}
-                      {row.noIndex ? <span className="ct-badge">Hidden</span> : null}
-                      {row.needsAttention ? (
-                        <span
-                          className="ct-badge ct-attention"
-                          title={(issues.get(row.id) ?? []).join("\n")}
-                        >
-                          Needs attention
-                        </span>
-                      ) : null}
-                    </span>
+                  <td className="ct-hide-wide">
+                    {row.featured ? (
+                      <span className="ct-badge ct-featured">Featured</span>
+                    ) : (
+                      <Empty />
+                    )}
                   </td>
-                  <td className="ct-hide-wide ct-muted">
-                    <time
-                      dateTime={row._updatedAt}
-                      title={new Date(row._updatedAt).toLocaleString("en-GB")}
-                    >
-                      {updatedAgo(row._updatedAt)}
-                    </time>
+                  <td>
+                    <span className={`ct-badge ct-${row.status}`}>{STATUS_LABEL[row.status]}</span>
+                  </td>
+                  <td className="ct-hide-medium ct-date">
+                    <DateCell iso={row.lastPublishedAt} />
+                  </td>
+                  <td className="ct-hide-wide ct-date ct-muted">
+                    <DateCell iso={row.createdAt} />
+                  </td>
+                  <td className="ct-hide-wide ct-date ct-muted">
+                    <DateCell iso={row.lastEditedAt} />
                   </td>
                 </tr>
               ))}
@@ -453,8 +472,9 @@ const CSS = `
 /* The whole row opens the document. */
 .ct-name a::after { content: ""; position: absolute; inset: 0; }
 .ct-slug, .ct-muted { color: var(--card-muted-fg-color); }
+.ct-meta { display: flex; align-items: center; gap: 0.25rem; min-width: 0; }
 .ct-slug { overflow: hidden; font-size: 0.75rem; text-overflow: ellipsis; white-space: nowrap; }
-.ct-badges { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+.ct-date { white-space: nowrap; }
 .ct-badge { padding: 0.125rem 0.375rem; border-radius: 0.25rem; background: var(--card-badge-default-bg-color); color: var(--card-badge-default-fg-color); font-size: 0.6875rem; font-weight: 500; white-space: nowrap; }
 .ct-published { background: var(--card-badge-positive-bg-color, var(--card-badge-default-bg-color)); color: var(--card-badge-positive-fg-color); }
 .ct-changed, .ct-attention { background: var(--card-badge-caution-bg-color); color: var(--card-badge-caution-fg-color); }

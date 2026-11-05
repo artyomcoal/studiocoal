@@ -29,7 +29,8 @@ const config: CollectionTableConfig<JournalDoc> = {
   columns: [
     { header: "Category", hide: "wide", cell: (row) => row.category ?? <Empty /> },
     {
-      header: "Published",
+      // The post's own date (the "Published at" field), not when it was last published.
+      header: "Publish date",
       hide: "medium",
       cell: (row) => {
         const time = timestamp(row.publishedAt);

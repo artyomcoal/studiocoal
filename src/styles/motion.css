@@ -10,18 +10,26 @@
  *    (the old blur) re-rasterises text when it's removed, which shows as a jump at the end.
  *    Direct visits and reloads don't animate, so the first paint (and LCP) is never delayed.
  *    Works without View Transition support (Firefox).
+ *
+ * The `@view-transition` opt-in itself is NOT here: it's an inline <style> at the top of
+ * BaseLayout's <head>. Chrome checks the opt-in as soon as the new page may render; from this
+ * external sheet it was often not applied yet (especially on cached navigations, where module
+ * scripts run first), so the transition was skipped and the old page cut away instantly.
  */
 
-@view-transition {
-  navigation: auto;
-}
-
+/* The old page sits above the new one and fades out over it, while the new page's sections
+ * play their entrance underneath. By default the new snapshot is drawn on top, so at full
+ * opacity it hid the fade completely and the old page vanished in one frame.
+ * mix-blend-mode: the UA default (plus-lighter) is only right for a symmetric cross-fade. */
 ::view-transition-old(root) {
+  z-index: 1;
+  mix-blend-mode: normal;
   animation: vt-fade-out var(--motion-duration-exit) ease both;
 }
 
 /* The new page shows at once; its sections play the entrance instead. */
 ::view-transition-new(root) {
+  mix-blend-mode: normal;
   animation: none;
 }
 
@@ -91,11 +99,8 @@
   }
 }
 
+/* Reduced motion: the View Transition is turned off next to the opt-in, in BaseLayout. */
 @media (prefers-reduced-motion: reduce) {
-  @view-transition {
-    navigation: none;
-  }
-
   .animate-enter,
   .animate-enter-stagger > * {
     animation: none !important;

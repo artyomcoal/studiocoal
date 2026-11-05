@@ -169,7 +169,13 @@ const tokens: Part[] = parts.flatMap((part): Part[] =>
       delete headline.dataset.measuring;
     };
 
-    const ms = (name: string) => parseFloat(getComputedStyle(headline).getPropertyValue(name)) || 0;
+    // Time token in ms. The production CSS minifier rewrites ms tokens as
+    // seconds (2600ms → 2.6s), so honour the unit instead of assuming ms.
+    const ms = (name: string) => {
+      const value = getComputedStyle(headline).getPropertyValue(name).trim();
+      const n = parseFloat(value) || 0;
+      return value.endsWith("ms") ? n : value.endsWith("s") ? n * 1000 : n;
+    };
     const hold = ms("--motion-word-hold");
     const stagger = ms("--motion-stagger");
     const step = hold + ms("--motion-duration-word");
