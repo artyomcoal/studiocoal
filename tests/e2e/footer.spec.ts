@@ -1,4 +1,5 @@
-import { expect, test, type Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
+import { expect, test } from "./test";
 
 // Footer (src/components/Footer.astro): contact, service and social links, and the newsletter
 // form, which shows its success message only after the endpoint answers 2xx.
