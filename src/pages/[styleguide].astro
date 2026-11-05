@@ -18,6 +18,7 @@ import CapabilitiesSection from "@/sections/CapabilitiesSection.astro";
 import ClientsSection from "@/sections/ClientsSection.astro";
 import FeaturedArticlesSection from "@/sections/FeaturedArticlesSection.astro";
 import FeaturedWorkSection from "@/sections/FeaturedWorkSection.astro";
+import HomeHeroSection from "@/sections/HomeHeroSection.astro";
 import HowWeWorkSection from "@/sections/HowWeWorkSection.astro";
 import JournalArchiveSection from "@/sections/JournalArchiveSection.astro";
 import ProcessStepsSection from "@/sections/ProcessStepsSection.astro";
@@ -168,6 +169,9 @@ const motion: [string, string][] = [
   ["--motion-stagger", "delay between sections / list items"],
   ["--motion-ease-enter", "entrance easing"],
   ["--motion-blur-enter", "starting blur"],
+  ["--motion-word-hold", "rotating headline word hold (home hero)"],
+  ["--motion-duration-word", "rotating headline word roll in / out"],
+  ["--motion-shift-word", "rotating headline word travel (share of its height)"],
 ];
 
 // Media fixtures. The dataset has no assets yet, so images show the empty (bg-secondary) state.
@@ -833,6 +837,10 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
     <AboutWhySection />
     <AboutPrinciplesSection image={null} />
     <CapabilitiesSection />
+    <h2 class="px-container text-headline-lg">
+      HomeHeroSection (rotating words; static under reduced motion)
+    </h2>
+    <HomeHeroSection />
     <h2 class="px-container pb-6 text-headline-lg">ClientsSection (logos need Sanity assets)</h2>
     <ClientsSection clients={demoClients} />
     <h2 class="px-container pt-section pb-6 text-headline-lg">
