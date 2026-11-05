@@ -4,6 +4,7 @@ import { structureTool } from "sanity/structure";
 import { withSlugRedirect } from "./src/sanity/actions/publishWithRedirect";
 import { withRevealOnPublish } from "./src/sanity/actions/revealOnPublish";
 import { QuietField } from "./src/sanity/components/QuietField";
+import { StudioLayout } from "./src/sanity/components/StudioLayout";
 import { schemaTypes, singletonTypes } from "./src/sanity/schemas";
 import { structure } from "./src/sanity/structure";
 import { studioTheme } from "./src/sanity/theme";
@@ -24,6 +25,8 @@ export default defineConfig({
   projectId,
   dataset,
   plugins: [structureTool({ structure }), visionTool()],
+  // Section separators and headings, and aligned two-column inputs (StudioLayout.tsx).
+  studio: { components: { layout: StudioLayout } },
   form: {
     // Errors appear once a field is filled in or visited, or when Publish is pressed.
     components: { field: QuietField },

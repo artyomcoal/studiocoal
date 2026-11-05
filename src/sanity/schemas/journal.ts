@@ -1,4 +1,5 @@
 import { defineField, defineType } from "sanity";
+import { PageIcon, SeoIcon } from "../components/icons";
 import { previousSlugsField, slugField } from "./fields";
 
 export const journal = defineType({
@@ -6,21 +7,34 @@ export const journal = defineType({
   title: "Journal",
   type: "document",
   groups: [
-    { name: "content", title: "Content", default: true },
-    { name: "seo", title: "SEO" },
+    { name: "content", title: "Content", icon: PageIcon, default: true },
+    { name: "seo", title: "SEO", icon: SeoIcon },
+  ],
+  fieldsets: [
+    { name: "post", title: "Post", options: { columns: 2 } },
+    {
+      name: "listing",
+      title: "Listing",
+      description: "Article cards on the home page and the Journal.",
+    },
+    { name: "article", title: "Article" },
+    { name: "search", title: "Search and sharing" },
+    { name: "redirects", title: "Redirects" },
   ],
   fields: [
     defineField({
       name: "title",
       group: "content",
+      fieldset: "post",
       title: "Title",
       type: "string",
       validation: (rule) => rule.required(),
     }),
-    slugField("journal", "content"),
+    slugField("journal", "content", "post"),
     defineField({
       name: "publishedAt",
       group: "content",
+      fieldset: "post",
       title: "Published at",
       type: "datetime",
       initialValue: () => new Date().toISOString(),
@@ -29,6 +43,7 @@ export const journal = defineType({
     defineField({
       name: "category",
       group: "content",
+      fieldset: "post",
       title: "Category",
       type: "string",
       description: "Shown as a tag on article cards, e.g. News, Insight, Process.",
@@ -39,6 +54,7 @@ export const journal = defineType({
       type: "text",
       rows: 3,
       group: "content",
+      fieldset: "listing",
       description:
         "Shown on article cards, and used for search results unless SEO › Search description is set.",
       validation: (rule) =>
@@ -51,6 +67,7 @@ export const journal = defineType({
       title: "Cover image",
       type: "imageWithAlt",
       group: "content",
+      fieldset: "listing",
       validation: (rule) =>
         rule
           .custom((value: { asset?: unknown; alt?: string } | undefined) => {
@@ -59,17 +76,24 @@ export const journal = defineType({
           })
           .warning(),
     }),
-    defineField({ name: "body", title: "Body", type: "richText", group: "content" }),
+    defineField({
+      name: "body",
+      title: "Body",
+      type: "richText",
+      group: "content",
+      fieldset: "article",
+    }),
     defineField({
       name: "featured",
       group: "content",
+      fieldset: "listing",
       title: "Featured",
       type: "boolean",
       description: "Prefer this post in the Featured Articles section.",
       initialValue: false,
     }),
-    defineField({ name: "seo", title: "SEO", type: "seo", group: "seo" }),
-    previousSlugsField("journal", "seo"),
+    defineField({ name: "seo", title: "SEO", type: "seo", group: "seo", fieldset: "search" }),
+    previousSlugsField("journal", "seo", "redirects"),
   ],
   orderings: [
     {
