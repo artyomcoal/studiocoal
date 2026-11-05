@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
+import { expect, test } from "./test";
 
 // Get in touch dialog (src/components/GetInTouchModal.astro), opened from the Navbar button.
 const trigger = (page: Page) => page.getByRole("button", { name: "Get in touch" });

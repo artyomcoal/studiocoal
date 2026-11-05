@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./test";
 
 // Navbar (src/components/Navbar.astro): fixed frosted pill, all links visible at every
 // breakpoint, logomark links home, "Get in touch" top-right from md and bottom-centre on base.
