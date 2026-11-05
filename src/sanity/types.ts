@@ -1399,7 +1399,7 @@ export type JOURNAL_SLUGS_QUERY_RESULT = Array<string>;
 
 // Source: src/sanity/queries.ts
 // Variable: JOURNAL_QUERY
-// Query: *[_type == "journal" && slug.current == $slug][0]{    _id,    _updatedAt,    title,    "slug": slug.current,    publishedAt,    category,    excerpt,    seo,    coverImage{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }},    body[]{ ..., _type == "imageWithAlt" => {  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} }  }
+// Query: *[_type == "journal" && slug.current == $slug][0]{    _id,    _updatedAt,    title,    "slug": slug.current,    publishedAt,    category,    excerpt,    seo,    coverImage{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }},    body[]{ ..., _type == "imageWithAlt" => {  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} },    // Article pager: the next newer and the next older post.    "previous": *[_type == "journal" && defined(slug.current) && publishedAt > ^.publishedAt] | order(publishedAt asc)[0]{ title, "slug": slug.current },    "next": *[_type == "journal" && defined(slug.current) && publishedAt < ^.publishedAt] | order(publishedAt desc)[0]{ title, "slug": slug.current }  }
 export type JOURNAL_QUERY_RESULT = {
   _id: string;
   _updatedAt: string;
@@ -1460,6 +1460,14 @@ export type JOURNAL_QUERY_RESULT = {
         } | null;
       }
   > | null;
+  previous: {
+    title: string;
+    slug: string;
+  } | null;
+  next: {
+    title: string;
+    slug: string;
+  } | null;
 } | null;
 
 // Source: src/sanity/queries.ts
@@ -1622,7 +1630,7 @@ declare global {
     '*[_type == "journal" && defined(slug.current)] | order(coalesce(featured, false) desc, publishedAt desc) [0...$limit] {\n  _id,\n  title,\n  "slug": slug.current,\n  publishedAt,\n  category,\n  excerpt,\n  coverImage{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n}\n}': FEATURED_JOURNAL_QUERY_RESULT;
     '*[_type == "journal" && defined(slug.current)] | order(publishedAt desc) {\n  _id,\n  title,\n  "slug": slug.current,\n  publishedAt,\n  category,\n  excerpt,\n  coverImage{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n}\n}': ALL_JOURNAL_QUERY_RESULT;
     '*[_type == "journal" && defined(slug.current)].slug.current': JOURNAL_SLUGS_QUERY_RESULT;
-    '*[_type == "journal" && slug.current == $slug][0]{\n    _id,\n    _updatedAt,\n    title,\n    "slug": slug.current,\n    publishedAt,\n    category,\n    excerpt,\n    seo,\n    coverImage{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n},\n    body[]{ ..., _type == "imageWithAlt" => {\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }': JOURNAL_QUERY_RESULT;
+    '*[_type == "journal" && slug.current == $slug][0]{\n    _id,\n    _updatedAt,\n    title,\n    "slug": slug.current,\n    publishedAt,\n    category,\n    excerpt,\n    seo,\n    coverImage{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n},\n    body[]{ ..., _type == "imageWithAlt" => {\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n    // Article pager: the next newer and the next older post.\n    "previous": *[_type == "journal" && defined(slug.current) && publishedAt > ^.publishedAt] | order(publishedAt asc)[0]{ title, "slug": slug.current },\n    "next": *[_type == "journal" && defined(slug.current) && publishedAt < ^.publishedAt] | order(publishedAt desc)[0]{ title, "slug": slug.current }\n  }': JOURNAL_QUERY_RESULT;
     '*[_type == "journal" && defined(slug.current) && slug.current != $slug] | order(publishedAt desc) [0...$limit] {\n  _id,\n  title,\n  "slug": slug.current,\n  publishedAt,\n  category,\n  excerpt,\n  coverImage{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n}\n}': RECENT_JOURNAL_QUERY_RESULT;
     '*[_type in ["work", "journal"] && defined(slug.current)]{\n    _type,\n    "slug": slug.current,\n    _updatedAt,\n    "noIndex": seo.noIndex == true\n  }': SITEMAP_QUERY_RESULT;
     '{\n    "content": *[_type in ["work", "journal"] && defined(slug.current)]{\n      _type,\n      "slug": slug.current,\n      previousSlugs\n    },\n    "manual": *[_type == "siteSettings" && _id == "siteSettings"][0].redirects[]{ from, to, permanent }\n  }': REDIRECTS_QUERY_RESULT;

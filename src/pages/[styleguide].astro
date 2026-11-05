@@ -8,6 +8,8 @@ import Footer from "@/components/Footer.astro";
 import GetInTouchModal from "@/components/GetInTouchModal.astro";
 import Media from "@/components/Media.astro";
 import RichText from "@/components/RichText.astro";
+import ArticlePager from "@/components/ArticlePager.astro";
+import ArticleToc from "@/components/ArticleToc.astro";
 import NavItem from "@/components/NavItem.astro";
 import BlogListCard from "@/components/BlogListCard.astro";
 import WorkArchiveCard from "@/components/WorkArchiveCard.astro";
@@ -40,6 +42,7 @@ import { Button } from "@/ui/button";
 import { Badge } from "@/ui/badge";
 import { Input } from "@/ui/input";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/ui/accordion";
+import { outline } from "@/lib/portableText";
 import { OFFERINGS, SERVICES } from "@/lib/services";
 import type { ServiceValue, Showreel } from "@/lib/showreels";
 
@@ -352,7 +355,12 @@ const demoBody = [
   pt("l2", "normal", [span("Second bullet")], { listItem: "bullet", level: 1 }),
   pt("h3", "h3", [span("A smaller heading")]),
   pt("q", "blockquote", [span("A pull quote from the panel discussion.")]),
+  pt("h2b", "h2", [span("Panel")]),
+  pt("n1", "normal", [span("First numbered step")], { listItem: "number", level: 1 }),
+  pt("n2", "normal", [span("Second numbered step")], { listItem: "number", level: 1 }),
+  pt("p4", "normal", [span("Closing paragraph.")]),
 ] as unknown as Parameters<typeof RichText>[0]["value"];
+const demoOutline = outline(demoBody ?? []);
 
 const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
 ---
@@ -782,6 +790,32 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
         aren't shown here.
       </p>
       <RichText value={demoBody} class="max-w-2xl" />
+    </section>
+
+    <section class="flex flex-col gap-6">
+      <h2 class="text-headline-lg">ArticleToc</h2>
+      <p class="text-body-sm text-fg-secondary">
+        "On this page" for the article page (xl only there): the body's H2s. The section being read
+        is marked while scrolling; here the RichText demo above is the body. Hidden for fewer than 2
+        headings.
+      </p>
+      <ArticleToc headings={demoOutline} class="max-w-60" />
+    </section>
+
+    <section class="flex flex-col gap-6">
+      <h2 class="text-headline-lg">ArticlePager</h2>
+      <p class="text-body-sm text-fg-secondary">
+        End of an article: previous (newer) and next (older) post. Next stays in the right column
+        when it's alone.
+      </p>
+      <div class="flex max-w-3xl flex-col gap-6">
+        <ArticlePager
+          previous={{ title: "Why we stay a small studio", slug: "small-studio" }}
+          next={{ title: "Notes on making quiet interfaces", slug: "quiet-interfaces" }}
+        />
+        <ArticlePager previous={null} next={{ title: "Next only", slug: "quiet-interfaces" }} />
+        <ArticlePager previous={{ title: "Previous only", slug: "small-studio" }} next={null} />
+      </div>
     </section>
 
     <section class="flex flex-col gap-6">
