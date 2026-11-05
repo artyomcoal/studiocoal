@@ -1,12 +1,21 @@
 ---
 /**
  * Clients Section
- * Eyebrow, header and a grid of client logo tiles (8 / 4 / 2 columns).
+ * Eyebrow, header and a grid of 8 client logo tiles (8 / 4 / 2 columns).
  * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=53474-5619
  *
  * Logos come from Site settings › Clients in Sanity. Each logo is used as a CSS mask and
- * filled with fg-secondary, so any single-colour SVG matches both themes.
- * Renders nothing until logos are added.
+ * filled with fg-secondary, so any single-colour SVG matches both themes. Until logos are
+ * added in Sanity, numbered placeholder tiles show instead.
+ *
+ * Swap animation (modelled on the "Swappable" component, ui.bytogether.agency):
+ * - Only the first 8 logos are in the grid. With more than 8, every 1.2–2.8 s one random tile
+ *   swaps its logo for a random one that isn't showing, so a logo never appears twice.
+ * - In the same grid cell, the old logo rises, blurs and fades out while the new one rises in
+ *   from below and sharpens (--motion-duration-swap, --motion-ease-swap, --motion-shift-swap,
+ *   --motion-blur-swap).
+ * - Pauses while the grid is off-screen, the tab is hidden, or the pointer / focus is on it.
+ * - Without JS, or under prefers-reduced-motion, the first 8 logos stay put.
  */
 import { cn } from "@/lib/utils";
 import { urlFor } from "@/sanity/image";
@@ -18,34 +27,178 @@ interface Props {
 }
 
 const { clients, class: className } = Astro.props;
+
+/** Tiles in the grid at every breakpoint (Figma: 8×1, 4×2, 2×4). */
+const VISIBLE = 8;
+
+type Logo = { key: string; name: string; url: string | null };
+
+// Placeholders until the real logos are in Sanity: more than VISIBLE, so the swap runs.
+const placeholders: Logo[] = Array.from({ length: 16 }, (_, i) => {
+  const name = `Logo ${String(i + 1).padStart(2, "0")}`;
+  return { key: name, name, url: null };
+});
+
+const logos: Logo[] =
+  clients && clients.length > 0
+    ? clients.map((c) => ({ key: c._key, name: c.name ?? "", url: urlFor(c.logo).url() }))
+    : placeholders;
 ---
 
-{clients && clients.length > 0 && (
-  <section aria-labelledby="clients" class={cn("px-container pb-section", className)}>
-    <h2
-      id="clients"
-      class="border-t border-border-subtle py-6 text-eyebrow text-fg-primary uppercase"
-    >
-      Selected clients
-    </h2>
-    <div class="flex flex-col gap-20 pt-20 xl:gap-12">
-      <div class="grid-cols-layout">
-        <p class="col-span-full text-headline-xl text-balance text-fg-primary md:col-span-8 xl:col-span-6">
-          A few of the companies we've worked with over the years.
-        </p>
-      </div>
-      <ul class="grid animate-enter-stagger grid-cols-2 gap-2 md:grid-cols-4 xl:grid-cols-8">
-        {clients.map((client) => (
-          <li class="flex h-20 items-center justify-center rounded-sm bg-bg-secondary md:h-34 xl:h-35">
-            <span
-              role="img"
-              aria-label={client.name}
-              class="aspect-4/1 w-24 bg-fg-secondary mask-contain mask-center mask-no-repeat"
-              style={`mask-image: url(${urlFor(client.logo).url()})`}
-            />
-          </li>
-        ))}
-      </ul>
+<section aria-labelledby="clients" class={cn("px-container pb-section", className)}>
+  <h2
+    id="clients"
+    class="border-t border-border-subtle py-6 text-eyebrow text-fg-primary uppercase"
+  >
+    Selected clients
+  </h2>
+  <div class="flex flex-col gap-20 pt-20 xl:gap-12">
+    <div class="grid-cols-layout">
+      <p class="col-span-full text-headline-xl text-balance text-fg-primary md:col-span-8 xl:col-span-6">
+        A few of the companies we've worked with over the years.
+      </p>
     </div>
-  </section>
-)}
+    <!-- Logos past the first 8 render as hidden tiles; the script takes them into its pool. -->
+    <ul
+      data-swappable
+      class="grid animate-enter-stagger grid-cols-2 gap-2 md:grid-cols-4 xl:grid-cols-8"
+    >
+      {logos.map((logo, i) => (
+        <li
+          hidden={i >= VISIBLE}
+          class="grid h-20 place-items-center overflow-hidden rounded-sm bg-bg-secondary md:h-34 xl:h-35"
+        >
+          {logo.url ? (
+            <span
+              data-swap-item
+              role="img"
+              aria-label={logo.name}
+              class="col-start-1 row-start-1 aspect-4/1 w-24 bg-fg-secondary mask-contain mask-center mask-no-repeat"
+              style={`mask-image: url(${logo.url})`}
+            />
+          ) : (
+            <span data-swap-item class="col-start-1 row-start-1 text-label text-fg-secondary">
+              {logo.name}
+            </span>
+          )}
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  [data-swap-item] {
+    transition:
+      opacity var(--motion-duration-swap) var(--motion-ease-swap),
+      translate var(--motion-duration-swap) var(--motion-ease-swap),
+      filter var(--motion-duration-swap) var(--motion-ease-swap);
+  }
+
+  /* Entering logos start below; leaving logos end above. Both invisible and blurred. */
+  [data-swap-item][data-swap-state] {
+    opacity: 0;
+    filter: blur(var(--motion-blur-swap));
+  }
+  [data-swap-item][data-swap-state="enter"] {
+    translate: 0 var(--motion-shift-swap);
+  }
+  [data-swap-item][data-swap-state="exit"] {
+    translate: 0 calc(var(--motion-shift-swap) * -1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-swap-item] {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  document.querySelectorAll<HTMLElement>("[data-swappable]").forEach((grid) => {
+    const tiles = [...grid.children] as HTMLElement[];
+    const cells = tiles.filter((tile) => !tile.hidden);
+    const hidden = tiles.filter((tile) => tile.hidden);
+    if (reducedMotion || hidden.length === 0) return;
+
+    // Off-screen logos, detached from the DOM.
+    const pool = hidden.map((tile) => {
+      const item = tile.firstElementChild as HTMLElement;
+      tile.remove();
+      return item;
+    });
+
+    const styles = getComputedStyle(grid);
+    // Time token in ms. The CSS minifier rewrites "2000ms" as "2s", so read the unit too.
+    const ms = (name: string) => {
+      const value = styles.getPropertyValue(name).trim();
+      const n = parseFloat(value) || 0;
+      return value.endsWith("ms") ? n : value.endsWith("s") ? n * 1000 : n;
+    };
+    const duration = ms("--motion-duration-swap");
+    const min = ms("--motion-swap-interval-min");
+    const max = ms("--motion-swap-interval-max");
+
+    const random = (n: number) => Math.floor(Math.random() * n);
+    let lastCell = -1;
+
+    const swap = () => {
+      // Any tile except the one that just swapped, so the change moves around the grid.
+      const choices = cells.map((_, i) => i).filter((i) => i !== lastCell);
+      const index = choices[random(choices.length)];
+      const cell = cells[index];
+      const outgoing = cell.querySelector<HTMLElement>("[data-swap-item]:not([data-swap-state])");
+      if (!outgoing) return;
+      lastCell = index;
+
+      const incoming = pool.splice(random(pool.length), 1)[0];
+      incoming.dataset.swapState = "enter";
+      cell.append(incoming);
+      // Commit the start state before transitioning out of it.
+      void incoming.offsetWidth;
+      delete incoming.dataset.swapState;
+
+      outgoing.dataset.swapState = "exit";
+      window.setTimeout(() => {
+        outgoing.remove();
+        delete outgoing.dataset.swapState;
+        pool.push(outgoing);
+      }, duration);
+    };
+
+    // Paused while off-screen, in a hidden tab, or hovered / focused.
+    let visible = false;
+    let hovered = false;
+    let timer: number | undefined;
+
+    const schedule = () => {
+      window.clearTimeout(timer);
+      timer = undefined;
+      if (!visible || hovered || document.hidden) return;
+      timer = window.setTimeout(
+        () => {
+          swap();
+          schedule();
+        },
+        min + Math.random() * (max - min),
+      );
+    };
+
+    new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      schedule();
+    }).observe(grid);
+    document.addEventListener("visibilitychange", schedule);
+
+    const setHovered = (value: boolean) => () => {
+      hovered = value;
+      schedule();
+    };
+    grid.addEventListener("pointerenter", setHovered(true));
+    grid.addEventListener("pointerleave", setHovered(false));
+    grid.addEventListener("focusin", setHovered(true));
+    grid.addEventListener("focusout", setHovered(false));
+  });
+</script>

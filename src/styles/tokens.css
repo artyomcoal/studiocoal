@@ -241,4 +241,15 @@
   --motion-duration-dialog: 250ms;
   --motion-ease-dialog: cubic-bezier(0.23, 1, 0.32, 1);
   --motion-scale-dialog: 0.95;
+
+  /* Client logo swap (home Clients section): one random tile swaps its logo for an unseen one
+   * every min–max ms; the old logo rises, blurs and fades out while the new one rises in from
+   * below, unblurring. Values from the "Swappable" reference's custom example
+   * (ui.bytogether.agency), chosen by the owner. */
+  --motion-duration-swap: 500ms;
+  --motion-ease-swap: cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-shift-swap: 14px; /* vertical travel: enter from +shift, exit to -shift */
+  --motion-blur-swap: 6px; /* blur at the start of enter / end of exit */
+  --motion-swap-interval-min: 1200ms;
+  --motion-swap-interval-max: 2800ms;
 }

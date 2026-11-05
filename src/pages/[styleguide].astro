@@ -853,7 +853,14 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
       HomeHeroSection (rotating words; static under reduced motion)
     </h2>
     <HomeHeroSection />
-    <h2 class="px-container pb-6 text-headline-lg">ClientsSection (logos need Sanity assets)</h2>
+    <h2 class="px-container pb-6 text-headline-lg">
+      ClientsSection (no Sanity logos: 16 placeholders, one tile swaps every 1.2–2.8 s; static under
+      reduced motion)
+    </h2>
+    <ClientsSection clients={[]} />
+    <h2 class="px-container pb-6 text-headline-lg">
+      ClientsSection (8 logos: no swap; logos need Sanity assets)
+    </h2>
     <ClientsSection clients={demoClients} />
     <h2 class="px-container pt-section pb-6 text-headline-lg">
       FeaturedArticlesSection (swipe track below md)
