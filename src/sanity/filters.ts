@@ -6,7 +6,7 @@
 import { SEO_DESCRIPTION_LIMIT, SEO_PAGE_TITLE_MAX } from "../lib/seo";
 
 /** The page's search title or description is longer than Google shows. */
-export const SEO_TOO_LONG_FILTER = `length(coalesce(seo.title, title)) > ${SEO_PAGE_TITLE_MAX} || length(coalesce(seo.description, excerpt)) > ${SEO_DESCRIPTION_LIMIT}`;
+export const SEO_TOO_LONG_FILTER = `length(coalesce(seo.title, title)) > ${SEO_PAGE_TITLE_MAX} || length(coalesce(seo.description, summary, excerpt)) > ${SEO_DESCRIPTION_LIMIT}`;
 
 /** A Work document is missing something the site shows, or has an SEO problem. */
 export const WORK_NEEDS_ATTENTION_FILTER = `!defined(slug.current)

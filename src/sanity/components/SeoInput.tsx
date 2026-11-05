@@ -40,6 +40,8 @@ interface DocumentValue {
   _type?: string;
   title?: string;
   excerpt?: string;
+  /** Work only: the short description, preferred over the long one for search. */
+  summary?: string;
   slug?: { current?: string };
   listingMedia?: MediaValue;
   heroMedia?: MediaValue;
@@ -98,7 +100,15 @@ export function SeoInput(props: ObjectInputProps) {
   if (!isContentType(doc._type)) return props.renderDefault(props);
 
   const value = props.value as SeoValue | undefined;
-  const resolved = contentSeo({ title: doc.title, excerpt: doc.excerpt, seo: value });
+  // Work prefers the short description, as the site does (pages/work/[slug].astro).
+  const ownDescription = doc.summary?.trim() || doc.excerpt;
+  const resolved = contentSeo({ title: doc.title, excerpt: ownDescription, seo: value });
+  const descriptionSource =
+    resolved.source.description === "excerpt" && doc.summary?.trim()
+      ? "from the short description"
+      : resolved.source.description === "excerpt" && doc._type === "work"
+        ? "from the long description"
+        : SOURCE_LABEL[resolved.source.description];
   const title = pageTitle(resolved.title);
   const description = resolved.description;
   const path = contentPath(doc._type, doc.slug?.current || "…");
@@ -136,7 +146,7 @@ export function SeoInput(props: ObjectInputProps) {
           />
           <Meta
             label="Description"
-            source={SOURCE_LABEL[resolved.source.description]}
+            source={descriptionSource}
             count={description?.length}
             min={SEO_DESCRIPTION_MIN}
             max={SEO_DESCRIPTION_LIMIT}
