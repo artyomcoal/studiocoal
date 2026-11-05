@@ -92,3 +92,25 @@ test("the navbar logo is inline SVG, so it's drawn in the new page's first frame
   });
   expect(await logo.evaluate((el) => el.tagName.toLowerCase())).toBe("svg");
 });
+
+test("the nav pill's blur moves to its transition group while a transition runs", async ({
+  page,
+}) => {
+  // Safari bakes a named element's backdrop into its snapshot (the pill turned flat and opaque
+  // mid-transition), so the group blurs the page snapshots and the pill drops its own blur.
+  await page.goto("/");
+  const rules = await page.evaluate(() =>
+    [...document.styleSheets]
+      .flatMap((sheet) => [...sheet.cssRules])
+      .filter((rule): rule is CSSStyleRule => rule instanceof CSSStyleRule)
+      .map((rule) => ({ selector: rule.selectorText, backdrop: rule.style.backdropFilter })),
+  );
+  expect(rules).toContainEqual({
+    selector: "::view-transition-group(site-header)",
+    backdrop: "blur(20px)",
+  });
+  expect(rules).toContainEqual({
+    selector: ":root:active-view-transition .view-transition-header",
+    backdrop: "none",
+  });
+});
