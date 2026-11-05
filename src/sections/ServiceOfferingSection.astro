@@ -2,7 +2,8 @@
 /**
  * Service Offering Section
  * One service on /services: name, intro, an accordion of capabilities and up to two related
- * projects. Anchored by the service (#brand, #website, #product) for the home page and Footer.
+ * projects. Each capability's accordion text is the Description of the Service document in
+ * Sanity with the same title; a capability without one is left out (and logged at build). Anchored by the service (#brand, #website, #product) for the home page and Footer.
  * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=53474-6264
  *
  * xl: content in columns 1–4, projects in 7–12. md / base: stacked, 48px apart; projects in
@@ -11,18 +12,35 @@
 import WorkListCard from "@/components/WorkListCard.astro";
 import { OFFERINGS, SERVICES } from "@/lib/services";
 import { cn } from "@/lib/utils";
-import type { WORK_BY_SERVICE_QUERY_RESULT } from "@/sanity/types";
+import type {
+  SERVICE_DESCRIPTIONS_QUERY_RESULT,
+  WORK_BY_SERVICE_QUERY_RESULT,
+} from "@/sanity/types";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/ui/accordion";
 
 interface Props {
   service: (typeof SERVICES)[number];
   /** Related projects (WORK_BY_SERVICE_QUERY, max 2). */
   works: WORK_BY_SERVICE_QUERY_RESULT;
+  /** Service documents' descriptions (SERVICE_DESCRIPTIONS_QUERY), matched by title. */
+  descriptions: SERVICE_DESCRIPTIONS_QUERY_RESULT;
   class?: string;
 }
 
-const { service, works, class: className } = Astro.props;
+const { service, works, descriptions, class: className } = Astro.props;
 const offering = OFFERINGS[service.value];
+
+const descriptionByTitle = new Map(
+  descriptions.map(({ title, description }) => [title.trim().toLowerCase(), description]),
+);
+const capabilities = offering.capabilities.flatMap((name) => {
+  const description = descriptionByTitle.get(name.toLowerCase());
+  if (!description) {
+    console.warn(`[services] No Sanity description for "${name}"; left out of the accordion.`);
+    return [];
+  }
+  return [{ name, description }];
+});
 const headingId = `service-${service.anchor}`;
 ---
 
@@ -41,10 +59,10 @@ const headingId = `service-${service.anchor}`;
       </h2>
       <p class="text-headline-md text-pretty">{offering.intro}</p>
       <Accordion>
-        {offering.capabilities.map((capability) => (
+        {capabilities.map((capability) => (
           <AccordionItem value={capability.name}>
             <AccordionTrigger>{capability.name}</AccordionTrigger>
-            <AccordionContent>{capability.detail}</AccordionContent>
+            <AccordionContent>{capability.description}</AccordionContent>
           </AccordionItem>
         ))}
       </Accordion>
