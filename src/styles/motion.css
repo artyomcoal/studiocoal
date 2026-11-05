@@ -47,6 +47,21 @@
   display: none;
 }
 
+/* The pill's frosted blur during a transition. Safari bakes a named element's backdrop into its
+ * snapshot, so the pill turned flat and opaque over the fading old page, then the live blur
+ * popped back at the end. Instead, while a transition runs the pill itself has no
+ * backdrop-filter (its snapshot is just the translucent fill), and the pill's group blurs the
+ * page snapshots underneath. Same look in Chromium and Safari, and no change when it ends.
+ * 20px and rounded-sm match the nav pill in Navbar.astro. */
+::view-transition-group(site-header) {
+  border-radius: var(--radius-sm);
+  backdrop-filter: blur(20px);
+}
+:root:active-view-transition .view-transition-header {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
 @keyframes vt-fade-out {
   to {
     opacity: 0;
