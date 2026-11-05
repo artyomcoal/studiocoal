@@ -1,3 +1,4 @@
+import { assist } from "@sanity/assist";
 import { visionTool } from "@sanity/vision";
 import { defineConfig } from "sanity";
 import { structureTool } from "sanity/structure";
@@ -24,7 +25,9 @@ export default defineConfig({
   theme: studioTheme,
   projectId,
   dataset,
-  plugins: [structureTool({ structure }), visionTool()],
+  // AI Assist: writes image alt text on upload (src/sanity/schemas/imageWithAlt.ts) and
+  // offers AI instructions on fields. Studio only; the site ships none of it.
+  plugins: [structureTool({ structure }), visionTool(), assist()],
   // Section separators and headings, and aligned two-column inputs (StudioLayout.tsx).
   studio: { components: { layout: StudioLayout } },
   form: {
