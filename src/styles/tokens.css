@@ -54,7 +54,7 @@
   --bg-secondary: var(--color-neutral-800);
   --bg-tertiary: var(--color-neutral-700);
   --bg-elevated: var(--color-neutral-700);
-  --bg-overlay: color-mix(in srgb, var(--color-neutral-900) 30%, transparent);
+  --bg-overlay: color-mix(in srgb, var(--color-neutral-900) 50%, transparent);
   --bg-translucent: color-mix(in srgb, var(--color-neutral-600) 50%, transparent);
 
   /* foreground */
