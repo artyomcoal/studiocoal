@@ -26,6 +26,8 @@ const {
 // - text from headline styles via `size`, interactive-primary color, hover/expanded/focus use -hover
 // - 20px vertical padding (py-5), Figma focus ring, plus icon in a 24px box (bg-secondary,
 //   bg-tertiary on hover/press) instead of chevrons
+// - the plus morphs to a minus when open: its vertical bar (own SVG, stacked in the same grid
+//   cell) rotates 90° onto the horizontal one (--motion-*-accordion, off under reduced motion)
 // - cursor-pointer: Tailwind v4 Preflight leaves <button> on the default cursor
 const triggerVariants = cva(
   [
@@ -74,7 +76,7 @@ const triggerVariants = cva(
         <span
           data-slot="accordion-trigger-icon"
           aria-hidden="true"
-          class="pointer-events-none grid size-6 shrink-0 place-items-center rounded-xs bg-bg-secondary text-fg-primary transition-colors group-hover/accordion-trigger:bg-bg-tertiary group-active/accordion-trigger:bg-bg-tertiary"
+          class="pointer-events-none grid size-6 shrink-0 place-items-center rounded-xs bg-bg-secondary text-fg-primary transition-colors group-hover/accordion-trigger:bg-bg-tertiary group-active/accordion-trigger:bg-bg-tertiary *:col-start-1 *:row-start-1"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -83,7 +85,17 @@ const triggerVariants = cva(
             viewBox="0 0 24 24"
             fill="none"
           >
-            <path d="M12 8V16M8 12H16" stroke="currentColor" stroke-width="1.25" />
+            <path d="M8 12H16" stroke="currentColor" stroke-width="1.25" />
+          </svg>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            class="transition-transform duration-(--motion-duration-accordion) ease-(--motion-ease-accordion) group-aria-expanded/accordion-trigger:rotate-90 motion-reduce:transition-none"
+          >
+            <path d="M12 8V16" stroke="currentColor" stroke-width="1.25" />
           </svg>
         </span>
       )}
