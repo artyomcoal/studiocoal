@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./test";
 
 // Page transitions (src/styles/motion.css). The entrance only plays after an in-site
 // navigation, which BaseLayout detects from a same-origin referrer.

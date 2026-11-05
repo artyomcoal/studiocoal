@@ -56,7 +56,8 @@ const addressLines = settings?.address?.trim()
   : ["Korte Prinsengracht 42H", "1013 GT Amsterdam", "The Netherlands"];
 
 const newsletterEndpoint = import.meta.env.PUBLIC_NEWSLETTER_ENDPOINT || undefined;
-const year = new Date().getFullYear();
+// Build year. Fixture builds (e2e) pin it, so the visual baselines don't change on 1 January.
+const year = import.meta.env.COPYRIGHT_YEAR ?? new Date().getFullYear();
 
 const linkClass = cn(
   "rounded-xs text-fg-primary transition-colors duration-150 ease-out outline-none",

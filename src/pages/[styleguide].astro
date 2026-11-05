@@ -86,7 +86,7 @@ const semantic: Record<string, [string, string][]> = {
     ["border-medium", "colors/border/color-border-medium"],
     ["border-subtle", "colors/border/color-border-subtle"],
   ],
-  "Media (code only)": [["bg-media-label", 'Button "View work" fill on Card / Work Featured']],
+  "Media (code only)": [["bg-media-label", "Media play/pause button fill"]],
 };
 
 // [css variable, Figma variable, utility] — Figma Custom collection, layout/*
@@ -729,8 +729,8 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
     <section class="flex flex-col gap-6">
       <h2 class="text-headline-lg">WorkListCard</h2>
       <p class="text-body-sm text-fg-secondary">
-        Card / Work Featured. Hover or Tab to a card for the "View work" label; the whole card is
-        the link. Shows the short description; without one, the long description cut to two lines.
+        Card / Work Featured. The whole card is the link. Shows the short description; without one,
+        the long description cut to two lines.
       </p>
       <div class="grid gap-x-2 gap-y-12 md:grid-cols-2 xl:grid-cols-3">
         <WorkListCard work={demoListWork} />
