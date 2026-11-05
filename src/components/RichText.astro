@@ -5,14 +5,14 @@
  * The one place Portable Text is rendered (CLAUDE.md). No runtime JS, no dependency.
  * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=5070-9330
  *
- * Text styles: paragraphs and lists Body MD, H2 Headline LG, H3 Headline MD, quotes Headline
+ * Text styles: paragraphs and lists Body SM (14px), H2 Headline LG, H3 Headline MD, quotes Headline
  * MD with a strong rule, figures with a Body XS caption.
  *
  * Reading measure: text blocks stop at `max-w-xl` (36rem, ~75 characters of Body MD; with
  * Graphik's tight tracking `max-w-prose` still runs to ~90). Figures fill the column.
  *
  * Rhythm (block flow, so vertical margins collapse: a figure's space wins over a heading's):
- * - one Body MD line (20px) between paragraphs and lists
+ * - 20px between paragraphs and lists (kept from the Body MD rhythm)
  * - 56px above an H2, 40px above an H3, and a tight 16 / 12px from a heading to its text, so a
  *   heading reads as part of the section it opens
  * - 40px around quotes, 48px (xl: 64px) around figures
@@ -48,7 +48,7 @@ const nodes = groupLists(blocks);
 const headingIds = new Map(outline(blocks).map((heading) => [heading.key, heading.id]));
 
 const blockClass: Record<string, string> = {
-  normal: "mt-5 max-w-xl text-body-md",
+  normal: "mt-5 max-w-xl text-body-sm",
   h2: "mt-14 max-w-xl scroll-mt-24 text-headline-lg text-balance",
   h3: "mt-10 max-w-xl text-headline-md text-balance",
   blockquote:
@@ -77,7 +77,7 @@ const styleOf = (node: (typeof nodes)[number] | undefined) =>
       return (
         <List
           class={cn(
-            "mt-5 flex max-w-xl flex-col gap-2 pl-5 text-body-md marker:text-fg-tertiary",
+            "mt-5 flex max-w-xl flex-col gap-2 pl-5 text-body-sm marker:text-fg-tertiary",
             node.listItem === "number" ? "list-decimal" : "list-disc",
             tight,
           )}

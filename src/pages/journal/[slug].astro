@@ -1,6 +1,6 @@
 ---
 /**
- * Journal article page: header (back link, meta, title, excerpt), 16:9 cover, rich text body
+ * Journal article page: header (meta, title, excerpt), 16:9 cover (4px radius), rich text body
  * with an "On this page" list beside it on xl, a previous / next pager and the latest other
  * articles.
  * Figma: Article Template / breakpoint=xl|md|base (frames 5068:9132, 53350:13666, 53350:14038)
@@ -8,7 +8,6 @@
  * Columns: header, body and pager share one centred column (base: full, md: 8 of 12,
  * xl: 6 of 12); text inside it stops at a 65ch reading measure (RichText).
  */
-import ArrowLeft from "@lucide/astro/icons/arrow-left";
 import { sanityClient } from "sanity:client";
 import ArticlePager from "@/components/ArticlePager.astro";
 import ArticleToc from "@/components/ArticleToc.astro";
@@ -103,44 +102,32 @@ const jsonLd = [
   </Fragment>
 
   <header class="grid-cols-layout px-container pt-40 pb-12 xl:pb-16">
-    <div class={`${column} flex flex-col gap-10 text-fg-primary`}>
-      <a
-        href="/journal"
-        class="group -m-1 flex w-fit items-center gap-1 rounded-xs p-1 text-label text-fg-secondary transition-colors outline-none hover:text-fg-primary focus-visible:ring-2 focus-visible:ring-interactive-focus-ring"
-      >
-        <ArrowLeft
-          aria-hidden="true"
-          class="size-4 transition-transform group-hover:-translate-x-0.5 motion-reduce:transition-none"
-        />
-        Journal
-      </a>
-      <div class="flex flex-col gap-6">
-        <ul class="flex flex-wrap gap-1" aria-label="Article details">
-          {post.category && (
-            <li>
-              <Badge>{post.category}</Badge>
-            </li>
-          )}
+    <div class={`${column} flex flex-col gap-6 text-fg-primary`}>
+      <ul class="flex flex-wrap gap-1" aria-label="Article details">
+        {post.category && (
           <li>
-            <Badge>
-              <time datetime={post.publishedAt}>{formatDate(post.publishedAt)}</time>
-            </Badge>
+            <Badge>{post.category}</Badge>
           </li>
-          <li>
-            <Badge class="normal-case">{minutes} min read</Badge>
-          </li>
-        </ul>
-        <h1 class="text-headline-xxl text-balance">{post.title}</h1>
-        {post.excerpt && (
-          <p class="max-w-prose text-headline-md text-pretty text-fg-secondary">{post.excerpt}</p>
         )}
-      </div>
+        <li>
+          <Badge>
+            <time datetime={post.publishedAt}>{formatDate(post.publishedAt)}</time>
+          </Badge>
+        </li>
+        <li>
+          <Badge class="normal-case">{minutes} min read</Badge>
+        </li>
+      </ul>
+      <h1 class="text-headline-xxl text-balance">{post.title}</h1>
+      {post.excerpt && (
+        <p class="max-w-prose text-headline-md text-pretty text-fg-primary">{post.excerpt}</p>
+      )}
     </div>
   </header>
 
   {cover && (
     <div class="px-container">
-      <Media media={cover} aspect="landscape" sizes={coverSizes} priority class="rounded-none" />
+      <Media media={cover} aspect="landscape" sizes={coverSizes} priority />
     </div>
   )}
 
@@ -156,5 +143,5 @@ const jsonLd = [
     <ArticlePager previous={post.previous} next={post.next} class={column} />
   </div>
 
-  <FeaturedArticlesSection posts={recentPosts} heading="More from the journal" title="" />
+  <FeaturedArticlesSection posts={recentPosts} title="" />
 </PageLayout>
