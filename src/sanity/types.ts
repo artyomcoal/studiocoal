@@ -1769,6 +1769,55 @@ export type SOCIAL_IMAGES_QUERY_RESULT = Array<
     }
 >;
 
+// Source: src/sanity/queries.ts
+// Variable: WORK_TABLE_QUERY
+// Query: {    "docs": *[_type == "work" && (_id in path("*") || _id in path("drafts.*"))]{      _id,      _createdAt,      _updatedAt,      title,      "slug": slug.current,      client,      year,      services,      featured,      "noIndex": seo.noIndex == true,      "needsAttention": !defined(slug.current)  || !defined(excerpt)  || count(coalesce(services, [])) == 0  || !defined(listingMedia)  || count(coalesce(archiveMedia, [])) != 3  || !defined(heroMedia)  || length(coalesce(seo.title, title)) > 46 || length(coalesce(seo.description, excerpt)) > 160  || (listingMedia.kind == "image" && !defined(listingMedia.image.alt))  || (listingMedia.kind == "video" && !defined(listingMedia.video.alt)),      "thumbnail": select(        listingMedia.kind == "video" => listingMedia.video.poster,        listingMedia.image      ){ asset, crop, hotspot }    },    "home": *[_type == "work" && _id in path("*") && defined(slug.current)]      | order(coalesce(featured, false) desc, year desc, _createdAt desc) [0...6]._id  }
+export type WORK_TABLE_QUERY_RESULT = {
+  docs: Array<{
+    _id: string;
+    _createdAt: string;
+    _updatedAt: string;
+    title: string;
+    slug: string;
+    client: string | null;
+    year: number | null;
+    services: Array<string> | null;
+    featured: boolean | null;
+    noIndex: boolean | false;
+    needsAttention: boolean | true | null;
+    thumbnail: {
+      asset: SanityImageAssetReference | null;
+      crop: SanityImageCrop | null;
+      hotspot: SanityImageHotspot | null;
+    } | null;
+  }>;
+  home: Array<string>;
+};
+
+// Source: src/sanity/queries.ts
+// Variable: JOURNAL_TABLE_QUERY
+// Query: {    "docs": *[_type == "journal" && (_id in path("*") || _id in path("drafts.*"))]{      _id,      _createdAt,      _updatedAt,      title,      "slug": slug.current,      category,      publishedAt,      featured,      "noIndex": seo.noIndex == true,      "needsAttention": !defined(slug.current)  || !defined(publishedAt)  || !defined(excerpt)  || !defined(coverImage.asset)  || (defined(coverImage.asset) && !defined(coverImage.alt))  || length(coalesce(seo.title, title)) > 46 || length(coalesce(seo.description, excerpt)) > 160,      "thumbnail": coverImage{ asset, crop, hotspot }    },    "home": *[_type == "journal" && _id in path("*") && defined(slug.current)]      | order(coalesce(featured, false) desc, publishedAt desc) [0...4]._id  }
+export type JOURNAL_TABLE_QUERY_RESULT = {
+  docs: Array<{
+    _id: string;
+    _createdAt: string;
+    _updatedAt: string;
+    title: string;
+    slug: string;
+    category: string | null;
+    publishedAt: string;
+    featured: boolean | null;
+    noIndex: boolean | false;
+    needsAttention: boolean | true | null;
+    thumbnail: {
+      asset: SanityImageAssetReference | null;
+      crop: SanityImageCrop | null;
+      hotspot: SanityImageHotspot | null;
+    } | null;
+  }>;
+  home: Array<string>;
+};
+
 // Query TypeMap
 declare global {
   interface SanityQueries {
@@ -1790,6 +1839,8 @@ declare global {
     '*[_type in ["work", "journal"] && defined(slug.current)]{\n    _type,\n    "slug": slug.current,\n    _updatedAt,\n    "noIndex": seo.noIndex == true\n  }': SITEMAP_QUERY_RESULT;
     '{\n    "content": *[_type in ["work", "journal"] && defined(slug.current)]{\n      _type,\n      "slug": slug.current,\n      previousSlugs\n    },\n    "manual": *[_type == "siteSettings" && _id == "siteSettings"][0].redirects[]{ from, to, permanent }\n  }': REDIRECTS_QUERY_RESULT;
     '*[_type in ["work", "journal"] && defined(slug.current) && !defined(seo.image.asset)]{\n    _type,\n    "slug": slug.current,\n    title,\n    "visual": select(\n      _type == "work" => coalesce(\n        select(listingMedia.kind == "video" => listingMedia.video.poster, listingMedia.image),\n        select(heroMedia.kind == "video" => heroMedia.video.poster, heroMedia.image)\n      ),\n      coverImage\n    ){ asset, crop, hotspot }\n  }': SOCIAL_IMAGES_QUERY_RESULT;
+    '{\n    "docs": *[_type == "work" && (_id in path("*") || _id in path("drafts.*"))]{\n      _id,\n      _createdAt,\n      _updatedAt,\n      title,\n      "slug": slug.current,\n      client,\n      year,\n      services,\n      featured,\n      "noIndex": seo.noIndex == true,\n      "needsAttention": !defined(slug.current)\n  || !defined(excerpt)\n  || count(coalesce(services, [])) == 0\n  || !defined(listingMedia)\n  || count(coalesce(archiveMedia, [])) != 3\n  || !defined(heroMedia)\n  || length(coalesce(seo.title, title)) > 46 || length(coalesce(seo.description, excerpt)) > 160\n  || (listingMedia.kind == "image" && !defined(listingMedia.image.alt))\n  || (listingMedia.kind == "video" && !defined(listingMedia.video.alt)),\n      "thumbnail": select(\n        listingMedia.kind == "video" => listingMedia.video.poster,\n        listingMedia.image\n      ){ asset, crop, hotspot }\n    },\n    "home": *[_type == "work" && _id in path("*") && defined(slug.current)]\n      | order(coalesce(featured, false) desc, year desc, _createdAt desc) [0...6]._id\n  }': WORK_TABLE_QUERY_RESULT;
+    '{\n    "docs": *[_type == "journal" && (_id in path("*") || _id in path("drafts.*"))]{\n      _id,\n      _createdAt,\n      _updatedAt,\n      title,\n      "slug": slug.current,\n      category,\n      publishedAt,\n      featured,\n      "noIndex": seo.noIndex == true,\n      "needsAttention": !defined(slug.current)\n  || !defined(publishedAt)\n  || !defined(excerpt)\n  || !defined(coverImage.asset)\n  || (defined(coverImage.asset) && !defined(coverImage.alt))\n  || length(coalesce(seo.title, title)) > 46 || length(coalesce(seo.description, excerpt)) > 160,\n      "thumbnail": coverImage{ asset, crop, hotspot }\n    },\n    "home": *[_type == "journal" && _id in path("*") && defined(slug.current)]\n      | order(coalesce(featured, false) desc, publishedAt desc) [0...4]._id\n  }': JOURNAL_TABLE_QUERY_RESULT;
   }
 }
 // Lets @sanity/client releases that predate the global registry read it too
