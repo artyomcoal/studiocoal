@@ -29,3 +29,6 @@ export const JOURNAL_NEEDS_ATTENTION_FILTER = `!defined(slug.current)
 
 /** How many projects the home page's Featured Work section shows (src/pages/index.astro). */
 export const HOME_FEATURED_LIMIT = 6;
+
+/** How many posts the home page's Featured Articles section shows (src/pages/index.astro). */
+export const HOME_JOURNAL_LIMIT = 4;

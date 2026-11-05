@@ -1,20 +1,24 @@
 import { describe, expect, it } from "vitest";
 import {
+  type CollectionDoc,
+  type CollectionRow,
   filterRows,
-  isWorkSort,
-  isWorkTab,
+  isCollectionSort,
+  isCollectionTab,
   mergeVersions,
+  sortOptions,
   sortRows,
-  type WorkTableDoc,
-} from "./work-table";
+  timestamp,
+} from "./collection-table";
 
-type TestDoc = WorkTableDoc & { needsAttention?: boolean };
+type TestDoc = CollectionDoc & { client?: string | null; year?: number | null };
 const doc = (id: string, fields: Partial<TestDoc> = {}): TestDoc => ({
   _id: id,
   _createdAt: "2026-01-01T00:00:00Z",
   _updatedAt: "2026-01-01T00:00:00Z",
   ...fields,
 });
+const ids = (list: { id: string }[]) => list.map((row) => row.id);
 
 describe("mergeVersions", () => {
   it("shows the draft when there is one and derives the status", () => {
@@ -44,7 +48,6 @@ describe("filterRows", () => {
     ],
     ["a", "c"],
   );
-  const ids = (list: { id: string }[]) => list.map((row) => row.id);
 
   it("filters by tab", () => {
     expect(ids(filterRows(rows, "all"))).toEqual(["a", "b", "c"]);
@@ -53,9 +56,12 @@ describe("filterRows", () => {
     expect(ids(filterRows(rows, "attention"))).toEqual(["b"]);
   });
 
-  it("searches the name and client, ignoring case", () => {
-    expect(ids(filterRows(rows, "all", " north "))).toEqual(["b"]);
-    expect(ids(filterRows(rows, "home", "GAM"))).toEqual(["c"]);
+  it("searches the given fields, ignoring case", () => {
+    const byNameOrClient = (row: CollectionRow<TestDoc>) => [row.title, row.client];
+    expect(ids(filterRows(rows, "all", " north ", byNameOrClient))).toEqual(["b"]);
+    expect(ids(filterRows(rows, "home", "GAM", byNameOrClient))).toEqual(["c"]);
+    // By default only the title is searched.
+    expect(ids(filterRows(rows, "all", "north"))).toEqual([]);
   });
 });
 
@@ -70,11 +76,12 @@ describe("sortRows", () => {
     ],
     [],
   );
-  const order = (sort: Parameters<typeof sortRows>[1]) => sortRows(rows, sort).map((r) => r.id);
+  const order = (sort: Parameters<typeof sortRows>[1]) =>
+    ids(sortRows(rows, sort, (row) => row.year));
 
-  it("sorts by project date, missing years last, ties newest added first", () => {
-    expect(order("year-desc")).toEqual(["b", "e", "d", "a", "c"]);
-    expect(order("year-asc")).toEqual(["d", "a", "e", "b", "c"]);
+  it("sorts by the collection's date, missing dates last, ties newest added first", () => {
+    expect(order("date-desc")).toEqual(["b", "e", "d", "a", "c"]);
+    expect(order("date-asc")).toEqual(["d", "a", "e", "b", "c"]);
   });
 
   it("sorts alphabetically, case- and number-aware, untitled last", () => {
@@ -88,17 +95,34 @@ describe("sortRows", () => {
   });
 
   it("doesn't change the input", () => {
-    const before = rows.map((r) => r.id);
-    sortRows(rows, "title-asc");
-    expect(rows.map((r) => r.id)).toEqual(before);
+    const before = ids(rows);
+    sortRows(rows, "title-asc", (row) => row.year);
+    expect(ids(rows)).toEqual(before);
+  });
+});
+
+describe("timestamp", () => {
+  it("parses ISO dates and rejects missing or invalid ones", () => {
+    expect(timestamp("2026-03-01T00:00:00Z")).toBe(Date.UTC(2026, 2, 1));
+    expect(timestamp(null)).toBeNull();
+    expect(timestamp("not a date")).toBeNull();
+  });
+});
+
+describe("sortOptions", () => {
+  it("names the collection's date", () => {
+    expect(sortOptions("Publish date")[0]).toEqual({
+      value: "date-desc",
+      label: "Publish date, newest first",
+    });
   });
 });
 
 describe("guards", () => {
   it("accepts only known tabs and sorts", () => {
-    expect(isWorkTab("home")).toBe(true);
-    expect(isWorkTab("nope")).toBe(false);
-    expect(isWorkSort("title-asc")).toBe(true);
-    expect(isWorkSort(null)).toBe(false);
+    expect(isCollectionTab("home")).toBe(true);
+    expect(isCollectionTab("nope")).toBe(false);
+    expect(isCollectionSort("title-asc")).toBe(true);
+    expect(isCollectionSort("year-desc")).toBe(false);
   });
 });
