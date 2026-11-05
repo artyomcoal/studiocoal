@@ -183,6 +183,20 @@ const demoVideo = (playback: "ambient" | "player"): MediaData => ({
   },
 });
 
+// A Bunny video without an uploaded poster: Media shows Bunny's own thumbnail (the dataset's
+// first project video). The test stream above isn't on Bunny, so it shows bg-secondary instead.
+const demoBunnyVideo: MediaData = {
+  kind: "video",
+  video: {
+    playlistUrl:
+      "https://vz-8d865576-a41.b-cdn.net/9df43d9e-0d5d-4475-bc36-4747500e69b0/playlist.m3u8",
+    alt: "Demo Bunny video",
+    caption: null,
+    playback: "ambient",
+    poster: null,
+  },
+};
+
 // An image slot with no asset yet: renders the bg-secondary placeholder.
 const emptyMedia: MediaData = { kind: "image", image: null, video: null };
 
@@ -693,8 +707,12 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
           <Media media={null} aspect="portrait" sizes="25vw" />
         </div>
         <div class="flex flex-col gap-2">
-          <p class="text-caption-md text-fg-tertiary">Portrait, ambient video</p>
+          <p class="text-caption-md text-fg-tertiary">Portrait, ambient video, no poster</p>
           <Media media={demoVideo("ambient")} aspect="portrait" sizes="25vw" />
+        </div>
+        <div class="flex flex-col gap-2">
+          <p class="text-caption-md text-fg-tertiary">Portrait, Bunny video, Bunny thumbnail</p>
+          <Media media={demoBunnyVideo} aspect="portrait" sizes="25vw" />
         </div>
         <div class="col-span-2 flex flex-col gap-2">
           <p class="text-caption-md text-fg-tertiary">Landscape, player video</p>

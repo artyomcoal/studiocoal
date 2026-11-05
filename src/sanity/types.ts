@@ -55,8 +55,8 @@ export type MediaFullWidth = {
 
 export type BunnyVideo = {
   _type: "bunnyVideo";
-  playlistUrl: string;
-  poster: {
+  playlistUrl?: string;
+  poster?: {
     asset?: SanityImageAssetReference;
     media?: unknown;
     hotspot?: SanityImageHotspot;
@@ -65,7 +65,7 @@ export type BunnyVideo = {
   };
   alt?: string;
   caption?: string;
-  playback: "ambient" | "player";
+  playback?: "ambient" | "player";
 };
 
 export type Media = {
@@ -407,10 +407,10 @@ export type SERVICE_THUMBNAILS_QUERY_RESULT = {
           } | null;
         } | null;
         video: {
-          playlistUrl: string;
+          playlistUrl: string | null;
           alt: string | null;
           caption: string | null;
-          playback: "ambient" | "player";
+          playback: "ambient" | "player" | null;
           poster: {
             asset?: SanityImageAssetReference;
             media?: unknown;
@@ -423,7 +423,7 @@ export type SERVICE_THUMBNAILS_QUERY_RESULT = {
               height: number;
               aspectRatio: number;
             } | null;
-          };
+          } | null;
         } | null;
       }
     | {
@@ -447,10 +447,10 @@ export type SERVICE_THUMBNAILS_QUERY_RESULT = {
     | {
         kind: "image" | "video";
         video: {
-          playlistUrl: string;
+          playlistUrl: string | null;
           alt: string | null;
           caption: string | null;
-          playback: "ambient" | "player";
+          playback: "ambient" | "player" | null;
           poster: {
             asset?: SanityImageAssetReference;
             media?: unknown;
@@ -463,7 +463,7 @@ export type SERVICE_THUMBNAILS_QUERY_RESULT = {
               height: number;
               aspectRatio: number;
             } | null;
-          };
+          } | null;
         } | null;
       }
     | {
@@ -489,10 +489,10 @@ export type SERVICE_THUMBNAILS_QUERY_RESULT = {
           } | null;
         } | null;
         video: {
-          playlistUrl: string;
+          playlistUrl: string | null;
           alt: string | null;
           caption: string | null;
-          playback: "ambient" | "player";
+          playback: "ambient" | "player" | null;
           poster: {
             asset?: SanityImageAssetReference;
             media?: unknown;
@@ -505,7 +505,7 @@ export type SERVICE_THUMBNAILS_QUERY_RESULT = {
               height: number;
               aspectRatio: number;
             } | null;
-          };
+          } | null;
         } | null;
       }
     | {
@@ -529,10 +529,10 @@ export type SERVICE_THUMBNAILS_QUERY_RESULT = {
     | {
         kind: "image" | "video";
         video: {
-          playlistUrl: string;
+          playlistUrl: string | null;
           alt: string | null;
           caption: string | null;
-          playback: "ambient" | "player";
+          playback: "ambient" | "player" | null;
           poster: {
             asset?: SanityImageAssetReference;
             media?: unknown;
@@ -545,7 +545,7 @@ export type SERVICE_THUMBNAILS_QUERY_RESULT = {
               height: number;
               aspectRatio: number;
             } | null;
-          };
+          } | null;
         } | null;
       }
     | {
@@ -571,10 +571,10 @@ export type SERVICE_THUMBNAILS_QUERY_RESULT = {
           } | null;
         } | null;
         video: {
-          playlistUrl: string;
+          playlistUrl: string | null;
           alt: string | null;
           caption: string | null;
-          playback: "ambient" | "player";
+          playback: "ambient" | "player" | null;
           poster: {
             asset?: SanityImageAssetReference;
             media?: unknown;
@@ -587,7 +587,7 @@ export type SERVICE_THUMBNAILS_QUERY_RESULT = {
               height: number;
               aspectRatio: number;
             } | null;
-          };
+          } | null;
         } | null;
       }
     | {
@@ -611,10 +611,10 @@ export type SERVICE_THUMBNAILS_QUERY_RESULT = {
     | {
         kind: "image" | "video";
         video: {
-          playlistUrl: string;
+          playlistUrl: string | null;
           alt: string | null;
           caption: string | null;
-          playback: "ambient" | "player";
+          playback: "ambient" | "player" | null;
           poster: {
             asset?: SanityImageAssetReference;
             media?: unknown;
@@ -627,7 +627,7 @@ export type SERVICE_THUMBNAILS_QUERY_RESULT = {
               height: number;
               aspectRatio: number;
             } | null;
-          };
+          } | null;
         } | null;
       }
     | {
@@ -760,10 +760,10 @@ export type FEATURED_WORK_QUERY_RESULT = Array<{
           } | null;
         } | null;
         video: {
-          playlistUrl: string;
+          playlistUrl: string | null;
           alt: string | null;
           caption: string | null;
-          playback: "ambient" | "player";
+          playback: "ambient" | "player" | null;
           poster: {
             asset?: SanityImageAssetReference;
             media?: unknown;
@@ -776,7 +776,7 @@ export type FEATURED_WORK_QUERY_RESULT = Array<{
               height: number;
               aspectRatio: number;
             } | null;
-          };
+          } | null;
         } | null;
       }
     | {
@@ -800,10 +800,10 @@ export type FEATURED_WORK_QUERY_RESULT = Array<{
     | {
         kind: "image" | "video";
         video: {
-          playlistUrl: string;
+          playlistUrl: string | null;
           alt: string | null;
           caption: string | null;
-          playback: "ambient" | "player";
+          playback: "ambient" | "player" | null;
           poster: {
             asset?: SanityImageAssetReference;
             media?: unknown;
@@ -816,7 +816,7 @@ export type FEATURED_WORK_QUERY_RESULT = Array<{
               height: number;
               aspectRatio: number;
             } | null;
-          };
+          } | null;
         } | null;
       }
     | {
@@ -854,10 +854,10 @@ export type RECENT_WORK_QUERY_RESULT = Array<{
           } | null;
         } | null;
         video: {
-          playlistUrl: string;
+          playlistUrl: string | null;
           alt: string | null;
           caption: string | null;
-          playback: "ambient" | "player";
+          playback: "ambient" | "player" | null;
           poster: {
             asset?: SanityImageAssetReference;
             media?: unknown;
@@ -870,7 +870,7 @@ export type RECENT_WORK_QUERY_RESULT = Array<{
               height: number;
               aspectRatio: number;
             } | null;
-          };
+          } | null;
         } | null;
       }
     | {
@@ -894,10 +894,10 @@ export type RECENT_WORK_QUERY_RESULT = Array<{
     | {
         kind: "image" | "video";
         video: {
-          playlistUrl: string;
+          playlistUrl: string | null;
           alt: string | null;
           caption: string | null;
-          playback: "ambient" | "player";
+          playback: "ambient" | "player" | null;
           poster: {
             asset?: SanityImageAssetReference;
             media?: unknown;
@@ -910,7 +910,7 @@ export type RECENT_WORK_QUERY_RESULT = Array<{
               height: number;
               aspectRatio: number;
             } | null;
-          };
+          } | null;
         } | null;
       }
     | {
@@ -946,10 +946,10 @@ export type WORK_ARCHIVE_QUERY_RESULT = Array<{
           } | null;
         } | null;
         video: {
-          playlistUrl: string;
+          playlistUrl: string | null;
           alt: string | null;
           caption: string | null;
-          playback: "ambient" | "player";
+          playback: "ambient" | "player" | null;
           poster: {
             asset?: SanityImageAssetReference;
             media?: unknown;
@@ -962,7 +962,7 @@ export type WORK_ARCHIVE_QUERY_RESULT = Array<{
               height: number;
               aspectRatio: number;
             } | null;
-          };
+          } | null;
         } | null;
       }
     | {
@@ -986,10 +986,10 @@ export type WORK_ARCHIVE_QUERY_RESULT = Array<{
     | {
         kind: "image" | "video";
         video: {
-          playlistUrl: string;
+          playlistUrl: string | null;
           alt: string | null;
           caption: string | null;
-          playback: "ambient" | "player";
+          playback: "ambient" | "player" | null;
           poster: {
             asset?: SanityImageAssetReference;
             media?: unknown;
@@ -1002,7 +1002,7 @@ export type WORK_ARCHIVE_QUERY_RESULT = Array<{
               height: number;
               aspectRatio: number;
             } | null;
-          };
+          } | null;
         } | null;
       }
     | {
@@ -1041,10 +1041,10 @@ export type WORK_BY_SERVICE_QUERY_RESULT = Array<{
           } | null;
         } | null;
         video: {
-          playlistUrl: string;
+          playlistUrl: string | null;
           alt: string | null;
           caption: string | null;
-          playback: "ambient" | "player";
+          playback: "ambient" | "player" | null;
           poster: {
             asset?: SanityImageAssetReference;
             media?: unknown;
@@ -1057,7 +1057,7 @@ export type WORK_BY_SERVICE_QUERY_RESULT = Array<{
               height: number;
               aspectRatio: number;
             } | null;
-          };
+          } | null;
         } | null;
       }
     | {
@@ -1081,10 +1081,10 @@ export type WORK_BY_SERVICE_QUERY_RESULT = Array<{
     | {
         kind: "image" | "video";
         video: {
-          playlistUrl: string;
+          playlistUrl: string | null;
           alt: string | null;
           caption: string | null;
-          playback: "ambient" | "player";
+          playback: "ambient" | "player" | null;
           poster: {
             asset?: SanityImageAssetReference;
             media?: unknown;
@@ -1097,7 +1097,7 @@ export type WORK_BY_SERVICE_QUERY_RESULT = Array<{
               height: number;
               aspectRatio: number;
             } | null;
-          };
+          } | null;
         } | null;
       }
     | {
@@ -1153,10 +1153,10 @@ export type WORK_QUERY_RESULT = {
           } | null;
         } | null;
         video: {
-          playlistUrl: string;
+          playlistUrl: string | null;
           alt: string | null;
           caption: string | null;
-          playback: "ambient" | "player";
+          playback: "ambient" | "player" | null;
           poster: {
             asset?: SanityImageAssetReference;
             media?: unknown;
@@ -1169,7 +1169,7 @@ export type WORK_QUERY_RESULT = {
               height: number;
               aspectRatio: number;
             } | null;
-          };
+          } | null;
         } | null;
       }
     | {
@@ -1193,10 +1193,10 @@ export type WORK_QUERY_RESULT = {
     | {
         kind: "image" | "video";
         video: {
-          playlistUrl: string;
+          playlistUrl: string | null;
           alt: string | null;
           caption: string | null;
-          playback: "ambient" | "player";
+          playback: "ambient" | "player" | null;
           poster: {
             asset?: SanityImageAssetReference;
             media?: unknown;
@@ -1209,7 +1209,7 @@ export type WORK_QUERY_RESULT = {
               height: number;
               aspectRatio: number;
             } | null;
-          };
+          } | null;
         } | null;
       }
     | {
@@ -1234,10 +1234,10 @@ export type WORK_QUERY_RESULT = {
           } | null;
         } | null;
         video: {
-          playlistUrl: string;
+          playlistUrl: string | null;
           alt: string | null;
           caption: string | null;
-          playback: "ambient" | "player";
+          playback: "ambient" | "player" | null;
           poster: {
             asset?: SanityImageAssetReference;
             media?: unknown;
@@ -1250,7 +1250,7 @@ export type WORK_QUERY_RESULT = {
               height: number;
               aspectRatio: number;
             } | null;
-          };
+          } | null;
         } | null;
       }
     | {
@@ -1274,10 +1274,10 @@ export type WORK_QUERY_RESULT = {
     | {
         kind: "image" | "video";
         video: {
-          playlistUrl: string;
+          playlistUrl: string | null;
           alt: string | null;
           caption: string | null;
-          playback: "ambient" | "player";
+          playback: "ambient" | "player" | null;
           poster: {
             asset?: SanityImageAssetReference;
             media?: unknown;
@@ -1290,7 +1290,7 @@ export type WORK_QUERY_RESULT = {
               height: number;
               aspectRatio: number;
             } | null;
-          };
+          } | null;
         } | null;
       }
     | {
@@ -1319,10 +1319,10 @@ export type WORK_QUERY_RESULT = {
                 } | null;
               } | null;
               video: {
-                playlistUrl: string;
+                playlistUrl: string | null;
                 alt: string | null;
                 caption: string | null;
-                playback: "ambient" | "player";
+                playback: "ambient" | "player" | null;
                 poster: {
                   asset?: SanityImageAssetReference;
                   media?: unknown;
@@ -1335,7 +1335,7 @@ export type WORK_QUERY_RESULT = {
                     height: number;
                     aspectRatio: number;
                   } | null;
-                };
+                } | null;
               } | null;
             }
           | {
@@ -1359,10 +1359,10 @@ export type WORK_QUERY_RESULT = {
           | {
               kind: "image" | "video";
               video: {
-                playlistUrl: string;
+                playlistUrl: string | null;
                 alt: string | null;
                 caption: string | null;
-                playback: "ambient" | "player";
+                playback: "ambient" | "player" | null;
                 poster: {
                   asset?: SanityImageAssetReference;
                   media?: unknown;
@@ -1375,7 +1375,7 @@ export type WORK_QUERY_RESULT = {
                     height: number;
                     aspectRatio: number;
                   } | null;
-                };
+                } | null;
               } | null;
             }
           | {
@@ -1404,10 +1404,10 @@ export type WORK_QUERY_RESULT = {
                 } | null;
               } | null;
               video: {
-                playlistUrl: string;
+                playlistUrl: string | null;
                 alt: string | null;
                 caption: string | null;
-                playback: "ambient" | "player";
+                playback: "ambient" | "player" | null;
                 poster: {
                   asset?: SanityImageAssetReference;
                   media?: unknown;
@@ -1420,7 +1420,7 @@ export type WORK_QUERY_RESULT = {
                     height: number;
                     aspectRatio: number;
                   } | null;
-                };
+                } | null;
               } | null;
             }
           | {
@@ -1444,10 +1444,10 @@ export type WORK_QUERY_RESULT = {
           | {
               kind: "image" | "video";
               video: {
-                playlistUrl: string;
+                playlistUrl: string | null;
                 alt: string | null;
                 caption: string | null;
-                playback: "ambient" | "player";
+                playback: "ambient" | "player" | null;
                 poster: {
                   asset?: SanityImageAssetReference;
                   media?: unknown;
@@ -1460,7 +1460,7 @@ export type WORK_QUERY_RESULT = {
                     height: number;
                     aspectRatio: number;
                   } | null;
-                };
+                } | null;
               } | null;
             }
           | {
@@ -1485,10 +1485,10 @@ export type WORK_QUERY_RESULT = {
                 } | null;
               } | null;
               video: {
-                playlistUrl: string;
+                playlistUrl: string | null;
                 alt: string | null;
                 caption: string | null;
-                playback: "ambient" | "player";
+                playback: "ambient" | "player" | null;
                 poster: {
                   asset?: SanityImageAssetReference;
                   media?: unknown;
@@ -1501,7 +1501,7 @@ export type WORK_QUERY_RESULT = {
                     height: number;
                     aspectRatio: number;
                   } | null;
-                };
+                } | null;
               } | null;
             }
           | {
@@ -1525,10 +1525,10 @@ export type WORK_QUERY_RESULT = {
           | {
               kind: "image" | "video";
               video: {
-                playlistUrl: string;
+                playlistUrl: string | null;
                 alt: string | null;
                 caption: string | null;
-                playback: "ambient" | "player";
+                playback: "ambient" | "player" | null;
                 poster: {
                   asset?: SanityImageAssetReference;
                   media?: unknown;
@@ -1541,7 +1541,7 @@ export type WORK_QUERY_RESULT = {
                     height: number;
                     aspectRatio: number;
                   } | null;
-                };
+                } | null;
               } | null;
             }
           | {
@@ -1745,7 +1745,7 @@ export type REDIRECTS_QUERY_RESULT = {
 
 // Source: src/sanity/queries.ts
 // Variable: SOCIAL_IMAGES_QUERY
-// Query: *[_type in ["work", "journal"] && defined(slug.current) && !defined(seo.image.asset)]{    _type,    "slug": slug.current,    title,    "visual": select(      _type == "work" => coalesce(        select(listingMedia.kind == "video" => listingMedia.video.poster, listingMedia.image),        select(heroMedia.kind == "video" => heroMedia.video.poster, heroMedia.image)      ),      coverImage    ){ asset, crop, hotspot }  }
+// Query: *[_type in ["work", "journal"] && defined(slug.current) && !defined(seo.image.asset)]{    _type,    "slug": slug.current,    title,    "visual": select(      _type == "work" => coalesce(        select(listingMedia.kind == "video" => listingMedia.video.poster, listingMedia.image),        select(heroMedia.kind == "video" => heroMedia.video.poster, heroMedia.image)      ),      coverImage    ){ asset, crop, hotspot },    // A video visual without a poster: the card uses Bunny's thumbnail instead.    "videoPlaylist": select(      _type == "work" => coalesce(        select(listingMedia.kind == "video" => listingMedia.video.playlistUrl),        select(heroMedia.kind == "video" => heroMedia.video.playlistUrl)      )    )  }
 export type SOCIAL_IMAGES_QUERY_RESULT = Array<
   | {
       _type: "journal";
@@ -1756,6 +1756,7 @@ export type SOCIAL_IMAGES_QUERY_RESULT = Array<
         crop: SanityImageCrop | null;
         hotspot: SanityImageHotspot | null;
       } | null;
+      videoPlaylist: null;
     }
   | {
       _type: "work";
@@ -1766,12 +1767,13 @@ export type SOCIAL_IMAGES_QUERY_RESULT = Array<
         crop: SanityImageCrop | null;
         hotspot: SanityImageHotspot | null;
       } | null;
+      videoPlaylist: string | null;
     }
 >;
 
 // Source: src/sanity/queries.ts
 // Variable: WORK_TABLE_QUERY
-// Query: {    "docs": *[_type == "work" && (_id in path("*") || _id in path("drafts.*"))]{      _id,      _createdAt,      _updatedAt,      title,      "slug": slug.current,      client,      year,      services,      featured,      "noIndex": seo.noIndex == true,      "needsAttention": !defined(slug.current)  || !defined(excerpt)  || count(coalesce(services, [])) == 0  || !defined(listingMedia)  || count(coalesce(archiveMedia, [])) != 3  || !defined(heroMedia)  || length(coalesce(seo.title, title)) > 46 || length(coalesce(seo.description, excerpt)) > 160  || (listingMedia.kind == "image" && !defined(listingMedia.image.alt))  || (listingMedia.kind == "video" && !defined(listingMedia.video.alt)),      "thumbnail": select(        listingMedia.kind == "video" => listingMedia.video.poster,        listingMedia.image      ){ asset, crop, hotspot }    },    "home": *[_type == "work" && _id in path("*") && defined(slug.current)]      | order(coalesce(featured, false) desc, year desc, _createdAt desc) [0...6]._id  }
+// Query: {    "docs": *[_type == "work" && (_id in path("*") || _id in path("drafts.*"))]{      _id,      _createdAt,      _updatedAt,      title,      "slug": slug.current,      client,      year,      services,      featured,      "noIndex": seo.noIndex == true,      "needsAttention": !defined(slug.current)  || !defined(excerpt)  || count(coalesce(services, [])) == 0  || !defined(listingMedia)  || count(coalesce(archiveMedia, [])) != 3  || !defined(heroMedia)  || length(coalesce(seo.title, title)) > 46 || length(coalesce(seo.description, excerpt)) > 160  || (listingMedia.kind == "image" && !defined(listingMedia.image.alt))  || (listingMedia.kind == "video" && !defined(listingMedia.video.alt)),      "thumbnail": select(        listingMedia.kind == "video" => listingMedia.video.poster,        listingMedia.image      ){ asset, crop, hotspot },      // A video without a poster: the table shows Bunny's thumbnail.      "thumbnailVideo": select(listingMedia.kind == "video" => listingMedia.video.playlistUrl)    },    "home": *[_type == "work" && _id in path("*") && defined(slug.current)]      | order(coalesce(featured, false) desc, year desc, _createdAt desc) [0...6]._id  }
 export type WORK_TABLE_QUERY_RESULT = {
   docs: Array<{
     _id: string;
@@ -1790,6 +1792,7 @@ export type WORK_TABLE_QUERY_RESULT = {
       crop: SanityImageCrop | null;
       hotspot: SanityImageHotspot | null;
     } | null;
+    thumbnailVideo: string | null;
   }>;
   home: Array<string>;
 };
@@ -1838,8 +1841,8 @@ declare global {
     '*[_type == "journal" && defined(slug.current) && slug.current != $slug] | order(publishedAt desc) [0...$limit] {\n  _id,\n  title,\n  "slug": slug.current,\n  publishedAt,\n  category,\n  excerpt,\n  coverImage{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n}\n}': RECENT_JOURNAL_QUERY_RESULT;
     '*[_type in ["work", "journal"] && defined(slug.current)]{\n    _type,\n    "slug": slug.current,\n    _updatedAt,\n    "noIndex": seo.noIndex == true\n  }': SITEMAP_QUERY_RESULT;
     '{\n    "content": *[_type in ["work", "journal"] && defined(slug.current)]{\n      _type,\n      "slug": slug.current,\n      previousSlugs\n    },\n    "manual": *[_type == "siteSettings" && _id == "siteSettings"][0].redirects[]{ from, to, permanent }\n  }': REDIRECTS_QUERY_RESULT;
-    '*[_type in ["work", "journal"] && defined(slug.current) && !defined(seo.image.asset)]{\n    _type,\n    "slug": slug.current,\n    title,\n    "visual": select(\n      _type == "work" => coalesce(\n        select(listingMedia.kind == "video" => listingMedia.video.poster, listingMedia.image),\n        select(heroMedia.kind == "video" => heroMedia.video.poster, heroMedia.image)\n      ),\n      coverImage\n    ){ asset, crop, hotspot }\n  }': SOCIAL_IMAGES_QUERY_RESULT;
-    '{\n    "docs": *[_type == "work" && (_id in path("*") || _id in path("drafts.*"))]{\n      _id,\n      _createdAt,\n      _updatedAt,\n      title,\n      "slug": slug.current,\n      client,\n      year,\n      services,\n      featured,\n      "noIndex": seo.noIndex == true,\n      "needsAttention": !defined(slug.current)\n  || !defined(excerpt)\n  || count(coalesce(services, [])) == 0\n  || !defined(listingMedia)\n  || count(coalesce(archiveMedia, [])) != 3\n  || !defined(heroMedia)\n  || length(coalesce(seo.title, title)) > 46 || length(coalesce(seo.description, excerpt)) > 160\n  || (listingMedia.kind == "image" && !defined(listingMedia.image.alt))\n  || (listingMedia.kind == "video" && !defined(listingMedia.video.alt)),\n      "thumbnail": select(\n        listingMedia.kind == "video" => listingMedia.video.poster,\n        listingMedia.image\n      ){ asset, crop, hotspot }\n    },\n    "home": *[_type == "work" && _id in path("*") && defined(slug.current)]\n      | order(coalesce(featured, false) desc, year desc, _createdAt desc) [0...6]._id\n  }': WORK_TABLE_QUERY_RESULT;
+    '*[_type in ["work", "journal"] && defined(slug.current) && !defined(seo.image.asset)]{\n    _type,\n    "slug": slug.current,\n    title,\n    "visual": select(\n      _type == "work" => coalesce(\n        select(listingMedia.kind == "video" => listingMedia.video.poster, listingMedia.image),\n        select(heroMedia.kind == "video" => heroMedia.video.poster, heroMedia.image)\n      ),\n      coverImage\n    ){ asset, crop, hotspot },\n    // A video visual without a poster: the card uses Bunny\'s thumbnail instead.\n    "videoPlaylist": select(\n      _type == "work" => coalesce(\n        select(listingMedia.kind == "video" => listingMedia.video.playlistUrl),\n        select(heroMedia.kind == "video" => heroMedia.video.playlistUrl)\n      )\n    )\n  }': SOCIAL_IMAGES_QUERY_RESULT;
+    '{\n    "docs": *[_type == "work" && (_id in path("*") || _id in path("drafts.*"))]{\n      _id,\n      _createdAt,\n      _updatedAt,\n      title,\n      "slug": slug.current,\n      client,\n      year,\n      services,\n      featured,\n      "noIndex": seo.noIndex == true,\n      "needsAttention": !defined(slug.current)\n  || !defined(excerpt)\n  || count(coalesce(services, [])) == 0\n  || !defined(listingMedia)\n  || count(coalesce(archiveMedia, [])) != 3\n  || !defined(heroMedia)\n  || length(coalesce(seo.title, title)) > 46 || length(coalesce(seo.description, excerpt)) > 160\n  || (listingMedia.kind == "image" && !defined(listingMedia.image.alt))\n  || (listingMedia.kind == "video" && !defined(listingMedia.video.alt)),\n      "thumbnail": select(\n        listingMedia.kind == "video" => listingMedia.video.poster,\n        listingMedia.image\n      ){ asset, crop, hotspot },\n      // A video without a poster: the table shows Bunny\'s thumbnail.\n      "thumbnailVideo": select(listingMedia.kind == "video" => listingMedia.video.playlistUrl)\n    },\n    "home": *[_type == "work" && _id in path("*") && defined(slug.current)]\n      | order(coalesce(featured, false) desc, year desc, _createdAt desc) [0...6]._id\n  }': WORK_TABLE_QUERY_RESULT;
     '{\n    "docs": *[_type == "journal" && (_id in path("*") || _id in path("drafts.*"))]{\n      _id,\n      _createdAt,\n      _updatedAt,\n      title,\n      "slug": slug.current,\n      category,\n      publishedAt,\n      featured,\n      "noIndex": seo.noIndex == true,\n      "needsAttention": !defined(slug.current)\n  || !defined(publishedAt)\n  || !defined(excerpt)\n  || !defined(coverImage.asset)\n  || (defined(coverImage.asset) && !defined(coverImage.alt))\n  || length(coalesce(seo.title, title)) > 46 || length(coalesce(seo.description, excerpt)) > 160,\n      "thumbnail": coverImage{ asset, crop, hotspot }\n    },\n    "home": *[_type == "journal" && _id in path("*") && defined(slug.current)]\n      | order(coalesce(featured, false) desc, publishedAt desc) [0...4]._id\n  }': JOURNAL_TABLE_QUERY_RESULT;
   }
 }

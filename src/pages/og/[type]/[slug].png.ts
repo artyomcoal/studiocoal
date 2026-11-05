@@ -5,6 +5,7 @@
  */
 import type { APIRoute, GetStaticPaths } from "astro";
 import { sanityClient } from "sanity:client";
+import { resolveBunnyThumbnail } from "@/lib/bunny";
 import { fetchAsDataUrl, renderSocialImage, socialImagesEnabled } from "@/lib/social-image";
 import { urlFor } from "@/sanity/image";
 import { SOCIAL_IMAGES_QUERY } from "@/sanity/queries";
@@ -26,12 +27,19 @@ export const getStaticPaths = (async () => {
 
 type Props = { page: Awaited<ReturnType<typeof getStaticPaths>>[number]["props"]["page"] };
 
-export const GET: APIRoute<Props> = async ({ props: { page } }) => {
+export const GET: APIRoute<Props> = async ({ props: { page }, site }) => {
+  const referer = String(site ?? "https://studiocoal.com");
+  const bunnyThumbnail =
+    !page.visual?.asset && page.videoPlaylist
+      ? await resolveBunnyThumbnail(page.videoPlaylist, referer)
+      : null;
   const visual = page.visual?.asset
     ? await fetchAsDataUrl(
         urlFor(page.visual).width(1200).height(630).fit("crop").format("jpg").url(),
       )
-    : null;
+    : bunnyThumbnail
+      ? await fetchAsDataUrl(bunnyThumbnail, { Referer: referer })
+      : null;
   const png = await renderSocialImage({
     eyebrow: EYEBROW[page._type as keyof typeof EYEBROW],
     title: page.title ?? "",

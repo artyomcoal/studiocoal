@@ -163,9 +163,12 @@ export async function renderSocialImage({ eyebrow, title, image }: SocialImageIn
 }
 
 /** Downloads an image and returns it as a data URL for satori, or null on failure. */
-export async function fetchAsDataUrl(url: string): Promise<string | null> {
+export async function fetchAsDataUrl(
+  url: string,
+  headers?: Record<string, string>,
+): Promise<string | null> {
   try {
-    const response = await fetch(url);
+    const response = await fetch(url, { headers });
     if (!response.ok) return null;
     const type = response.headers.get("content-type") ?? "image/jpeg";
     const data = Buffer.from(await response.arrayBuffer()).toString("base64");

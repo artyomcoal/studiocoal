@@ -32,6 +32,7 @@ import {
   sortRows,
 } from "../../lib/collection-table";
 import { CONTENT_PATHS, type ContentType } from "../../lib/seo";
+import { BunnyThumbnail } from "./BunnyThumbnail";
 
 export const API_VERSION = "2026-11-01";
 
@@ -40,6 +41,8 @@ export interface TableDoc extends CollectionDoc {
   slug?: string | null;
   noIndex?: boolean | null;
   thumbnail?: { asset?: unknown } | null;
+  /** Playlist URL of a video thumbnail without a poster: Bunny's thumbnail is shown. */
+  thumbnailVideo?: string | null;
 }
 
 export interface Column<T extends TableDoc> {
@@ -302,7 +305,11 @@ export function CollectionTable<T extends TableDoc>({
                         height={40}
                       />
                     ) : (
-                      <span className="ct-thumb" aria-hidden="true" />
+                      <span className="ct-thumb" aria-hidden="true">
+                        {row.thumbnailVideo ? (
+                          <BunnyThumbnail playlistUrl={row.thumbnailVideo} />
+                        ) : null}
+                      </span>
                     )}
                     <span className="ct-name-text">
                       <ChildLink childId={row.id}>{row.title || `Untitled ${noun}`}</ChildLink>
@@ -382,7 +389,7 @@ const CSS = `
 .ct-table tbody tr:hover { background: var(--card-muted-bg-color); }
 .ct-table tbody tr[aria-current="true"] { background: var(--card-badge-primary-bg-color); }
 .ct-name { display: flex; align-items: center; gap: 0.75rem; min-width: 10rem; }
-.ct-name img, .ct-thumb { flex: none; width: 2rem; height: 2.5rem; border-radius: 0.125rem; object-fit: cover; background: var(--card-muted-bg-color); }
+.ct-name > img, .ct-thumb { flex: none; overflow: hidden; width: 2rem; height: 2.5rem; border-radius: 0.125rem; object-fit: cover; background: var(--card-muted-bg-color); }
 .ct-name-text { display: grid; min-width: 0; }
 .ct-name a { overflow: hidden; color: inherit; font-weight: 600; text-decoration: none; text-overflow: ellipsis; white-space: nowrap; }
 /* The whole row opens the document. */
