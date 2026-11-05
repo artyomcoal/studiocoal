@@ -230,12 +230,14 @@ export type Work = {
   _rev: string;
   title: string;
   slug: Slug;
-  client?: string;
-  year?: number;
-  services?: Array<string>;
   summary?: string;
   excerpt?: string;
+  featured?: boolean;
+  client?: string;
+  year?: number;
+  websiteUrl?: string;
   industry?: Array<string>;
+  services?: Array<string>;
   deliverables?: Array<
     {
       _key: string;
@@ -250,8 +252,6 @@ export type Work = {
     _type: "result";
     _key: string;
   }>;
-  websiteUrl?: string;
-  featured?: boolean;
   listingMedia: Media;
   archiveMedia: Array<
     {
