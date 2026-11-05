@@ -82,5 +82,9 @@ export default defineConfig({
   ],
   vite: {
     plugins: [tailwindcss()],
+    // Dev only: pre-bundle the Studio's Vision tool at startup. Otherwise Vite finds it on the
+    // first /studio visit, re-bundles and reloads the page (a blank Studio and "Outdated
+    // Optimize Dep" errors until then).
+    optimizeDeps: { include: ["@sanity/vision"] },
   },
 });
