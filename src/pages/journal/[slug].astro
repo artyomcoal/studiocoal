@@ -102,47 +102,51 @@ const jsonLd = [
     )}
   </Fragment>
 
-  <header class="mx-auto grid-cols-layout max-w-container px-container pt-40 pb-12 xl:pb-16">
-    <div class={`${column} flex flex-col gap-6 text-fg-primary`}>
-      <ul class="flex flex-wrap gap-1" aria-label="Article details">
-        {post.category && (
+  {/* One <article> for the whole post (header, cover, body), so its <h1> and <header> belong
+    to it. It staggers its parts like <main> does with sections. */}
+  <article class="animate-enter-stagger">
+    <header class="mx-auto grid-cols-layout max-w-container px-container pt-40 pb-12 xl:pb-16">
+      <div class={`${column} flex flex-col gap-6 text-fg-primary`}>
+        <ul class="flex flex-wrap gap-1" aria-label="Article details">
+          {post.category && (
+            <li>
+              <Badge>{post.category}</Badge>
+            </li>
+          )}
           <li>
-            <Badge>{post.category}</Badge>
+            <Badge>
+              <time datetime={post.publishedAt}>{formatDate(post.publishedAt)}</time>
+            </Badge>
           </li>
+          <li>
+            <Badge class="normal-case">{minutes} min read</Badge>
+          </li>
+        </ul>
+        <h1 class="text-headline-xxl text-balance">{post.title}</h1>
+        {post.excerpt && (
+          <p class="max-w-prose text-headline-md text-pretty text-fg-primary">{post.excerpt}</p>
         )}
-        <li>
-          <Badge>
-            <time datetime={post.publishedAt}>{formatDate(post.publishedAt)}</time>
-          </Badge>
-        </li>
-        <li>
-          <Badge class="normal-case">{minutes} min read</Badge>
-        </li>
-      </ul>
-      <h1 class="text-headline-xxl text-balance">{post.title}</h1>
-      {post.excerpt && (
-        <p class="max-w-prose text-headline-md text-pretty text-fg-primary">{post.excerpt}</p>
-      )}
-    </div>
-  </header>
+      </div>
+    </header>
 
-  {cover && (
-    <div class="px-container">
-      <Media media={cover} aspect="landscape" sizes={coverSizes} priority />
-    </div>
-  )}
-
-  <div class="mx-auto grid-cols-layout max-w-container gap-y-16 px-container pt-12 pb-section xl:gap-y-24 xl:pt-16">
-    {headings.length > 1 && (
-      <aside class="hidden xl:col-span-2 xl:col-start-1 xl:row-start-1 xl:block">
-        <ArticleToc headings={headings} class="sticky top-24" />
-      </aside>
+    {cover && (
+      <div class="px-container">
+        <Media media={cover} aspect="landscape" sizes={coverSizes} priority />
+      </div>
     )}
-    <article class={`${column} xl:row-start-1`}>
-      <RichText value={body} />
-    </article>
-    <ArticlePager previous={post.previous} next={post.next} class={column} />
-  </div>
+
+    <div class="mx-auto grid-cols-layout max-w-container gap-y-16 px-container pt-12 pb-section xl:gap-y-24 xl:pt-16">
+      {headings.length > 1 && (
+        <aside class="hidden xl:col-span-2 xl:col-start-1 xl:row-start-1 xl:block">
+          <ArticleToc headings={headings} class="sticky top-24" />
+        </aside>
+      )}
+      <div class={`${column} xl:row-start-1`}>
+        <RichText value={body} />
+      </div>
+      <ArticlePager previous={post.previous} next={post.next} class={column} />
+    </div>
+  </article>
 
   <FeaturedArticlesSection posts={recentPosts} title="" />
 </PageLayout>
