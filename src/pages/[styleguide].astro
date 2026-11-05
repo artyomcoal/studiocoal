@@ -32,6 +32,7 @@ import type { MediaData } from "@/sanity/media";
 import type {
   ALL_JOURNAL_QUERY_RESULT,
   FEATURED_WORK_QUERY_RESULT,
+  SERVICE_DESCRIPTIONS_QUERY_RESULT,
   WORK_ARCHIVE_QUERY_RESULT,
 } from "@/sanity/types";
 import BaseLayout from "@/layouts/BaseLayout.astro";
@@ -39,7 +40,7 @@ import { Button } from "@/ui/button";
 import { Badge } from "@/ui/badge";
 import { Input } from "@/ui/input";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/ui/accordion";
-import { SERVICES } from "@/lib/services";
+import { OFFERINGS, SERVICES } from "@/lib/services";
 import type { ServiceValue, Showreel } from "@/lib/showreels";
 
 // Dynamic route with a single path in dev and none in production, so /styleguide
@@ -239,6 +240,14 @@ const demoArchiveWork: WORK_ARCHIVE_QUERY_RESULT[number] = {
   ...demoWork,
   archiveMedia: [emptyMedia, demoVideo("ambient"), emptyMedia],
 };
+
+// ServiceOfferingSection: accordion text per Brand capability (live copy is in Sanity).
+const demoServiceDescriptions: SERVICE_DESCRIPTIONS_QUERY_RESULT = OFFERINGS.brand.capabilities.map(
+  (title) => ({
+    title,
+    description: `What ${title.toLowerCase()} covers, in two or three sentences.`,
+  }),
+);
 
 // Section fixtures: n copies with unique ids.
 const listWorks = (n: number) =>
@@ -834,7 +843,11 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
     </h2>
     <ServicesOverviewSection showreels={demoShowreels} />
     <h2 class="px-container pb-6 text-headline-lg">ServiceOfferingSection (services page)</h2>
-    <ServiceOfferingSection service={SERVICES[0]} works={listWorks(2)} />
+    <ServiceOfferingSection
+      service={SERVICES[0]}
+      works={listWorks(2)}
+      descriptions={demoServiceDescriptions}
+    />
     <h2 class="px-container pb-6 text-headline-lg">ProcessStepsSection (process page)</h2>
     <ProcessStepsSection />
     <h2 class="px-container pt-section pb-6 text-headline-lg">WorkFormatsSection</h2>

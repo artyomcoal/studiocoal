@@ -96,6 +96,14 @@ export const WORK_BY_SERVICE_QUERY = defineQuery(
   `*[_type == "work" && $service in services && defined(slug.current)] | order(year desc) [0...2] ${workCard}`,
 );
 
+/**
+ * ServiceOfferingSection: accordion text per capability. Matched to OFFERINGS
+ * (src/lib/services.ts) by title.
+ */
+export const SERVICE_DESCRIPTIONS_QUERY = defineQuery(
+  `*[_type == "deliverable" && defined(title) && defined(description)]{ title, description }`,
+);
+
 export const WORK_SLUGS_QUERY = defineQuery(
   `*[_type == "work" && defined(slug.current)].slug.current`,
 );
