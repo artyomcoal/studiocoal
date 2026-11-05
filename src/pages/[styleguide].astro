@@ -63,6 +63,7 @@ const semantic: Record<string, [string, string][]> = {
     ["bg-elevated", "colors/background/color-bg-elevated"],
     ["bg-overlay", "colors/background/color-bg-overlay"],
     ["bg-translucent", "colors/background/color-bg-translucent"],
+    ["bg-inverse", "custom (text selection fill, not in Figma)"],
   ],
   Foreground: [
     ["fg-primary", "colors/foreground/color-fg-primary"],
@@ -778,7 +779,8 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
       <h2 class="text-headline-lg">WorkArchiveCard</h2>
       <p class="text-body-sm text-fg-secondary">
         Card / Work Archive Item. Below md the visuals are a swipe track (fixed 256px cards, no
-        scrollbar, snaps per card, bleeds to the screen edges).
+        scrollbar, snaps per card, bleeds to the screen edges). The text and every visual link to
+        the project; only the title is a tab stop.
       </p>
       <WorkArchiveCard work={demoArchiveWork} as="h3" />
     </section>

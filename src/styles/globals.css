@@ -75,6 +75,10 @@
   body {
     @apply bg-background text-body-md text-foreground antialiased;
   }
+  /* Text selection paints in the inverse colours of the current theme. */
+  ::selection {
+    @apply bg-bg-inverse text-fg-inverse;
+  }
   .cn-font-heading {
     @apply font-heading;
   }
