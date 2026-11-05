@@ -4,11 +4,12 @@
  *
  * 1. Cross-document View Transitions: every navigation is a normal page load. The old page
  *    fades out; the header's nav pill and Get in touch button (view-transition-header,
- *    view-transition-header-action) are named groups and stay pinned.
+ *    view-transition-header-action) are named groups that don't animate at all.
  * 2. Entrance: after an in-site navigation, BaseLayout adds `nav-entered` to <html> and the
- *    children of `animate-enter-stagger` fade in from blur, one after another. Direct visits
- *    don't animate, so the first paint (and LCP) is never delayed. Works without View
- *    Transition support (Firefox).
+ *    children of `animate-enter-stagger` fade in, one after another. Opacity only: a filter
+ *    (the old blur) re-rasterises text when it's removed, which shows as a jump at the end.
+ *    Direct visits and reloads don't animate, so the first paint (and LCP) is never delayed.
+ *    Works without View Transition support (Firefox).
  */
 
 @view-transition {
@@ -24,14 +25,18 @@
   animation: none;
 }
 
-/* Header is identical on every page: no cross-fade, it just stays. */
-::view-transition-old(site-header),
+/* Header: no cross-fade, it just stays. Only the new snapshot is drawn: with both drawn
+ * (each fully opaque), the translucent pill painted twice, both pages' current-page items
+ * showed, and it snapped back when the transition ended. */
 ::view-transition-new(site-header),
 ::view-transition-group(site-header),
-::view-transition-old(site-header-action),
 ::view-transition-new(site-header-action),
 ::view-transition-group(site-header-action) {
   animation: none;
+}
+::view-transition-old(site-header),
+::view-transition-old(site-header-action) {
+  display: none;
 }
 
 @keyframes vt-fade-out {
@@ -43,7 +48,6 @@
 @keyframes page-enter {
   from {
     opacity: 0;
-    filter: blur(var(--motion-blur-enter));
   }
 }
 
