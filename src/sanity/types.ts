@@ -188,6 +188,7 @@ export type Deliverable = {
   _updatedAt: string;
   _rev: string;
   title: string;
+  description?: string;
   projectTypes?: Array<string>;
 };
 
