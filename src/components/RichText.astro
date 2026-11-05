@@ -1,15 +1,26 @@
 ---
 /**
  * Rich Text
- * Renders Portable Text (the `richText` schema) with the Figma article text styles:
- * paragraphs Body SM, H2 Headline LG, H3 Headline MD, figures with a Body XS caption.
+ * Renders Portable Text (the `richText` schema) as a long-form article body.
  * The one place Portable Text is rendered (CLAUDE.md). No runtime JS, no dependency.
  * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=5070-9330
  *
- * Spacing follows Figma's article body: a blank Body MD line (20px) between paragraphs,
- * two before a heading, 64px around figures.
+ * Text styles: paragraphs and lists Body MD, H2 Headline LG, H3 Headline MD, quotes Headline
+ * MD with a strong rule, figures with a Body XS caption.
+ *
+ * Reading measure: text blocks stop at `max-w-xl` (36rem, ~75 characters of Body MD; with
+ * Graphik's tight tracking `max-w-prose` still runs to ~90). Figures fill the column.
+ *
+ * Rhythm (block flow, so vertical margins collapse: a figure's space wins over a heading's):
+ * - one Body MD line (20px) between paragraphs and lists
+ * - 56px above an H2, 40px above an H3, and a tight 16 / 12px from a heading to its text, so a
+ *   heading reads as part of the section it opens
+ * - 40px around quotes, 48px (xl: 64px) around figures
+ *
+ * H2s get ids from `outline()` (src/lib/portableText.ts), so they can be linked to and listed
+ * in the article's "On this page" navigation.
  */
-import { groupLists, renderSpans, type PtBlock } from "@/lib/portableText";
+import { groupLists, outline, renderSpans, type PtBlock } from "@/lib/portableText";
 import { cn } from "@/lib/utils";
 import { imageSrcSet, urlFor } from "@/sanity/image";
 import type { JOURNAL_QUERY_RESULT } from "@/sanity/types";
@@ -29,13 +40,19 @@ const {
   class: className,
 } = Astro.props;
 
-const nodes = groupLists(value ?? []);
+// Empty paragraphs are editor spacing; the layout already has the gaps.
+const blocks = (value ?? []).filter(
+  (node) => node._type !== "block" || renderSpans(node as PtBlock).trim(),
+);
+const nodes = groupLists(blocks);
+const headingIds = new Map(outline(blocks).map((heading) => [heading.key, heading.id]));
 
 const blockClass: Record<string, string> = {
-  normal: "mt-5 text-body-sm first:mt-0",
-  h2: "mt-10 text-headline-lg first:mt-0",
-  h3: "mt-10 text-headline-md first:mt-0",
-  blockquote: "mt-10 border-l border-border-subtle pl-4 text-headline-md first:mt-0",
+  normal: "mt-5 max-w-xl text-body-md",
+  h2: "mt-14 max-w-xl scroll-mt-24 text-headline-lg text-balance",
+  h3: "mt-10 max-w-xl text-headline-md text-balance",
+  blockquote:
+    "my-10 max-w-xl border-l-2 border-border-strong py-1 pl-5 text-headline-md text-balance",
 };
 const blockTag: Record<string, string> = {
   normal: "p",
@@ -43,23 +60,30 @@ const blockTag: Record<string, string> = {
   h3: "h3",
   blockquote: "blockquote",
 };
+/** Top margin of the block after a heading: the heading's own text follows closely. */
+const afterHeading: Record<string, string> = { h2: "mt-4", h3: "mt-3" };
+
+const styleOf = (node: (typeof nodes)[number] | undefined) =>
+  node?._type === "block" ? ((node as PtBlock).style ?? "normal") : undefined;
 ---
 
-<!-- Block flow (not flex), so vertical margins collapse: 64px around a figure wins over a
-     heading's 40px. -->
-<div class={cn("text-pretty text-fg-primary", className)}>
-  {nodes.map((node) => {
+<!-- The first block has no top margin and the last no bottom margin, so the column's own
+     padding sets the space around the body. -->
+<div class={cn("text-pretty text-fg-primary *:first:mt-0 *:last:mb-0", className)}>
+  {nodes.map((node, index) => {
+    const tight = afterHeading[styleOf(nodes[index - 1]) ?? ""];
     if (node._type === "list") {
       const List = node.listItem === "number" ? "ol" : "ul";
       return (
         <List
           class={cn(
-            "mt-5 flex flex-col gap-2 pl-5 text-body-sm first:mt-0",
+            "mt-5 flex max-w-xl flex-col gap-2 pl-5 text-body-md marker:text-fg-tertiary",
             node.listItem === "number" ? "list-decimal" : "list-disc",
+            tight,
           )}
         >
           {node.items.map((item) => (
-            <li set:html={renderSpans(item as PtBlock)} />
+            <li class="pl-1" set:html={renderSpans(item as PtBlock)} />
           ))}
         </List>
       );
@@ -68,15 +92,18 @@ const blockTag: Record<string, string> = {
       const block = node as PtBlock;
       const style = block.style && blockTag[block.style] ? block.style : "normal";
       const Tag = blockTag[style] as "p";
-      const html = renderSpans(block);
-      // Empty paragraphs are editor spacing; the layout already has the gaps.
-      if (!html.trim()) return null;
-      return <Tag class={blockClass[style]} set:html={html} />;
+      return (
+        <Tag
+          id={headingIds.get(block._key)}
+          class={cn(blockClass[style], style === "normal" && tight)}
+          set:html={renderSpans(block)}
+        />
+      );
     }
     if (node._type === "imageWithAlt" && "asset" in node && node.asset) {
       const { width, height } = node.dimensions ?? { width: 1600, height: 1200 };
       return (
-        <figure class="my-16 flex flex-col gap-2 first:mt-0 last:mb-0">
+        <figure class="my-12 flex flex-col gap-3 xl:my-16">
           <img
             src={urlFor(node).width(1024).url()}
             srcset={imageSrcSet(node)}
@@ -89,7 +116,9 @@ const blockTag: Record<string, string> = {
             class="h-auto w-full rounded-sm bg-bg-secondary bg-cover"
             style={node.lqip ? `background-image: url(${node.lqip})` : undefined}
           />
-          {node.caption && <figcaption class="text-body-xs">{node.caption}</figcaption>}
+          {node.caption && (
+            <figcaption class="max-w-xl text-body-xs text-fg-secondary">{node.caption}</figcaption>
+          )}
         </figure>
       );
     }

@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { escapeHtml, groupLists, renderSpans, safeHref, type PtBlock } from "./portableText";
+import {
+  escapeHtml,
+  groupLists,
+  outline,
+  readingMinutes,
+  renderSpans,
+  safeHref,
+  type PtBlock,
+} from "./portableText";
 
 const block = (over: Partial<PtBlock>): PtBlock => ({ _type: "block", _key: "b", ...over });
 
@@ -65,5 +73,36 @@ describe("safeHref / escapeHtml", () => {
 
   it("escapes quotes", () => {
     expect(escapeHtml(`"'`)).toBe("&quot;&#39;");
+  });
+});
+
+const text = (key: string, value: string, style = "normal"): PtBlock =>
+  block({ _key: key, style, children: [{ _type: "span", text: value }] });
+
+describe("readingMinutes", () => {
+  it("counts words in text blocks only, rounds up and is at least 1", () => {
+    expect(readingMinutes([])).toBe(1);
+    expect(readingMinutes([text("a", "one two three")])).toBe(1);
+    const long = Array.from({ length: 221 }, () => "word").join(" ");
+    expect(readingMinutes([text("a", long), { _type: "imageWithAlt" }])).toBe(2);
+  });
+});
+
+describe("outline", () => {
+  it("lists H2s with unique slug ids", () => {
+    expect(
+      outline([
+        text("a", "Start with the job", "h2"),
+        text("b", "Body"),
+        text("c", "Start with the job!", "h2"),
+        text("d", "Café & co", "h2"),
+        text("e", "Sub", "h3"),
+        text("f", "   ", "h2"),
+      ]),
+    ).toEqual([
+      { key: "a", id: "start-with-the-job", text: "Start with the job" },
+      { key: "c", id: "start-with-the-job-2", text: "Start with the job!" },
+      { key: "d", id: "cafe-co", text: "Café & co" },
+    ]);
   });
 });

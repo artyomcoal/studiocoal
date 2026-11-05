@@ -1,0 +1,70 @@
+---
+/**
+ * Article Table of Contents
+ * "On this page": the article's H2s as in-page links, with the section being read marked.
+ * Shown beside the body on xl (the article page hides it below xl, where the body fills the
+ * column). Renders nothing for fewer than 2 headings.
+ * Figma: no node. Built for the article page (Article Template, frame 5068:9132).
+ *
+ * The current section is tracked by a small script (no dependency): the last heading above
+ * the top third of the viewport. It gets `aria-current="location"` and `data-current`.
+ */
+import type { PtHeading } from "@/lib/portableText";
+import { cn } from "@/lib/utils";
+
+interface Props {
+  headings: PtHeading[];
+  class?: string;
+}
+
+const { headings, class: className } = Astro.props;
+---
+
+{headings.length > 1 && (
+  <nav aria-labelledby="article-toc" class={cn("flex flex-col gap-4", className)} data-article-toc>
+    <h2 id="article-toc" class="text-eyebrow text-fg-secondary uppercase">
+      On this page
+    </h2>
+    <ol class="flex flex-col border-l border-border-subtle">
+      {headings.map((heading) => (
+        <li>
+          <a
+            href={`#${heading.id}`}
+            class="-ml-px block border-l border-transparent py-1.5 pl-3 text-body-sm text-fg-secondary transition-colors outline-none hover:text-fg-primary focus-visible:rounded-xs focus-visible:ring-2 focus-visible:ring-interactive-focus-ring data-current:border-fg-primary data-current:text-fg-primary"
+          >
+            {heading.text}
+          </a>
+        </li>
+      ))}
+    </ol>
+  </nav>
+)}
+
+<script>
+  const nav = document.querySelector<HTMLElement>("[data-article-toc]");
+  if (nav) {
+    const links = [...nav.querySelectorAll<HTMLAnchorElement>("a")];
+    const headings = links.map((link) => document.getElementById(link.hash.slice(1)));
+    const update = () => {
+      const line = window.innerHeight / 3;
+      let current = -1;
+      headings.forEach((heading, index) => {
+        if (heading && heading.getBoundingClientRect().top <= line) current = index;
+      });
+      links.forEach((link, index) => {
+        const isCurrent = index === current;
+        link.toggleAttribute("data-current", isCurrent);
+        if (isCurrent) link.setAttribute("aria-current", "location");
+        else link.removeAttribute("aria-current");
+      });
+    };
+    let frame = 0;
+    const schedule = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(update);
+    };
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule, { passive: true });
+    update();
+  }
+</script>

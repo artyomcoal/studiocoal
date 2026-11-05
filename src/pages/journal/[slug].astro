@@ -1,14 +1,23 @@
 ---
 /**
- * Journal article page: header, 16:9 cover, rich text body and the latest other articles.
+ * Journal article page: header (back link, meta, title, excerpt), 16:9 cover, rich text body
+ * with an "On this page" list beside it on xl, a previous / next pager and the latest other
+ * articles.
  * Figma: Article Template / breakpoint=xl|md|base (frames 5068:9132, 53350:13666, 53350:14038)
+ *
+ * Columns: header, body and pager share one centred column (base: full, md: 8 of 12,
+ * xl: 6 of 12); text inside it stops at a 65ch reading measure (RichText).
  */
+import ArrowLeft from "@lucide/astro/icons/arrow-left";
 import { sanityClient } from "sanity:client";
+import ArticlePager from "@/components/ArticlePager.astro";
+import ArticleToc from "@/components/ArticleToc.astro";
 import Media from "@/components/Media.astro";
 import RichText from "@/components/RichText.astro";
 import PageLayout from "@/layouts/PageLayout.astro";
 import { formatDate } from "@/lib/format";
 import { ASPECT } from "@/lib/media";
+import { outline, readingMinutes } from "@/lib/portableText";
 import { canonicalUrl, contentPath, contentSeo } from "@/lib/seo";
 import { socialImagePath, socialImagesEnabled } from "@/lib/social-image";
 import { article, breadcrumbs } from "@/lib/structured-data";
@@ -30,6 +39,12 @@ const [post, recentPosts] = await Promise.all([
 ]);
 // Paths come from the same dataset, so a missing post means the build raced a delete.
 if (!post) throw new Error(`Journal post "${slug}" not found`);
+
+const body = post.body ?? [];
+const headings = outline(body);
+const minutes = readingMinutes(body);
+/** The centred reading column (header, body, pager). */
+const column = "col-span-full md:col-span-8 md:col-start-3 xl:col-span-6 xl:col-start-4";
 
 const cover: MediaData | null = post.coverImage?.asset
   ? { kind: "image", image: post.coverImage, video: null }
@@ -87,16 +102,39 @@ const jsonLd = [
     )}
   </Fragment>
 
-  <header class="grid-cols-layout px-container pt-40 pb-12">
-    <div class="col-span-full flex flex-col gap-6 text-fg-primary md:col-span-8 md:col-start-3 xl:col-span-6 xl:col-start-4">
-      <div class="flex gap-1">
-        {post.category && <Badge>{post.category}</Badge>}
-        <Badge>
-          <time datetime={post.publishedAt}>{formatDate(post.publishedAt)}</time>
-        </Badge>
+  <header class="grid-cols-layout px-container pt-40 pb-12 xl:pb-16">
+    <div class={`${column} flex flex-col gap-10 text-fg-primary`}>
+      <a
+        href="/journal"
+        class="group -m-1 flex w-fit items-center gap-1 rounded-xs p-1 text-label text-fg-secondary transition-colors outline-none hover:text-fg-primary focus-visible:ring-2 focus-visible:ring-interactive-focus-ring"
+      >
+        <ArrowLeft
+          aria-hidden="true"
+          class="size-4 transition-transform group-hover:-translate-x-0.5 motion-reduce:transition-none"
+        />
+        Journal
+      </a>
+      <div class="flex flex-col gap-6">
+        <ul class="flex flex-wrap gap-1" aria-label="Article details">
+          {post.category && (
+            <li>
+              <Badge>{post.category}</Badge>
+            </li>
+          )}
+          <li>
+            <Badge>
+              <time datetime={post.publishedAt}>{formatDate(post.publishedAt)}</time>
+            </Badge>
+          </li>
+          <li>
+            <Badge class="normal-case">{minutes} min read</Badge>
+          </li>
+        </ul>
+        <h1 class="text-headline-xxl text-balance">{post.title}</h1>
+        {post.excerpt && (
+          <p class="max-w-prose text-headline-md text-pretty text-fg-secondary">{post.excerpt}</p>
+        )}
       </div>
-      <h1 class="text-headline-xl text-balance">{post.title}</h1>
-      {post.excerpt && <p class="text-headline-md text-pretty">{post.excerpt}</p>}
     </div>
   </header>
 
@@ -106,12 +144,17 @@ const jsonLd = [
     </div>
   )}
 
-  <article class="grid-cols-layout px-container pt-12 pb-section">
-    <RichText
-      value={post.body}
-      class="col-span-full md:col-span-8 md:col-start-3 xl:col-span-6 xl:col-start-4"
-    />
-  </article>
+  <div class="grid-cols-layout gap-y-16 px-container pt-12 pb-section xl:gap-y-24 xl:pt-16">
+    {headings.length > 1 && (
+      <aside class="hidden xl:col-span-2 xl:col-start-1 xl:row-start-1 xl:block">
+        <ArticleToc headings={headings} class="sticky top-24" />
+      </aside>
+    )}
+    <article class={`${column} xl:row-start-1`}>
+      <RichText value={body} />
+    </article>
+    <ArticlePager previous={post.previous} next={post.next} class={column} />
+  </div>
 
-  <FeaturedArticlesSection posts={recentPosts} title="" />
+  <FeaturedArticlesSection posts={recentPosts} heading="More from the journal" title="" />
 </PageLayout>

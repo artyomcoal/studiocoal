@@ -163,7 +163,10 @@ export const JOURNAL_QUERY = defineQuery(
     excerpt,
     seo,
     coverImage${image},
-    body[]{ ..., _type == "imageWithAlt" => ${image} }
+    body[]{ ..., _type == "imageWithAlt" => ${image} },
+    // Article pager: the next newer and the next older post.
+    "previous": *[_type == "journal" && defined(slug.current) && publishedAt > ^.publishedAt] | order(publishedAt asc)[0]{ title, "slug": slug.current },
+    "next": *[_type == "journal" && defined(slug.current) && publishedAt < ^.publishedAt] | order(publishedAt desc)[0]{ title, "slug": slug.current }
   }`,
 );
 

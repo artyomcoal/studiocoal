@@ -106,3 +106,52 @@ export function renderSpans(block: PtBlock): string {
     })
     .join("");
 }
+
+/** The plain text of a block's spans. */
+export function blockText(block: PtBlock): string {
+  return (block.children ?? [])
+    .map((child) => (child._type === "span" ? (child as PtSpan).text : ""))
+    .join("");
+}
+
+/** Average adult reading speed for screen text, words per minute. */
+const WORDS_PER_MINUTE = 220;
+
+/** Minutes to read a body (text blocks only), rounded up, at least 1. */
+export function readingMinutes(blocks: ReadonlyArray<{ _type: string }>): number {
+  const words = blocks
+    .filter((node): node is PtBlock => node._type === "block")
+    .map((node) => blockText(node).trim().split(/\s+/).filter(Boolean).length)
+    .reduce((sum, count) => sum + count, 0);
+  return Math.max(1, Math.ceil(words / WORDS_PER_MINUTE));
+}
+
+export interface PtHeading {
+  key: string;
+  id: string;
+  text: string;
+}
+
+/**
+ * The body's H2s with unique, URL-safe ids ("start-with-the-job", "-2" for repeats). Used for
+ * the heading anchors in RichText and the "On this page" list, so both get the same ids.
+ */
+export function outline(blocks: ReadonlyArray<{ _type: string; _key: string }>): PtHeading[] {
+  const seen = new Map<string, number>();
+  return blocks
+    .filter((node): node is PtBlock => node._type === "block" && (node as PtBlock).style === "h2")
+    .map((node) => ({ key: node._key, text: blockText(node).trim() }))
+    .filter((heading) => heading.text)
+    .map(({ key, text }) => {
+      const base =
+        text
+          .toLowerCase()
+          .normalize("NFKD")
+          .replace(/[̀-ͯ]/g, "")
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-|-$/g, "") || "section";
+      const count = seen.get(base) ?? 0;
+      seen.set(base, count + 1);
+      return { key, id: count ? `${base}-${count + 1}` : base, text };
+    });
+}
