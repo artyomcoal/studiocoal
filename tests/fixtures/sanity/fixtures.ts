@@ -16,6 +16,8 @@ import { evaluate, parse } from "groq-js";
 
 /** Dataset name in fixture image URLs (cdn.sanity.io/images/<project>/<dataset>/…). */
 export const FIXTURE_DATASET = "e2e-fixtures";
+/** Footer © year in fixture builds: the build date must not change the screenshots. */
+export const FIXTURE_YEAR = 2026;
 /** Host of the fixture Bunny video (dataset.ndjson). */
 export const FIXTURE_BUNNY_HOST = "vz-e2e-fixtures.b-cdn.net";
 

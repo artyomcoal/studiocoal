@@ -100,6 +100,9 @@ export default defineConfig({
     // first /studio visit, re-bundles and reloads the page (a blank Studio and "Outdated
     // Optimize Dep" errors until then).
     optimizeDeps: { include: ["@sanity/vision"] },
+    define: fixtureModule
+      ? { "import.meta.env.COPYRIGHT_YEAR": JSON.stringify(fixtureModule.FIXTURE_YEAR) }
+      : {},
     resolve: {
       alias: fixtures
         ? [
