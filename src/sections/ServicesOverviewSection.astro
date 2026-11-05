@@ -11,7 +11,7 @@
  *
  * Indicator: Figma "Indicator" (rounded-xs box, interactive-secondary, hover
  * interactive-secondary-hover) with its chevron drawn inline in currentColor.
- * On devices with a cursor, hovering one row dims the other rows to fg-secondary
+ * On devices with a cursor, hovering one row dims the other rows to fg-tertiary
  * (hover: variants only match @media (hover: hover), so touch screens never dim).
  */
 import Media from "@/components/Media.astro";
@@ -49,7 +49,7 @@ const { showreels = SHOWREELS, class: className } = Astro.props;
     </div>
     <ul class="group/list animate-enter-stagger divide-y divide-border-subtle">
       {SERVICES.map((service) => (
-        <li class="group relative grid-cols-layout items-center gap-y-2 rounded-sm py-4 text-fg-primary transition-colors duration-300 ease-in-out group-hover/list:[&:not(:hover)]:text-fg-secondary has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-interactive-focus-ring has-[a:focus-visible]:ring-offset-2 has-[a:focus-visible]:ring-offset-bg-primary">
+        <li class="group relative grid-cols-layout items-center gap-y-2 rounded-sm py-4 text-fg-primary transition-colors duration-300 ease-in-out group-hover/list:[&:not(:hover)]:text-fg-tertiary has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-interactive-focus-ring has-[a:focus-visible]:ring-offset-2 has-[a:focus-visible]:ring-offset-bg-primary">
           <div class="hidden self-start pr-6 md:col-span-3 md:block xl:col-span-2">
             <Media
               video={showreels[service.value]}
