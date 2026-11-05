@@ -2,7 +2,8 @@
 /**
  * Dialog portal: full-page overlay + panel. The portal moves to <body> while open.
  *
- * Studio Coal: the overlay uses the bg-overlay token. The panel scales and fades from its anchor
+ * Studio Coal: the portal is z-60 so the overlay covers the z-50 Navbar. The overlay uses the
+ * bg-overlay token. The panel scales and fades from its anchor
  * corner (transform-origin set by the caller) using the dialog motion tokens, and reverses on
  * close: @data-slot/dialog keeps it visible until the transition ends.
  */
@@ -16,7 +17,9 @@ interface Props extends HTMLAttributes<"div"> {
 const { class: className, overlayClass, ...rest } = Astro.props;
 ---
 
-<div data-slot="dialog-portal" class="isolate">
+<!-- The portal itself carries the z-index: `isolate` alone makes it a z-auto stacking context,
+     which traps the overlay's z-index and leaves it under the fixed z-50 Navbar. -->
+<div data-slot="dialog-portal" class="relative isolate z-60">
   <div
     data-slot="dialog-overlay"
     hidden
