@@ -5,8 +5,7 @@
  * Used by the Featured Work sections (home, project pages, services, about).
  * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=5005-6780
  *
- * The whole card is clickable (stretched title link); on hover or keyboard focus a
- * "View work" label fades in over the visual.
+ * The whole card is clickable (stretched title link).
  */
 import Media from "@/components/Media.astro";
 import { serviceTitle } from "@/lib/services";
@@ -43,15 +42,7 @@ const description = work.summary ?? work.excerpt;
     className,
   )}
 >
-  <div class="relative">
-    <Media media={work.listingMedia} aspect="portrait" sizes={sizes} priority={priority} />
-    <span
-      aria-hidden="true"
-      class="pointer-events-none absolute top-1/2 left-1/2 flex h-6 -translate-1/2 items-center rounded-xs bg-bg-media-label px-2 text-eyebrow text-neutral-50 uppercase opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover/card:opacity-100 group-has-[a:focus-visible]/card:opacity-100"
-    >
-      View work
-    </span>
-  </div>
+  <Media media={work.listingMedia} aspect="portrait" sizes={sizes} priority={priority} />
   <div class="flex flex-col gap-3">
     <div class="flex flex-col gap-1">
       <Heading class="text-headline-sm text-balance">
