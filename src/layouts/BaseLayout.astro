@@ -63,6 +63,19 @@ const structuredData = serializeJsonLd(
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Cross-document View Transition opt-in (src/styles/motion.css). Inline and first on
+         purpose: Chrome reads the opt-in as soon as the new page may render, and from the
+         external stylesheet it often wasn't applied yet, so the transition was skipped. -->
+    <style is:inline>
+      @view-transition {
+        navigation: auto;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        @view-transition {
+          navigation: none;
+        }
+      }
+    </style>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
     <!-- Self-hosted fonts (public/fonts/). Both are used above the fold, so preload them. -->

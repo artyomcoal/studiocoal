@@ -13,6 +13,7 @@
  * centred (6px sides) and the button is fixed to the bottom centre of the dynamic viewport
  * (h-dvh), 16px from the bottom edge.
  */
+import LogoMark from "@/assets/studio-coal-mark.svg";
 import NavItem from "@/components/NavItem.astro";
 import { cn } from "@/lib/utils";
 import { sanityClient } from "sanity:client";
@@ -62,11 +63,13 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
       aria-current={path === "/" ? "page" : undefined}
       class="shrink-0 rounded-xs outline-none focus-visible:ring-2 focus-visible:ring-interactive-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg-primary"
     >
-      <img
-        src="/favicon.svg"
-        alt="Studio Coal home"
-        width="32"
-        height="32"
+      {/* Inline SVG, not <img>: an image isn't always decoded by the new page's first frame,
+          so the logo blinked out for a frame on every page transition. */}
+      <LogoMark
+        width={32}
+        height={32}
+        role="img"
+        aria-label="Studio Coal home"
         class="block size-8 rounded-xs"
       />
     </a>
