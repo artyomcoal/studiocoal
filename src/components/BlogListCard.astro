@@ -44,12 +44,12 @@ const cover: MediaData | null = post.coverImage
 >
   <Media media={cover} aspect="square" sizes={sizes} />
   <div class="flex flex-col gap-1">
-    <Heading class="text-headline-xs text-balance">
+    <Heading class="text-headline-xs">
       <a href={`/journal/${post.slug}`} class="outline-none after:absolute after:inset-0">
         {post.title}
       </a>
     </Heading>
-    {post.excerpt && <p class="text-body-sm text-pretty">{post.excerpt}</p>}
+    {post.excerpt && <p class="text-body-sm">{post.excerpt}</p>}
   </div>
   <div class="flex items-end gap-1 pt-3">
     {post.category && <Badge>{post.category}</Badge>}

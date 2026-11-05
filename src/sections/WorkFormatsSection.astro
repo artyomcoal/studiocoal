@@ -45,7 +45,7 @@ const formats = [
     <div class="grid-cols-layout">
       <h2
         id="work-formats"
-        class="col-span-full text-headline-xl text-balance text-fg-primary md:col-span-8 xl:col-span-5"
+        class="col-span-full text-headline-xl text-fg-primary md:col-span-8 xl:col-span-5"
       >
         Pick the shape that fits the moment, not the other way around.
       </h2>
@@ -56,7 +56,7 @@ const formats = [
           <div class="flex flex-col gap-6">
             <h3 class="text-body-sm text-fg-secondary">{format.name}</h3>
             <p class="text-headline-md">{format.price}</p>
-            <p class="text-body-sm text-pretty">{format.text}</p>
+            <p class="text-body-sm">{format.text}</p>
           </div>
           <ul class="mt-auto flex flex-wrap gap-1" aria-label={`${format.name} includes`}>
             {format.tags.map((tag) => (

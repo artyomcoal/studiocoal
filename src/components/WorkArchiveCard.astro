@@ -48,7 +48,7 @@ const visuals = Array.from({ length: 3 }, (_, i) => work.archiveMedia?.[i] ?? nu
         {work.title}
       </a>
     </Heading>
-    {work.excerpt && <p class="text-body-sm text-pretty">{work.excerpt}</p>}
+    {work.excerpt && <p class="text-body-sm">{work.excerpt}</p>}
     {work.services?.length ? (
       <ul class="flex flex-wrap gap-1 pt-4 md:pt-2 xl:pt-4" aria-label="Project type">
         {work.services.map((service) => (
