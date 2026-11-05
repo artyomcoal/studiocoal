@@ -66,3 +66,29 @@ test("the navbar isn't part of the transition: its old snapshot is never drawn",
   expect(hidden).toContain("::view-transition-old(site-header)");
   expect(hidden).toContain("::view-transition-old(site-header-action)");
 });
+
+test("the View Transition opt-in is inline in <head>, before any external stylesheet", async ({
+  page,
+}) => {
+  // From the external stylesheet, Chrome often read the opt-in before it was applied and
+  // skipped the transition (cached navigations, where module scripts run first).
+  await page.goto("/");
+  const order = await page.evaluate(() =>
+    [...document.head.querySelectorAll("style, link[rel=stylesheet]")].map((el) =>
+      el instanceof HTMLStyleElement ? (el.textContent ?? "") : "external",
+    ),
+  );
+  const optIn = order.findIndex((css) => /@view-transition\s*\{\s*navigation:\s*auto/.test(css));
+  expect(optIn).toBeGreaterThanOrEqual(0);
+  expect(order.slice(0, optIn)).not.toContain("external");
+});
+
+test("the navbar logo is inline SVG, so it's drawn in the new page's first frame", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const logo = page.getByRole("navigation", { name: "Main" }).getByRole("img", {
+    name: "Studio Coal home",
+  });
+  expect(await logo.evaluate((el) => el.tagName.toLowerCase())).toBe("svg");
+});

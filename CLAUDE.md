@@ -122,7 +122,7 @@ Token values live **only** in `src/styles/tokens.css` (neutral palette, semantic
 - Budget: under 20 KB of JS per page (excluding `/studio`).
 
 ### Page transitions
-- **Cross-document View Transitions** (CSS `@view-transition { navigation: auto; }`). Every navigation is a normal full page load. **Don't add Astro's `<ClientRouter />`** or any SPA router without asking.
+- **Cross-document View Transitions** (CSS `@view-transition { navigation: auto; }`). Every navigation is a normal full page load. The opt-in stays an inline `<style>` at the top of BaseLayout's `<head>`: in the external stylesheet Chrome often read it too early and skipped the transition. **Don't add Astro's `<ClientRouter />`** or any SPA router without asking.
 - Reference: permanent.is. The old page fades out, and the header keeps a `view-transition-name` so it stays pinned. On the new page, top-level sections play a staggered fade-in (opacity 0 → 1 only, no blur or other filter: removing a filter re-rasterises text and shows as a jump; about 0.8s, soft ease-out, staggered about 80ms). The navbar is never part of any transition or entrance: only its new snapshot is drawn. Grids and lists stagger their children the same way. Rebuild it in our own code; don't copy their CSS.
 - The entrance animation is CSS-only, defined once (keyframes and stagger in `src/styles/`) and applied through `PageLayout`/shared classes, not per component. It must still play where View Transitions aren't supported (e.g. Firefox).
 - Motion values (durations, easings) go in `tokens.css` like any other token, so ask before adding them.
