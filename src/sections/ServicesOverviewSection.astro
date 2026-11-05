@@ -8,8 +8,12 @@
  * Each row's visual is a 4:3 showreel video defined in code (src/lib/showreels.ts), not
  * Sanity. Rows without a video yet show the bg-secondary placeholder. The whole row is
  * clickable through a stretched title link, so the video's pause button isn't nested in it.
+ *
+ * Indicator: Figma "Indicator" (rounded-xs box, interactive-secondary, hover
+ * interactive-secondary-hover) with its chevron drawn inline in currentColor.
+ * On devices with a cursor, hovering one row dims the other rows to fg-secondary
+ * (hover: variants only match @media (hover: hover), so touch screens never dim).
  */
-import ChevronRight from "@lucide/astro/icons/chevron-right";
 import Media from "@/components/Media.astro";
 import { SERVICES } from "@/lib/services";
 import { SHOWREELS, type Showreel, type ServiceValue } from "@/lib/showreels";
@@ -43,15 +47,15 @@ const { showreels = SHOWREELS, class: className } = Astro.props;
         </Button>
       </div>
     </div>
-    <ul class="animate-enter-stagger divide-y divide-border-subtle">
+    <ul class="group/list animate-enter-stagger divide-y divide-border-subtle">
       {SERVICES.map((service) => (
-        <li class="group relative grid-cols-layout items-center gap-y-2 rounded-sm py-4 text-fg-primary has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-interactive-focus-ring has-[a:focus-visible]:ring-offset-2 has-[a:focus-visible]:ring-offset-bg-primary">
+        <li class="group relative grid-cols-layout items-center gap-y-2 rounded-sm py-4 text-fg-primary transition-colors duration-150 ease-out group-hover/list:[&:not(:hover)]:text-fg-secondary has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-interactive-focus-ring has-[a:focus-visible]:ring-offset-2 has-[a:focus-visible]:ring-offset-bg-primary">
           <div class="hidden self-start pr-6 md:col-span-3 md:block xl:col-span-2">
             <Media
               video={showreels[service.value]}
               aspect="thumbnail"
               sizes="(min-width: 64rem) 192px, 25vw"
-              class="max-w-48 rounded-none border-4 border-border-subtle"
+              class="max-w-48"
             />
           </div>
           <a
@@ -64,10 +68,18 @@ const { showreels = SHOWREELS, class: className } = Astro.props;
             {service.description}
           </span>
           <span class="col-start-12 hidden justify-self-end md:flex">
-            <ChevronRight
-              class="size-6 transition-transform duration-300 group-hover:translate-x-1 group-has-[a:focus-visible]:translate-x-1"
-              aria-hidden="true"
-            />
+            <span class="flex size-6 items-center justify-center rounded-xs bg-interactive-secondary transition-colors duration-150 ease-out group-hover:bg-interactive-secondary-hover group-has-[a:focus-visible]:bg-interactive-secondary-hover">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.25"
+                class="size-6"
+                aria-hidden="true"
+              >
+                <path d="M10 8l4 4-4 4" />
+              </svg>
+            </span>
           </span>
         </li>
       ))}
