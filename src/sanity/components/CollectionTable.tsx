@@ -8,7 +8,8 @@
  * - A row opens the document in the pane next to the table. Rows show the draft when there
  *   is one. Columns: name, the type's own columns, Featured, Status (Published, Changed =
  *   unpublished edits, or Draft), Published (last published), Created on and Last edited.
- *   Home / Hidden / Needs attention flags sit under the name, next to the URL.
+ *   A Hidden flag sits under the name, next to the URL (home page and validation status are
+ *   their own tabs).
  * - Updates live as documents change. The tab and sort are remembered per browser.
  *
  * Styles follow the Studio's light / dark theme through its --card-* CSS variables; the
@@ -389,16 +390,7 @@ export function CollectionTable<T extends TableDoc>({
                         <span className="ct-slug">
                           {row.slug ? `${CONTENT_PATHS[type]}/${row.slug}` : "No URL yet"}
                         </span>
-                        {row.onHome ? <span className="ct-badge ct-home">Home</span> : null}
                         {row.noIndex ? <span className="ct-badge">Hidden</span> : null}
-                        {row.needsAttention ? (
-                          <span
-                            className="ct-badge ct-attention"
-                            title={(issues.get(row.id) ?? []).join("\n")}
-                          >
-                            Needs attention
-                          </span>
-                        ) : null}
                       </span>
                     </span>
                   </td>
@@ -477,9 +469,9 @@ const CSS = `
 .ct-date { white-space: nowrap; }
 .ct-badge { padding: 0.125rem 0.375rem; border-radius: 0.25rem; background: var(--card-badge-default-bg-color); color: var(--card-badge-default-fg-color); font-size: 0.6875rem; font-weight: 500; white-space: nowrap; }
 .ct-published { background: var(--card-badge-positive-bg-color, var(--card-badge-default-bg-color)); color: var(--card-badge-positive-fg-color); }
-.ct-changed, .ct-attention { background: var(--card-badge-caution-bg-color); color: var(--card-badge-caution-fg-color); }
+.ct-changed { background: var(--card-badge-caution-bg-color); color: var(--card-badge-caution-fg-color); }
 .ct-draft { color: var(--card-muted-fg-color); }
-.ct-featured, .ct-home { background: var(--card-badge-primary-bg-color); color: var(--card-badge-primary-fg-color); }
+.ct-featured { background: var(--card-badge-primary-bg-color); color: var(--card-badge-primary-fg-color); }
 .ct-empty { margin: 3rem 0; color: var(--card-muted-fg-color); text-align: center; }
 /* Narrower pane (a document open beside the table): fewer columns, then name and status. */
 @container (max-width: 40rem) { .ct-hide-wide { display: none; } }
