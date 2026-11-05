@@ -64,15 +64,6 @@ export const CLIENTS_QUERY = defineQuery(
   `*[_type == "siteSettings" && _id == "siteSettings"][0].clients[defined(logo.asset)]{ _key, name, logo }`,
 );
 
-/** Home "Our services": the newest project's listing visual per service, as a thumbnail. */
-export const SERVICE_THUMBNAILS_QUERY = defineQuery(
-  `{
-    "brand": *[_type == "work" && "brand" in services && defined(slug.current)] | order(year desc) [0].listingMedia${media},
-    "web": *[_type == "work" && "web" in services && defined(slug.current)] | order(year desc) [0].listingMedia${media},
-    "digital-products": *[_type == "work" && "digital-products" in services && defined(slug.current)] | order(year desc) [0].listingMedia${media}
-  }`,
-);
-
 /** About page photos from site settings. */
 export const ABOUT_MEDIA_QUERY = defineQuery(
   `*[_type == "siteSettings" && _id == "siteSettings"][0]{

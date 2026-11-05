@@ -6,20 +6,14 @@
 import { sanityClient } from "sanity:client";
 import PageLayout from "@/layouts/PageLayout.astro";
 import { HOME_FEATURED_LIMIT, HOME_JOURNAL_LIMIT } from "@/sanity/filters";
-import {
-  CLIENTS_QUERY,
-  FEATURED_JOURNAL_QUERY,
-  FEATURED_WORK_QUERY,
-  SERVICE_THUMBNAILS_QUERY,
-} from "@/sanity/queries";
+import { CLIENTS_QUERY, FEATURED_JOURNAL_QUERY, FEATURED_WORK_QUERY } from "@/sanity/queries";
 import ClientsSection from "@/sections/ClientsSection.astro";
 import FeaturedArticlesSection from "@/sections/FeaturedArticlesSection.astro";
 import FeaturedWorkSection from "@/sections/FeaturedWorkSection.astro";
 import ServicesOverviewSection from "@/sections/ServicesOverviewSection.astro";
 
-const [featuredWork, thumbnails, clients, featuredPosts] = await Promise.all([
+const [featuredWork, clients, featuredPosts] = await Promise.all([
   sanityClient.fetch(FEATURED_WORK_QUERY, { limit: HOME_FEATURED_LIMIT }),
-  sanityClient.fetch(SERVICE_THUMBNAILS_QUERY),
   sanityClient.fetch(CLIENTS_QUERY),
   sanityClient.fetch(FEATURED_JOURNAL_QUERY, { limit: HOME_JOURNAL_LIMIT }),
 ]);
@@ -35,7 +29,7 @@ const [featuredWork, thumbnails, clients, featuredPosts] = await Promise.all([
     </h1>
   </section>
   <FeaturedWorkSection works={featuredWork} columns="2" />
-  <ServicesOverviewSection thumbnails={thumbnails} />
+  <ServicesOverviewSection />
   <ClientsSection clients={clients} />
   <FeaturedArticlesSection posts={featuredPosts} />
 </PageLayout>

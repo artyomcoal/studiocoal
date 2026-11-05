@@ -39,6 +39,7 @@ import { Badge } from "@/ui/badge";
 import { Input } from "@/ui/input";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/ui/accordion";
 import { SERVICES } from "@/lib/services";
+import type { ServiceValue, Showreel } from "@/lib/showreels";
 
 // Dynamic route with a single path in dev and none in production, so /styleguide
 // is never emitted by `astro build`. Explicit pages always take priority over this route.
@@ -195,6 +196,14 @@ const demoBunnyVideo: MediaData = {
     playback: "ambient",
     poster: null,
   },
+};
+
+// Code-defined showreels (home "Our services"): a Bunny playlist with its own thumbnail, the
+// HLS test stream without a poster, and a service with no video yet (placeholder).
+const demoShowreels: Record<ServiceValue, Showreel> = {
+  brand: { src: demoBunnyVideo.video?.playlistUrl ?? null },
+  web: { src: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8" },
+  "digital-products": { src: null },
 };
 
 // An image slot with no asset yet: renders the bg-secondary placeholder.
@@ -814,9 +823,13 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
     <h2 class="px-container pt-section text-headline-lg">WorkDetailsSection (project page)</h2>
     <WorkDetailsSection work={demoWorkDetails} />
     <h2 class="px-container pt-section pb-6 text-headline-lg">
-      ServicesOverviewSection (home; thumbnails empty without Work)
+      ServicesOverviewSection (home, SHOWREELS from src/lib/showreels.ts)
     </h2>
-    <ServicesOverviewSection thumbnails={{ brand: null, web: null, "digital-products": null }} />
+    <ServicesOverviewSection />
+    <h2 class="px-container pt-section pb-6 text-headline-lg">
+      ServicesOverviewSection (demo showreels: Bunny, HLS test stream, no video yet)
+    </h2>
+    <ServicesOverviewSection showreels={demoShowreels} />
     <h2 class="px-container pb-6 text-headline-lg">ServiceOfferingSection (services page)</h2>
     <ServiceOfferingSection service={SERVICES[0]} works={listWorks(2)} />
     <h2 class="px-container pb-6 text-headline-lg">ProcessStepsSection (process page)</h2>
