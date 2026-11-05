@@ -1,6 +1,6 @@
 import { defineField, defineType } from "sanity";
 import { videoPreviewMedia } from "../components/BunnyThumbnail";
-import { mediaAspect } from "./media";
+import { mediaAlt, mediaAspect } from "./media";
 
 /** Work project content block: one full-width visual, 16:9. */
 export const mediaFullWidth = defineType({
@@ -12,7 +12,11 @@ export const mediaFullWidth = defineType({
       name: "media",
       title: "Visual",
       type: "media",
-      validation: (rule) => [rule.required(), rule.custom(mediaAspect("landscape")).warning()],
+      validation: (rule) => [
+        rule.required(),
+        rule.custom(mediaAspect("landscape")).warning(),
+        rule.custom(mediaAlt).warning(),
+      ],
     }),
   ],
   preview: {
@@ -40,13 +44,21 @@ export const mediaPair = defineType({
       name: "left",
       title: "Left visual",
       type: "media",
-      validation: (rule) => [rule.required(), rule.custom(mediaAspect("portrait")).warning()],
+      validation: (rule) => [
+        rule.required(),
+        rule.custom(mediaAspect("portrait")).warning(),
+        rule.custom(mediaAlt).warning(),
+      ],
     }),
     defineField({
       name: "right",
       title: "Right visual",
       type: "media",
-      validation: (rule) => [rule.required(), rule.custom(mediaAspect("portrait")).warning()],
+      validation: (rule) => [
+        rule.required(),
+        rule.custom(mediaAspect("portrait")).warning(),
+        rule.custom(mediaAlt).warning(),
+      ],
     }),
   ],
   preview: {

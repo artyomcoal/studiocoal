@@ -6,6 +6,8 @@ import {
   type ValidationContext,
 } from "sanity";
 import { videoPreviewMedia } from "../components/BunnyThumbnail";
+import { MediaInput } from "../components/MediaInput";
+import { mediaCheckImage, type MediaValue } from "../mediaSlots";
 import { aspectMismatch, isHlsUrl, type AspectName } from "../../lib/media";
 
 /** The value at `path` in the document (array items by _key). */
@@ -103,12 +105,6 @@ export const bunnyVideo = defineType({
   },
 });
 
-interface MediaValue {
-  kind?: "image" | "video";
-  image?: { asset?: { _ref?: string }; crop?: Record<string, number> };
-  video?: { poster?: { asset?: { _ref?: string }; crop?: Record<string, number> } };
-}
-
 /**
  * One visual: an image (Sanity) or a video (Bunny HLS). Reused by every Work visual slot.
  * The slot sets the aspect ratio with `mediaAspect()`; the site crops around the hotspot.
@@ -117,6 +113,8 @@ export const media = defineType({
   name: "media",
   title: "Media",
   type: "object",
+  // Adds the "looks fine as cropped" tick under a size warning.
+  components: { input: MediaInput },
   fields: [
     defineField({
       name: "kind",
@@ -158,6 +156,20 @@ export const media = defineType({
             : true,
         ),
     }),
+    defineField({
+      name: "decorative",
+      title: "Decorative",
+      type: "boolean",
+      description:
+        "Tick if the visual adds nothing a screen-reader user would miss: then it needs no alternative text.",
+    }),
+    defineField({
+      // Set by the tick under a size warning (MediaInput); hidden from the form.
+      name: "aspectChecked",
+      title: "Size checked for image",
+      type: "string",
+      hidden: true,
+    }),
   ],
   preview: {
     select: {
@@ -179,10 +191,29 @@ export const media = defineType({
   },
 });
 
+/**
+ * Studio warning when an image or video has no alternative text and isn't marked Decorative.
+ * Added to each media slot's validation (a field's own rules replace the type's).
+ */
+export const mediaAlt: CustomValidator<MediaValue | undefined> = (value) => {
+  if (!value || value.decorative) return true;
+  if (value.kind === "video") {
+    return value.video?.playlistUrl && !value.video.alt?.trim()
+      ? "Describe the video in Alternative text, or tick Decorative."
+      : true;
+  }
+  return value.image?.asset && !value.image.alt?.trim()
+    ? "Describe the image in Alternative text, or tick Decorative."
+    : true;
+};
+
 /** Studio warning when a media item's image (or video poster) doesn't match the slot's ratio. */
 export function mediaAspect(aspect: AspectName): CustomValidator<MediaValue | undefined> {
   return (value) => {
-    const image = value?.kind === "video" ? value.video?.poster : value?.image;
-    return aspectMismatch(image?.asset?._ref, image?.crop, aspect) ?? true;
+    const image = mediaCheckImage(value);
+    const ref = image?.asset?._ref;
+    // Dismissed for this exact image; a different image is checked again.
+    if (ref && value?.aspectChecked === ref) return true;
+    return aspectMismatch(ref, image?.crop, aspect) ?? true;
   };
 }
