@@ -5,7 +5,8 @@
  * articles.
  * Figma: Article Template / breakpoint=xl|md|base (frames 5068:9132, 53350:13666, 53350:14038)
  *
- * Columns: header, body and pager share one centred column (base: full, md: 8 of 12,
+ * Columns: the header and body grids stop at max-w-container (1440) and centre; header, body
+ * and pager share one centred column (base: full, md: 8 of 12,
  * xl: 6 of 12); text inside it stops at a 65ch reading measure (RichText).
  */
 import { sanityClient } from "sanity:client";
@@ -101,7 +102,7 @@ const jsonLd = [
     )}
   </Fragment>
 
-  <header class="grid-cols-layout px-container pt-40 pb-12 xl:pb-16">
+  <header class="mx-auto grid-cols-layout max-w-container px-container pt-40 pb-12 xl:pb-16">
     <div class={`${column} flex flex-col gap-6 text-fg-primary`}>
       <ul class="flex flex-wrap gap-1" aria-label="Article details">
         {post.category && (
@@ -131,7 +132,7 @@ const jsonLd = [
     </div>
   )}
 
-  <div class="grid-cols-layout gap-y-16 px-container pt-12 pb-section xl:gap-y-24 xl:pt-16">
+  <div class="mx-auto grid-cols-layout max-w-container gap-y-16 px-container pt-12 pb-section xl:gap-y-24 xl:pt-16">
     {headings.length > 1 && (
       <aside class="hidden xl:col-span-2 xl:col-start-1 xl:row-start-1 xl:block">
         <ArticleToc headings={headings} class="sticky top-24" />
