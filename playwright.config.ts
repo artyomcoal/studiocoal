@@ -40,8 +40,11 @@ export default defineConfig({
     })),
   ),
   // Test the production build, not the dev server (/styleguide is dev-only and not tested here).
+  // E2E_FIXTURES=1 builds from the committed Sanity fixtures (tests/fixtures/sanity/), not the
+  // live dataset, so publishing content never changes the tests' results.
   webServer: {
     command: `pnpm build && pnpm preview --port ${PORT} --ignore-lock`,
+    env: { E2E_FIXTURES: "1" },
     port: PORT,
     reuseExistingServer: false,
     timeout: 180_000,

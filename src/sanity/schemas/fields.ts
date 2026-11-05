@@ -12,12 +12,13 @@ import { AutoSlugInput } from "../components/AutoSlugInput";
  * The URL slug of a Work project or Journal post. It fills in from the title while the page
  * is unpublished, and is checked for a clean format.
  */
-export function slugField(type: ContentType, group?: string) {
+export function slugField(type: ContentType, group?: string, fieldset?: string) {
   return defineField({
     name: "slug",
     title: "URL",
     type: "slug",
     group,
+    fieldset,
     description: `The page address: studiocoal.com${CONTENT_PATHS[type]}/<this>. Fills in from the title until the page is first published.`,
     options: { source: "title", maxLength: SLUG_MAX_LENGTH, slugify: (input) => slugify(input) },
     components: { input: AutoSlugInput },
@@ -36,12 +37,13 @@ export function slugField(type: ContentType, group?: string) {
  * Slugs a published page had before its URL changed. Each one redirects to the current URL
  * (src/lib/redirects.ts). The publish action in sanity.config.ts adds them automatically.
  */
-export function previousSlugsField(type: ContentType, group?: string) {
+export function previousSlugsField(type: ContentType, group?: string, fieldset?: string) {
   return defineField({
     name: "previousSlugs",
     title: "Old URLs",
     type: "array",
     group,
+    fieldset,
     description: `Earlier addresses of this page, each redirecting here (studiocoal.com${CONTENT_PATHS[type]}/<old>). Added automatically when you publish a new URL. Remove one to stop redirecting it.`,
     of: [{ type: "string" }],
     options: { layout: "tags" },
