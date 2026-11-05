@@ -21,6 +21,12 @@ export type CollectionRow<T extends CollectionDoc> = T & {
   status: DocStatus;
   /** Shown on the home page right now (published version). */
   onHome: boolean;
+  /** When the live version was last published (its `_updatedAt`), or null if never. */
+  lastPublishedAt: string | null;
+  /** When the document was first created (the earlier `_createdAt` of the two versions). */
+  createdAt: string;
+  /** When any version was last edited (the later `_updatedAt` of the two versions). */
+  lastEditedAt: string;
 };
 
 export const COLLECTION_TABS = [
@@ -70,12 +76,20 @@ export function mergeVersions<T extends CollectionDoc>(
     byId.set(id, entry);
   }
   const home = new Set(homeIds);
-  return [...byId].map(([id, { published, draft }]) => ({
-    ...(draft ?? published)!,
-    id,
-    status: published ? (draft ? "changed" : "published") : "draft",
-    onHome: home.has(id),
-  }));
+  const earliest = (a: string, b?: string) => (b && b < a ? b : a);
+  const latest = (a: string, b?: string) => (b && b > a ? b : a);
+  return [...byId].map(([id, { published, draft }]) => {
+    const shown = (draft ?? published)!;
+    return {
+      ...shown,
+      id,
+      status: published ? (draft ? "changed" : "published") : "draft",
+      onHome: home.has(id),
+      lastPublishedAt: published?._updatedAt ?? null,
+      createdAt: earliest(shown._createdAt, published?._createdAt),
+      lastEditedAt: latest(shown._updatedAt, published?._updatedAt),
+    };
+  });
 }
 
 /** Rows in a tab where any of `searchable(row)` contains the search text. */

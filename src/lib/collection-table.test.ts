@@ -37,6 +37,38 @@ describe("mergeVersions", () => {
       { id: "c", title: "C new", status: "draft", onHome: false },
     ]);
   });
+
+  it("reports when each document was published, created and last edited", () => {
+    const rows = mergeVersions(
+      [
+        doc("a", { _createdAt: "2026-01-01T00:00:00Z", _updatedAt: "2026-02-01T00:00:00Z" }),
+        doc("drafts.a", { _createdAt: "2026-02-02T00:00:00Z", _updatedAt: "2026-03-01T00:00:00Z" }),
+        doc("drafts.b", { _createdAt: "2026-04-01T00:00:00Z", _updatedAt: "2026-04-02T00:00:00Z" }),
+      ],
+      [],
+    );
+    expect(
+      rows.map(({ id, lastPublishedAt, createdAt, lastEditedAt }) => ({
+        id,
+        lastPublishedAt,
+        createdAt,
+        lastEditedAt,
+      })),
+    ).toEqual([
+      {
+        id: "a",
+        lastPublishedAt: "2026-02-01T00:00:00Z",
+        createdAt: "2026-01-01T00:00:00Z",
+        lastEditedAt: "2026-03-01T00:00:00Z",
+      },
+      {
+        id: "b",
+        lastPublishedAt: null,
+        createdAt: "2026-04-01T00:00:00Z",
+        lastEditedAt: "2026-04-02T00:00:00Z",
+      },
+    ]);
+  });
 });
 
 describe("filterRows", () => {
