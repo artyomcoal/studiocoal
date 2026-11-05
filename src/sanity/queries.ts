@@ -127,7 +127,8 @@ export const WORK_QUERY = defineQuery(
     excerpt,
     seo,
     industry,
-    deliverables,
+    // Services delivered: titles from the shared Services list.
+    "deliverables": deliverables[defined(@->title)]->title,
     challenge,
     solution,
     outcome,

@@ -129,11 +129,18 @@ export const work = defineType({
     defineField({
       name: "deliverables",
       title: "Services delivered",
-      description: "Tags on the project page, e.g. Brand Strategy, Website, Product Design.",
+      description:
+        "Picked from the shared Services list (Studio › Services), shown as tags on the project page. Missing one? Use “Create new” in the picker, then publish it.",
       type: "array",
       group: "page",
-      of: [{ type: "string" }],
-      options: { layout: "tags" },
+      of: [
+        defineArrayMember({
+          type: "reference",
+          to: [{ type: "deliverable" }],
+          options: { disableNew: false },
+        }),
+      ],
+      validation: (rule) => rule.unique(),
     }),
     defineField({
       name: "challenge",
