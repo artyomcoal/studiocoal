@@ -13,8 +13,15 @@
  * site's design tokens don't exist in the Studio.
  */
 import { createImageUrlBuilder, type SanityImageSource } from "@sanity/image-url";
-import { useEffect, useMemo, useState, type KeyboardEvent, type ReactNode } from "react";
-import { type SanityClient, useClient } from "sanity";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react";
+import { type SanityClient, useClient, useValidationStatus } from "sanity";
 import { IntentLink } from "sanity/router";
 import { usePaneRouter } from "sanity/structure";
 import {
@@ -95,6 +102,33 @@ function updatedAgo(iso: string): string {
   return "just now";
 }
 
+/**
+ * Runs the Studio's validation for one document (as its form does) and reports the error and
+ * warning messages. Renders nothing. Dismissed warnings (e.g. a size warning ticked as fine)
+ * are already gone from the validation, so they don't count.
+ */
+function ValidationProbe({
+  id,
+  versionId,
+  type,
+  onIssues,
+}: {
+  id: string;
+  versionId: string;
+  type: string;
+  onIssues: (id: string, messages: string[]) => void;
+}) {
+  const { validation, isValidating } = useValidationStatus(versionId, type, false);
+  const messages = validation
+    .filter((marker) => marker.level === "error" || marker.level === "warning")
+    .map((marker) => marker.message);
+  const key = messages.join("\n");
+  useEffect(() => {
+    if (!isValidating) onIssues(id, key ? key.split("\n") : []);
+  }, [id, key, isValidating, onIssues]);
+  return null;
+}
+
 /** An em dash for empty cells. */
 export const Empty = () => <span className="ct-muted">—</span>;
 
@@ -157,7 +191,21 @@ export function CollectionTable<T extends TableDoc>({
     };
   }, [client, load, type]);
 
-  const rows = useMemo(() => (data ? mergeVersions(data.docs, data.home) : []), [data]);
+  // "Needs attention": the same validation the form shows (errors and warnings not dismissed),
+  // reported per document by <ValidationProbe> below.
+  const [issues, setIssues] = useState<Map<string, string[]>>(new Map());
+  const reportIssues = useCallback((id: string, messages: string[]) => {
+    setIssues((current) => {
+      const before = current.get(id);
+      if (before && before.join("\n") === messages.join("\n")) return current;
+      return new Map(current).set(id, messages);
+    });
+  }, []);
+  const merged = useMemo(() => (data ? mergeVersions(data.docs, data.home) : []), [data]);
+  const rows = useMemo(
+    () => merged.map((row) => ({ ...row, needsAttention: (issues.get(row.id)?.length ?? 0) > 0 })),
+    [merged, issues],
+  );
   const visible = useMemo(
     () => sortRows(filterRows(rows, tab, search, config.searchable), sort, config.dateOf),
     [rows, tab, search, sort, config],
@@ -188,6 +236,16 @@ export function CollectionTable<T extends TableDoc>({
 
   return (
     <div className="ct">
+      {merged.map((row) => (
+        <ValidationProbe
+          key={row.id}
+          id={row.id}
+          // Validate the version the row shows: the draft when there is one.
+          versionId={row.status === "published" ? row.id : `drafts.${row.id}`}
+          type={type}
+          onIssues={reportIssues}
+        />
+      ))}
       <style>{CSS}</style>
       <header className="ct-head">
         <div className="ct-title">
@@ -337,7 +395,7 @@ export function CollectionTable<T extends TableDoc>({
                       {row.needsAttention ? (
                         <span
                           className="ct-badge ct-attention"
-                          title="Missing something the site shows, or an SEO issue"
+                          title={(issues.get(row.id) ?? []).join("\n")}
                         >
                           Needs attention
                         </span>

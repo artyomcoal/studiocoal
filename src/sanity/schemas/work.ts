@@ -2,7 +2,7 @@ import { defineArrayMember, defineField, defineType } from "sanity";
 import { videoPreviewMedia } from "../components/BunnyThumbnail";
 import { SERVICES, serviceTitle } from "../../lib/services";
 import { previousSlugsField, slugField } from "./fields";
-import { mediaAspect } from "./media";
+import { mediaAlt, mediaAspect } from "./media";
 import { HOME_FEATURED_LIMIT } from "../filters";
 
 /** Featured Work cards show two lines of Body SM: about 100 characters. */
@@ -238,7 +238,11 @@ export const work = defineType({
         "Project card on the home, services and about pages, and in recent work sections.",
       type: "media",
       group: "visuals",
-      validation: (rule) => [rule.required(), rule.custom(mediaAspect("portrait")).warning()],
+      validation: (rule) => [
+        rule.required(),
+        rule.custom(mediaAspect("portrait")).warning(),
+        rule.custom(mediaAlt).warning(),
+      ],
     }),
     defineField({
       name: "archiveMedia",
@@ -249,7 +253,10 @@ export const work = defineType({
       of: [
         defineArrayMember({
           type: "media",
-          validation: (rule) => rule.custom(mediaAspect("portrait")).warning(),
+          validation: (rule) => [
+            rule.custom(mediaAspect("portrait")).warning(),
+            rule.custom(mediaAlt).warning(),
+          ],
         }),
       ],
       validation: (rule) => rule.required().length(3),
@@ -260,7 +267,11 @@ export const work = defineType({
       description: "Full-width visual at the top of the project page.",
       type: "media",
       group: "visuals",
-      validation: (rule) => [rule.required(), rule.custom(mediaAspect("landscape")).warning()],
+      validation: (rule) => [
+        rule.required(),
+        rule.custom(mediaAspect("landscape")).warning(),
+        rule.custom(mediaAlt).warning(),
+      ],
     }),
     defineField({
       name: "content",
