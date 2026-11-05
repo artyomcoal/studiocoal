@@ -4,6 +4,7 @@ import { structureTool } from "sanity/structure";
 import { withSlugRedirect } from "./src/sanity/actions/publishWithRedirect";
 import { schemaTypes, singletonTypes } from "./src/sanity/schemas";
 import { structure } from "./src/sanity/structure";
+import { studioTheme } from "./src/sanity/theme";
 
 // In the browser (embedded Studio) Vite provides import.meta.env. The Sanity CLI (typegen,
 // schema extract) runs in Node, where the package scripts load .env into process.env.
@@ -16,6 +17,8 @@ const redirectingTypes = new Set(["work", "journal"]);
 export default defineConfig({
   name: "default",
   title: "Studio Coal",
+  // Neutral greys from the site palette instead of Sanity's blue tints (src/sanity/theme.ts).
+  theme: studioTheme,
   projectId,
   dataset,
   plugins: [structureTool({ structure }), visionTool()],

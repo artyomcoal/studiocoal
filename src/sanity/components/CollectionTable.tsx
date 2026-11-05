@@ -360,8 +360,9 @@ const CSS = `
 .ct-head { display: grid; gap: 1rem; margin-bottom: 1rem; }
 .ct-title { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .ct-title h2 { margin: 0; font-size: 1.25rem; font-weight: 600; }
-.ct-new { padding: 0.5rem 0.75rem; border-radius: 0.25rem; background: var(--card-badge-primary-dot-color); color: #fff; font-weight: 600; text-decoration: none; white-space: nowrap; }
-.ct-new:hover { filter: brightness(1.1); }
+/* Inverted (text colour as background): high contrast in light and dark, any accent hue. */
+.ct-new { padding: 0.5rem 0.75rem; border-radius: 0.25rem; background: var(--card-fg-color); color: var(--card-bg-color); font-weight: 600; text-decoration: none; white-space: nowrap; }
+.ct-new:hover { opacity: 0.85; }
 .ct-tabs { display: flex; gap: 0.25rem; overflow-x: auto; border-bottom: 1px solid var(--card-border-color); }
 .ct-tab { display: inline-flex; align-items: center; gap: 0.375rem; margin-bottom: -1px; padding: 0.625rem 0.75rem; border: 0; border-bottom: 2px solid transparent; background: none; color: var(--card-muted-fg-color); font: inherit; font-weight: 500; white-space: nowrap; cursor: pointer; }
 .ct-tab:hover { color: var(--card-fg-color); }
