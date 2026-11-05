@@ -163,11 +163,10 @@ const textVars = [
 ];
 
 const motion: [string, string][] = [
-  ["--motion-duration-enter", "section fade-in from blur"],
+  ["--motion-duration-enter", "section fade-in"],
   ["--motion-duration-exit", "old page fade-out (View Transition)"],
   ["--motion-stagger", "delay between sections / list items"],
   ["--motion-ease-enter", "entrance easing"],
-  ["--motion-blur-enter", "starting blur"],
 ];
 
 // Media fixtures. The dataset has no assets yet, so images show the empty (bg-secondary) state.
@@ -488,10 +487,10 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
       <h2 class="text-headline-lg">Motion</h2>
       <p class="max-w-2xl text-body-sm text-fg-secondary">
         Page transitions (src/styles/motion.css). After an in-site navigation, children of{" "}
-        <code>animate-enter-stagger</code> fade in from blur one after another;{" "}
-        <code>animate-enter</code> does the same for one element. The nav pill gets{" "}
-        <code>view-transition-header</code> and the Get in touch button{" "}
-        <code>view-transition-header-action</code>, so both stay pinned. Off under reduced motion.
+        <code>animate-enter-stagger</code> fade in one after another; <code>animate-enter</code>{" "}
+        does the same for one element. The nav pill gets <code>view-transition-header</code> and the
+        Get in touch button <code>view-transition-header-action</code>, so both stay pinned. Off
+        under reduced motion.
       </p>
       <ul class="flex flex-col gap-2">
         {motion.map(([name, use]) => (

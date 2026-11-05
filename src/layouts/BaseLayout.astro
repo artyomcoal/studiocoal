@@ -81,10 +81,16 @@ const structuredData = serializeJsonLd(
       crossorigin
     />
     <!-- Entrance animation only after an in-site navigation (src/styles/motion.css).
-         Runs before first paint; direct visits stay static so LCP isn't delayed. -->
+         Runs before first paint; direct visits and reloads (which keep the referrer) stay
+         static so LCP isn't delayed. -->
     <script is:inline>
       try {
-        if (document.referrer && new URL(document.referrer).origin === location.origin) {
+        const nav = performance.getEntriesByType("navigation")[0];
+        if (
+          nav?.type !== "reload" &&
+          document.referrer &&
+          new URL(document.referrer).origin === location.origin
+        ) {
           document.documentElement.classList.add("nav-entered");
         }
       } catch {
