@@ -17,8 +17,7 @@
  *   (WCAG 2.2.2) and don't autoplay under prefers-reduced-motion.
  * - "player" videos show native controls and only load segments once played.
  * Code-defined videos (`video` prop, e.g. the home showreels in src/lib/showreels.ts) are
- *   always ambient. Their source is a Bunny playlist or a self-hosted file in public/ (played
- *   as a plain `src`, no hls.js); `poster` is an optional still from public/.
+ *   Bunny playlists played as "ambient", with Bunny's thumbnail as the poster.
  */
 import Pause from "@lucide/astro/icons/pause";
 import Play from "@lucide/astro/icons/play";
@@ -32,7 +31,7 @@ import { resolveMedia, type MediaData } from "@/sanity/media";
 interface Props {
   /** A Sanity visual. */
   media?: MediaData | null;
-  /** A video defined in code instead (ambient playback). Ignored when `media` resolves. */
+  /** A Bunny video defined in code instead (ambient playback). Ignored when `media` resolves. */
   video?: Showreel | null;
   /** Crop: portrait 4:5, landscape 16:9, square 1:1, thumbnail 4:3, hero 4:5 → 16:9 at md. */
   aspect: AspectName | "hero";
@@ -59,15 +58,18 @@ const image = resolved?.kind === "image" ? resolved.image : resolved?.video.post
 const video =
   resolved?.kind === "video"
     ? resolved.video
-    : !resolved && codeVideo?.src
-      ? { playlistUrl: codeVideo.src, playback: "ambient" as const, alt: null, poster: null }
+    : !resolved && codeVideo?.playlistUrl
+      ? {
+          playlistUrl: codeVideo.playlistUrl,
+          playback: "ambient" as const,
+          alt: null,
+          poster: null,
+        }
       : null;
-// Still for a code-defined video, from public/.
-const codePoster = video && !resolved ? codeVideo?.poster : undefined;
 const alt = resolved?.kind === "image" ? (resolved.image.alt ?? "") : "";
 // No uploaded poster: Bunny's thumbnail (checked at build time; null if Bunny has none).
 const bunnyPoster =
-  video && !image?.asset && !codePoster
+  video && !image?.asset
     ? await resolveBunnyThumbnail(video.playlistUrl, String(Astro.site ?? Astro.url.origin))
     : null;
 // If the chosen thumbnail fails in the browser anyway (Bunny's CDN can keep serving a cached
@@ -132,18 +134,6 @@ const playerPoster =
         style={image.lqip ? `background-image: url(${image.lqip})` : undefined}
       />
     </picture>
-  )}
-  {codePoster && (
-    <img
-      src={codePoster}
-      width={width}
-      height={height}
-      alt=""
-      loading={priority ? "eager" : "lazy"}
-      decoding={priority ? "sync" : "async"}
-      fetchpriority={priority ? "high" : "auto"}
-      class="absolute inset-0 size-full object-cover"
-    />
   )}
   {bunnyPoster && (
     <img
@@ -210,17 +200,13 @@ const playerPoster =
   const HLS_TYPE = "application/vnd.apple.mpegurl";
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-  /**
-   * Gives the <video> its source: a plain file (e.g. self-hosted MP4) or native HLS as `src`,
-   * hls.js/light for HLS everywhere else.
-   */
+  /** Gives the <video> its source: native HLS when supported, hls.js/light otherwise. */
   async function attach(video: HTMLVideoElement) {
     const src = video.dataset.src;
     if (!src || video.dataset.attached !== undefined) return;
     video.dataset.attached = "";
 
-    const isHls = new URL(src, location.href).pathname.endsWith(".m3u8");
-    if (!isHls || video.canPlayType(HLS_TYPE)) {
+    if (video.canPlayType(HLS_TYPE)) {
       video.src = src;
       return;
     }

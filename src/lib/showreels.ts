@@ -4,29 +4,24 @@ import type { SERVICES } from "./services";
 export type ServiceValue = (typeof SERVICES)[number]["value"];
 
 /**
- * A showreel video defined in code (not Sanity). It always plays as an ambient video: muted,
- * looped, autoplaying while on screen, with a pause button.
+ * A showreel video defined in code (not Sanity), hosted on Bunny Stream. It always plays as an
+ * ambient video: muted, looped, autoplaying while on screen, with a pause button. The poster is
+ * the video's Bunny thumbnail (src/lib/bunny.ts), so pick one in the Bunny dashboard.
  */
 export interface Showreel {
   /**
-   * Either a Bunny Stream HLS playlist (`https://vz-….b-cdn.net/<id>/playlist.m3u8`) or a
-   * self-hosted file in `public/` (e.g. `/showreels/brand.mp4`). `null` until the video
-   * exists: the row then shows the bg-secondary placeholder.
+   * The Bunny Stream HLS playlist, `https://vz-<zone>.b-cdn.net/<video id>/playlist.m3u8`.
+   * `null` until the video is uploaded: the row then shows the bg-secondary placeholder.
    */
-  src: string | null;
-  /**
-   * Still frame shown until the video plays (and under reduced motion), e.g.
-   * `/showreels/brand.jpg`. Optional for Bunny: its thumbnail is used automatically.
-   */
-  poster?: string;
+  playlistUrl: string | null;
 }
 
 /**
  * Home "Our services" showreels, one per service (4:3, shown at up to 192 px wide).
- * TODO: add the videos once they're exported.
+ * TODO: add the Bunny playlist URLs once the videos are uploaded.
  */
 export const SHOWREELS: Record<ServiceValue, Showreel> = {
-  brand: { src: null },
-  web: { src: null },
-  "digital-products": { src: null },
+  brand: { playlistUrl: null },
+  web: { playlistUrl: null },
+  "digital-products": { playlistUrl: null },
 };
