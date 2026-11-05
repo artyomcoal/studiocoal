@@ -76,6 +76,11 @@ const structuredData = serializeJsonLd(
         }
       }
     </style>
+    <!-- Hold the new page's first frame until the navbar is parsed, so the transition always
+         captures it. Without this, a slow response (the dev server) showed the page before the
+         body arrived: the navbar wasn't in the snapshot, so it vanished and popped back in.
+         Chromium only; others ignore it. Pages without a navbar unblock at the end of parsing. -->
+    <link rel="expect" href="#site-header" blocking="render" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
     <!-- Self-hosted fonts (public/fonts/). Both are used above the fold, so preload them. -->
