@@ -58,7 +58,8 @@ const ogImage = work.seo?.image?.asset
         ? await resolveBunnyThumbnail(socialSource.video.playlistUrl, site)
         : null;
 
-const seo = contentSeo(work);
+// Search description falls back to the short description, which fits Google's length best.
+const seo = contentSeo({ ...work, excerpt: work.summary ?? work.excerpt });
 const url = canonicalUrl(contentPath("work", work.slug ?? slug), site);
 const jsonLd = [
   project({

@@ -211,6 +211,7 @@ const demoWork = {
 };
 const demoListWork: FEATURED_WORK_QUERY_RESULT[number] = {
   ...demoWork,
+  summary: "Serverless cloud infrastructure for AI, ML and data teams.",
   client: "Modal",
   year: 2026,
   listingMedia: emptyMedia,
@@ -219,7 +220,7 @@ const demoListWorkVideo: FEATURED_WORK_QUERY_RESULT[number] = {
   ...demoListWork,
   _id: "demo-video",
   title: "Company AI",
-  excerpt: "Explain what company does and how we helped",
+  summary: "Explain what company does and how we helped",
   listingMedia: demoVideo("ambient"),
 };
 const demoArchiveWork: WORK_ARCHIVE_QUERY_RESULT[number] = {
@@ -725,12 +726,22 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
       <h2 class="text-headline-lg">WorkListCard</h2>
       <p class="text-body-sm text-fg-secondary">
         Card / Work Featured. Hover or Tab to a card for the "View work" label; the whole card is
-        the link.
+        the link. Shows the short description; without one, the long description cut to two lines.
       </p>
       <div class="grid gap-x-2 gap-y-12 md:grid-cols-2 xl:grid-cols-3">
         <WorkListCard work={demoListWork} />
         <WorkListCard work={demoListWorkVideo} />
-        <WorkListCard work={{ ...demoListWork, _id: "demo-bare", services: null, excerpt: null }} />
+        <WorkListCard
+          work={{
+            ...demoListWork,
+            _id: "demo-no-summary",
+            title: "No short description",
+            summary: null,
+          }}
+        />
+        <WorkListCard
+          work={{ ...demoListWork, _id: "demo-bare", services: null, summary: null, excerpt: null }}
+        />
       </div>
     </section>
 

@@ -5,6 +5,11 @@ import { previousSlugsField, slugField } from "./fields";
 import { mediaAspect } from "./media";
 import { HOME_FEATURED_LIMIT } from "../filters";
 
+/** Featured Work cards show two lines of Body SM: about 100 characters. */
+const SUMMARY_MAX = 100;
+/** Four sentences of Body SM on an archive card. */
+const EXCERPT_MAX = 500;
+
 export const work = defineType({
   name: "work",
   title: "Work",
@@ -18,6 +23,12 @@ export const work = defineType({
   ],
   fieldsets: [
     { name: "meta", title: "Client and year", options: { columns: 2 } },
+    {
+      name: "descriptions",
+      title: "Descriptions",
+      description:
+        "A short one for Featured Work cards, a long one for the archive and project page.",
+    },
     {
       name: "story",
       title: "Story",
@@ -72,18 +83,38 @@ export const work = defineType({
       validation: (rule) => rule.min(1).warning("Pick at least one project type."),
     }),
     defineField({
-      name: "excerpt",
-      title: "Description",
+      name: "summary",
+      title: "Short description",
       description:
-        "What the company does and how we helped, in one or two sentences. Shown on project cards, and used for search results unless SEO › Description is set.",
+        "One line, two at most: what the company does. Shown on Featured Work cards (home, services, recent work) and used for search results unless SEO › Search description is set. Left empty, cards show the long description cut to two lines.",
       type: "text",
-      rows: 3,
+      rows: 2,
       group: "details",
+      fieldset: "descriptions",
+      validation: (rule) =>
+        rule
+          .max(SUMMARY_MAX)
+          .warning(`Keep it to about ${SUMMARY_MAX} characters: cards show two lines.`),
+    }),
+    defineField({
+      // Stored as `excerpt` (its original name), so existing descriptions keep working.
+      name: "excerpt",
+      title: "Long description",
+      description:
+        "Two to four sentences: what the company does, what we did and why it mattered. Shown on the Work archive and at the top of the project page.",
+      type: "text",
+      rows: 5,
+      group: "details",
+      fieldset: "descriptions",
       validation: (rule) => [
         rule
-          .custom((value) => (value ? true : "Project cards show this under the name."))
+          .custom((value) =>
+            value ? true : "The Work archive and the project page show this under the name.",
+          )
           .warning(),
-        rule.max(200).warning("Keep it short: cards show it in full."),
+        rule
+          .max(EXCERPT_MAX)
+          .warning("That's long for the archive cards: aim for two to four sentences."),
       ],
     }),
     defineField({

@@ -32,6 +32,9 @@ const {
   priority = false,
   class: className,
 } = Astro.props;
+
+// The short description; without one, the long description cut to two lines (line-clamp-2).
+const description = work.summary ?? work.excerpt;
 ---
 
 <article
@@ -56,7 +59,7 @@ const {
           {work.title}
         </a>
       </Heading>
-      {work.excerpt && <p class="text-body-sm text-pretty">{work.excerpt}</p>}
+      {description && <p class="line-clamp-2 text-body-sm text-pretty">{description}</p>}
     </div>
     {work.services?.length ? (
       <ul class="flex flex-wrap gap-1" aria-label="Project type">

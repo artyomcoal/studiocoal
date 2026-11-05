@@ -38,6 +38,8 @@ const workCard = /* groq */ `{
   client,
   year,
   services,
+  // Short description for the card; the long one is the fallback (cut to two lines).
+  summary,
   excerpt,
   listingMedia${media}
 }`;
@@ -121,6 +123,7 @@ export const WORK_QUERY = defineQuery(
     client,
     year,
     services,
+    summary,
     excerpt,
     seo,
     industry,
