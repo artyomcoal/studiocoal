@@ -10,6 +10,7 @@ import { CLIENTS_QUERY, FEATURED_JOURNAL_QUERY, FEATURED_WORK_QUERY } from "@/sa
 import ClientsSection from "@/sections/ClientsSection.astro";
 import FeaturedArticlesSection from "@/sections/FeaturedArticlesSection.astro";
 import FeaturedWorkSection from "@/sections/FeaturedWorkSection.astro";
+import HomeHeroSection from "@/sections/HomeHeroSection.astro";
 import ServicesOverviewSection from "@/sections/ServicesOverviewSection.astro";
 
 const [featuredWork, clients, featuredPosts] = await Promise.all([
@@ -20,14 +21,17 @@ const [featuredWork, clients, featuredPosts] = await Promise.all([
 ---
 
 <PageLayout>
-  <section class="px-container pt-hero pb-12">
-    <h1 class="text-headline-xxl text-balance text-fg-primary">
-      Studio Coal helps technology companies go from zero to{" "}
-      <span class="font-mono tracking-normal text-fg-tertiary">launch</span> by designing{" "}
-      <span class="font-mono tracking-normal text-fg-tertiary">brands</span> people remember, trust
-      and use.
-    </h1>
-  </section>
+  <Fragment slot="head">
+    <!-- The hero's rotating words use Geist Mono SemiBold (only on this page). -->
+    <link
+      rel="preload"
+      href="/fonts/geist/GeistMono-SemiBold.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+  </Fragment>
+  <HomeHeroSection />
   <FeaturedWorkSection works={featuredWork} columns="2" />
   <ServicesOverviewSection />
   <ClientsSection clients={clients} />

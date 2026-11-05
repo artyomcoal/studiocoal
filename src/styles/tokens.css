@@ -231,6 +231,9 @@
   --motion-stagger: 110ms; /* delay between sections / list items */
   --motion-ease-enter: cubic-bezier(0.45, 0.05, 0.25, 1);
   --motion-blur-enter: 12px; /* starting blur of the entrance */
+  --motion-word-hold: 2600ms; /* how long each rotating headline word stays (home hero) */
+  --motion-duration-word: 400ms; /* rotating headline word: roll in / out (home hero) */
+  --motion-shift-word: 50%; /* how far a rotating word travels, share of its own height */
 
   /* Dialogs (Get in touch): scale + fade in from the anchor corner, reversed on close.
    * Values given by the owner, from permanent.is. */

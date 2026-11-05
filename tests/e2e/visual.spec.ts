@@ -2,6 +2,12 @@ import type { Page } from "@playwright/test";
 import { expect, test } from "./test";
 import { routes } from "./routes";
 
+// Reduced motion keeps the home headline's rotating words on their first word, so the
+// screenshot doesn't depend on when the rotation timer fires.
+test.beforeEach(async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+});
+
 /** Loads every image (lazy ones included) and waits for fonts, so full-page shots are stable. */
 async function settle(page: Page) {
   await page.evaluate(async () => {
