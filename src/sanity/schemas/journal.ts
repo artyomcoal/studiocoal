@@ -1,16 +1,5 @@
 import { defineField, defineType } from "sanity";
 import { previousSlugsField, slugField } from "./fields";
-import { SEO_TOO_LONG_FILTER } from "./seo";
-
-/** GROQ condition for a post that's missing something the site shows, or has an SEO problem. */
-export const JOURNAL_NEEDS_ATTENTION_FILTER = [
-  "!defined(slug.current)",
-  "!defined(publishedAt)",
-  "!defined(excerpt)",
-  "!defined(coverImage.asset)",
-  "defined(coverImage.asset) && !defined(coverImage.alt)",
-  SEO_TOO_LONG_FILTER,
-].join(" || ");
 
 export const journal = defineType({
   name: "journal",

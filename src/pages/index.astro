@@ -5,6 +5,7 @@
  */
 import { sanityClient } from "sanity:client";
 import PageLayout from "@/layouts/PageLayout.astro";
+import { HOME_FEATURED_LIMIT } from "@/sanity/filters";
 import {
   CLIENTS_QUERY,
   FEATURED_JOURNAL_QUERY,
@@ -17,7 +18,7 @@ import FeaturedWorkSection from "@/sections/FeaturedWorkSection.astro";
 import ServicesOverviewSection from "@/sections/ServicesOverviewSection.astro";
 
 const [featuredWork, thumbnails, clients, featuredPosts] = await Promise.all([
-  sanityClient.fetch(FEATURED_WORK_QUERY, { limit: 6 }),
+  sanityClient.fetch(FEATURED_WORK_QUERY, { limit: HOME_FEATURED_LIMIT }),
   sanityClient.fetch(SERVICE_THUMBNAILS_QUERY),
   sanityClient.fetch(CLIENTS_QUERY),
   sanityClient.fetch(FEATURED_JOURNAL_QUERY, { limit: 4 }),

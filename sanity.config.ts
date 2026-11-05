@@ -10,7 +10,7 @@ import { structure } from "./src/sanity/structure";
 const projectId = import.meta.env?.PUBLIC_SANITY_PROJECT_ID ?? process.env.PUBLIC_SANITY_PROJECT_ID;
 const dataset = import.meta.env?.PUBLIC_SANITY_DATASET ?? process.env.PUBLIC_SANITY_DATASET;
 
-const contextTemplates = new Set(["work-featured", "work-by-service"]);
+const contextTemplates = new Set(["work-featured"]);
 const redirectingTypes = new Set(["work", "journal"]);
 
 export default defineConfig({
@@ -24,20 +24,13 @@ export default defineConfig({
     // Singletons can't be created from the "new document" menu.
     templates: (templates) => [
       ...templates.filter(({ schemaType }) => !singletonTypes.has(schemaType)),
-      // Used by the filtered Work lists (src/sanity/structure.ts): a project created from
-      // "Featured on home page" or a project type list starts with that already set.
+      // Used by the Work table's Featured tab (components/WorkTable.tsx): a project created
+      // there starts with Featured on.
       {
         id: "work-featured",
         title: "Featured project",
         schemaType: "work",
         value: { featured: true },
-      },
-      {
-        id: "work-by-service",
-        title: "Project of a type",
-        schemaType: "work",
-        parameters: [{ name: "service", type: "string" }],
-        value: ({ service }: { service: string }) => ({ services: [service] }),
       },
     ],
   },

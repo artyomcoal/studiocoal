@@ -119,5 +119,8 @@ export function contentSeo({ title, excerpt, seo }: ContentSeoInput): ContentSeo
   };
 }
 
-/** Longest page title (before " — Studio Coal") that keeps the full title within the limit. */
-export const SEO_PAGE_TITLE_MAX = SEO_TITLE_LIMIT - (pageTitle("x").length - 1);
+/**
+ * Longest page title (before " — Studio Coal") that keeps the full title within the limit.
+ * A literal so Sanity typegen can evaluate GROQ that uses it; seo.test.ts checks the maths.
+ */
+export const SEO_PAGE_TITLE_MAX = 46;

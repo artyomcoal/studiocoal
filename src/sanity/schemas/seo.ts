@@ -64,9 +64,3 @@ export const seo = defineType({
     }),
   ],
 });
-
-/** GROQ: the page's search title or description is longer than Google shows. */
-export const SEO_TOO_LONG_FILTER = [
-  `length(coalesce(seo.title, title)) > ${SEO_PAGE_TITLE_MAX}`,
-  `length(coalesce(seo.description, excerpt)) > ${SEO_DESCRIPTION_LIMIT}`,
-].join(" || ");

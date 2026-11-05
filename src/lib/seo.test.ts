@@ -6,6 +6,8 @@ import {
   contentSeo,
   DEFAULT_DESCRIPTION,
   pageTitle,
+  SEO_PAGE_TITLE_MAX,
+  SEO_TITLE_LIMIT,
   SLUG_MAX_LENGTH,
   SLUG_PATTERN,
   slugify,
@@ -97,5 +99,11 @@ describe("contentPath", () => {
   it("prefixes the content type's path", () => {
     expect(contentPath("work", "acme")).toBe("/work/acme");
     expect(contentPath("journal", "hello")).toBe("/journal/hello");
+  });
+});
+
+describe("SEO_PAGE_TITLE_MAX", () => {
+  it("leaves room for the site name within the title limit", () => {
+    expect(SEO_PAGE_TITLE_MAX).toBe(SEO_TITLE_LIMIT - (pageTitle("x").length - 1));
   });
 });

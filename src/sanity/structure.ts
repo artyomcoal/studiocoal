@@ -1,26 +1,11 @@
 import type { StructureBuilder, StructureResolver } from "sanity/structure";
-import { SERVICES } from "../lib/services";
-import { JOURNAL_NEEDS_ATTENTION_FILTER } from "./schemas/journal";
-import { WORK_NEEDS_ATTENTION_FILTER } from "./schemas/work";
+import { WorkTable } from "./components/WorkTable";
+import { JOURNAL_NEEDS_ATTENTION_FILTER } from "./filters";
 
 const apiVersion = "2026-11-01";
 
-/** Any of the project's visuals is a video. */
-const USES_VIDEO = [
-  `listingMedia.kind == "video"`,
-  `heroMedia.kind == "video"`,
-  `"video" in archiveMedia[].kind`,
-  `"video" in content[].media.kind`,
-  `"video" in content[].left.kind`,
-  `"video" in content[].right.kind`,
-].join(" || ");
-
 /** Newest first: the order the site lists each type in. */
 const newestFirst = {
-  work: [
-    { field: "year", direction: "desc" },
-    { field: "_createdAt", direction: "desc" },
-  ],
   journal: [{ field: "publishedAt", direction: "desc" }],
 } as const;
 
@@ -58,20 +43,9 @@ function filteredList(
     );
 }
 
-/** A filtered list of Work documents. */
-const workList = (
-  S: StructureBuilder,
-  id: string,
-  title: string,
-  filter: string,
-  params?: Record<string, unknown>,
-  template?: { id: string; params?: Record<string, unknown> },
-) => filteredList(S, "work", id, title, filter, params, template);
-
 /**
- * Work: the full list plus filtered views for the questions editors ask most often
- * (what's on the home page, what's in each service, what isn't ready yet).
- * Every list can be re-sorted from its menu (the orderings on the work schema).
+ * Work: one table with tabs (All, Featured, On home page, Needs attention), search and sort,
+ * like a Webflow CMS collection (components/WorkTable.tsx). A row opens the project beside it.
  */
 const work = (S: StructureBuilder) =>
   S.listItem()
@@ -79,65 +53,10 @@ const work = (S: StructureBuilder) =>
     .title("Work")
     .schemaType("work")
     .child(
-      S.list()
+      S.component(WorkTable)
         .id("work")
         .title("Work")
-        .items([
-          workList(S, "work-all", "All projects", "true"),
-          workList(
-            S,
-            "work-featured",
-            "Featured on home page",
-            "featured == true",
-            {},
-            {
-              id: "work-featured",
-            },
-          ),
-          workList(S, "work-needs-attention", "Needs attention", WORK_NEEDS_ATTENTION_FILTER),
-          S.divider(),
-          S.listItem()
-            .id("work-by-service")
-            .title("By project type")
-            .child(
-              S.list()
-                .id("work-by-service")
-                .title("By project type")
-                .items([
-                  ...SERVICES.map(({ title, value }) =>
-                    workList(
-                      S,
-                      `work-service-${value}`,
-                      title,
-                      "$service in services",
-                      { service: value },
-                      { id: "work-by-service", params: { service: value } },
-                    ),
-                  ),
-                  S.divider(),
-                  workList(
-                    S,
-                    "work-service-none",
-                    "No project type",
-                    "count(coalesce(services, [])) == 0",
-                  ),
-                ]),
-            ),
-          S.listItem()
-            .id("work-by-media")
-            .title("By visuals")
-            .child(
-              S.list()
-                .id("work-by-media")
-                .title("By visuals")
-                .items([
-                  workList(S, "work-with-video", "Uses video", USES_VIDEO),
-                  workList(S, "work-images-only", "Images only", `!(${USES_VIDEO})`),
-                ]),
-            ),
-          S.divider(),
-          workList(S, "work-hidden", "Hidden from search engines", HIDDEN_FROM_SEARCH),
-        ]),
+        .child((documentId) => S.document().documentId(documentId).schemaType("work")),
     );
 
 /** Journal: every post, plus what's featured, what isn't ready yet and what's hidden. */
