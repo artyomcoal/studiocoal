@@ -34,6 +34,14 @@ export const deliverable = defineType({
       ],
     }),
     defineField({
+      name: "description",
+      title: "Description",
+      type: "text",
+      rows: 4,
+      description:
+        "Two or three sentences on what this service covers. The text inside its accordion on the Services page.",
+    }),
+    defineField({
       name: "projectTypes",
       title: "Project type",
       description:
