@@ -1,0 +1,206 @@
+---
+/**
+ * Home Hero Section
+ * The home page headline. Two words in Geist Mono SemiBold rotate through alternatives:
+ * launch → round → scale and brands → websites → products.
+ * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=5039-7455
+ *
+ * How the rotation avoids reflow:
+ * - Each rotating slot is an inline-grid with its words stacked in one cell. Its width is set
+ *   from the character count (monospace: N characters = N × (1ch + letter-spacing)) and eases
+ *   from word to word, so the text after it slides instead of jumping.
+ * - Motion: the incoming word rises from below and fades in, the outgoing word keeps rising
+ *   and fades out at the top (--motion-duration-word, --motion-shift-word, dialog easing).
+ * - Before rotating, the script sizes every slot to its longest word, lets the browser wrap
+ *   the headline, then locks those line breaks (<br> + nowrap). Every word fits its locked
+ *   line, so a rotation never re-wraps the text. Re-measured on resize and after fonts load.
+ * - Without JS, or under prefers-reduced-motion, only the first words show and the headline
+ *   wraps normally.
+ * - Screen readers get the first words only; the alternatives are aria-hidden.
+ */
+import { cn } from "@/lib/utils";
+
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+
+type Part = string | readonly string[];
+
+/** Plain text, or a rotating slot (first word is the static/no-JS one). */
+const parts: Part[] = [
+  "Studio Coal helps technology companies go from zero to",
+  ["launch", "round", "scale"],
+  "by designing",
+  ["brands", "websites", "products"],
+  "people remember, trust and use.",
+];
+
+// Split text into single words so the script can find where each line starts.
+const tokens: Part[] = parts.flatMap((part): Part[] =>
+  typeof part === "string" ? part.split(" ") : [part],
+);
+---
+
+<section class={cn("px-container pt-hero pb-12", className)}>
+  <h1 class="text-headline-xxl text-balance text-fg-primary" data-rotating-headline>
+    {tokens.map((token, i) => (
+      <Fragment>
+        {i > 0 && " "}
+        {typeof token === "string" ? (
+          <span data-token>{token}</span>
+        ) : (
+          <span
+            data-token
+            data-rotator
+            class="rotator inline-grid font-mono font-semibold whitespace-nowrap text-fg-tertiary"
+          >
+            {token.map((word, w) => (
+              <span
+                class="rotator-word col-start-1 row-start-1"
+                data-active={w === 0 ? "" : undefined}
+                aria-hidden={w === 0 ? undefined : "true"}
+              >
+                {word}
+              </span>
+            ))}
+          </span>
+        )}
+      </Fragment>
+    ))}
+  </h1>
+</section>
+
+<style>
+  /* Before the script runs (and without it) only the first word exists in the layout. */
+  .rotator-word:not([data-active]) {
+    display: none;
+  }
+
+  /* Waiting words sit below; the active one is in place; the leaving one exits upwards.
+   * A leaving word drops back below while invisible, so that move is never seen. */
+  [data-rotating] .rotator {
+    transition: width var(--motion-duration-word) var(--motion-ease-dialog);
+  }
+
+  [data-rotating] .rotator-word {
+    display: block;
+    opacity: 0;
+    transform: translateY(var(--motion-shift-word));
+    transition:
+      transform var(--motion-duration-word) var(--motion-ease-dialog),
+      opacity var(--motion-duration-word) var(--motion-ease-dialog);
+  }
+
+  [data-rotating] .rotator-word[data-active] {
+    opacity: 1;
+    transform: none;
+  }
+
+  [data-rotating] .rotator-word[data-leaving] {
+    transform: translateY(calc(var(--motion-shift-word) * -1));
+  }
+
+  /* While measuring / re-locking: jump straight to the target widths. */
+  [data-rotating][data-measuring] .rotator {
+    transition: none;
+  }
+
+  [data-locked] {
+    white-space: nowrap;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rotator,
+    .rotator-word {
+      transition: none !important;
+    }
+  }
+</style>
+
+<script>
+  const headline = document.querySelector<HTMLElement>("[data-rotating-headline]");
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (headline && !reducedMotion) {
+    const tokens = [...headline.querySelectorAll<HTMLElement>("[data-token]")];
+    const slots = [...headline.querySelectorAll<HTMLElement>("[data-rotator]")].map((el) => {
+      const words = [...el.querySelectorAll<HTMLElement>(".rotator-word")];
+      const lengths = words.map((w) => (w.textContent ?? "").trim().length);
+      return { el, words, lengths, longest: Math.max(...lengths) };
+    });
+    let index = 0;
+
+    // Monospace: every character advances 1ch plus the headline's letter-spacing (-4%).
+    const setWidth = (slot: (typeof slots)[number], chars: number) => {
+      const tracking = getComputedStyle(slot.el).letterSpacing;
+      slot.el.style.width = `calc(${chars} * (1ch + ${tracking === "normal" ? "0px" : tracking}))`;
+    };
+
+    /** Wrap with every slot at its longest word, then freeze those line breaks. */
+    const lock = () => {
+      headline.dataset.measuring = "";
+      headline.querySelectorAll("br[data-break]").forEach((br) => br.remove());
+      delete headline.dataset.locked;
+      slots.forEach((slot) => setWidth(slot, slot.longest));
+
+      // Read every position first: inserting a <br> re-balances (text-balance) the text after it.
+      // A slot's box sits a few px off the text around it, so a new line means at least half a
+      // line lower than the start of the current one.
+      const tops = tokens.map((token) => token.getBoundingClientRect().top);
+      const halfLine = parseFloat(getComputedStyle(headline).lineHeight) / 2;
+      let lineTop = tops[0];
+      const breaks = tokens.filter((_, i) => {
+        if (tops[i] - lineTop < halfLine) return false;
+        lineTop = tops[i];
+        return true;
+      });
+      breaks.forEach((token) => {
+        const br = document.createElement("br");
+        br.dataset.break = "";
+        token.before(br);
+      });
+
+      headline.dataset.locked = "";
+      slots.forEach((slot) => setWidth(slot, slot.lengths[index]));
+      // Read layout so the jump commits before transitions come back on.
+      void headline.offsetWidth;
+      delete headline.dataset.measuring;
+    };
+
+    const ms = (name: string) => parseFloat(getComputedStyle(headline).getPropertyValue(name)) || 0;
+    const hold = ms("--motion-word-hold");
+    const stagger = ms("--motion-stagger");
+    const step = hold + ms("--motion-duration-word");
+
+    const advance = () => {
+      index = (index + 1) % slots[0].words.length;
+      slots.forEach((slot, s) => {
+        window.setTimeout(() => {
+          slot.words.forEach((word, w) => {
+            word.toggleAttribute("data-leaving", word.hasAttribute("data-active"));
+            word.toggleAttribute("data-active", w === index);
+          });
+          setWidth(slot, slot.lengths[index]);
+        }, s * stagger);
+      });
+    };
+
+    headline.dataset.rotating = "";
+    lock();
+    document.fonts.ready.then(lock);
+
+    let lastWidth = headline.clientWidth;
+    // ResizeObserver already runs once per frame, before paint.
+    new ResizeObserver(() => {
+      if (headline.clientWidth === lastWidth) return;
+      lastWidth = headline.clientWidth;
+      lock();
+    }).observe(headline.parentElement ?? headline);
+
+    window.setInterval(() => {
+      if (!document.hidden) advance();
+    }, step);
+  }
+</script>

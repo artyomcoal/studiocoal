@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./test";
 import { routes } from "./routes";
 
 for (const route of routes) {

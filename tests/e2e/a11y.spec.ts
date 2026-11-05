@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./test";
 import { routes } from "./routes";
 
 // CLAUDE.md: WCAG 2.2 AA, except colour contrast. The low-contrast text tokens (fg-secondary,

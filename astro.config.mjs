@@ -6,6 +6,7 @@ import sanity from "@sanity/astro";
 import tailwindcss from "@tailwindcss/vite";
 import { createClient } from "@sanity/client";
 import { defineConfig } from "astro/config";
+import { fileURLToPath } from "node:url";
 import { buildRedirects } from "./src/lib/redirects.ts";
 import { REDIRECTS_QUERY, SITEMAP_QUERY } from "./src/sanity/queries.ts";
 
@@ -23,6 +24,13 @@ if (!PUBLIC_SANITY_PROJECT_ID || !PUBLIC_SANITY_DATASET) {
   );
 }
 
+// E2E_FIXTURES=1 (set by playwright.config.ts): build from the committed fixture dataset in
+// tests/fixtures/sanity/ instead of the live one, so the e2e tests never depend on what's
+// published. `sanity:client` is aliased to a fixture client; see CLAUDE.md › Quality › Tests.
+const fixtures = process.env.E2E_FIXTURES === "1";
+const fixtureModule = fixtures ? await import("./tests/fixtures/sanity/fixtures.ts") : null;
+fixtureModule?.installFixtureFetch();
+
 const site = "https://studiocoal.com";
 const apiVersion = "2026-11-01";
 
@@ -34,9 +42,15 @@ const sanityBuildClient = createClient({
   apiVersion,
   useCdn: false,
 });
+/** @type {typeof sanityBuildClient.fetch} */
+const buildFetch = fixtureModule
+  ? /** @type {any} -- fixture fetch mirrors client.fetch(query, params) */ (
+      fixtureModule.fetchFixture
+    )
+  : sanityBuildClient.fetch.bind(sanityBuildClient);
 const [sitemapPages, redirectSources] = await Promise.all([
-  sanityBuildClient.fetch(SITEMAP_QUERY),
-  sanityBuildClient.fetch(REDIRECTS_QUERY),
+  buildFetch(SITEMAP_QUERY),
+  buildFetch(REDIRECTS_QUERY),
 ]);
 /** @param {string} url */
 const pathOf = (url) => new URL(url).pathname.replace(/\/+$/, "") || "/";
@@ -86,5 +100,20 @@ export default defineConfig({
     // first /studio visit, re-bundles and reloads the page (a blank Studio and "Outdated
     // Optimize Dep" errors until then).
     optimizeDeps: { include: ["@sanity/vision"] },
+    define: fixtureModule
+      ? { "import.meta.env.COPYRIGHT_YEAR": JSON.stringify(fixtureModule.FIXTURE_YEAR) }
+      : {},
+    resolve: {
+      alias: fixtures
+        ? [
+            {
+              find: /^sanity:client$/,
+              replacement: fileURLToPath(
+                new URL("./tests/fixtures/sanity/sanity-client.ts", import.meta.url),
+              ),
+            },
+          ]
+        : [],
+    },
   },
 });
