@@ -1,14 +1,14 @@
 ---
 /**
- * Journal article page: header (back link, meta, title, excerpt), 16:9 cover, rich text body
+ * Journal article page: header (meta, title, excerpt), 16:9 cover (4px radius), rich text body
  * with an "On this page" list beside it on xl, a previous / next pager and the latest other
  * articles.
  * Figma: Article Template / breakpoint=xl|md|base (frames 5068:9132, 53350:13666, 53350:14038)
  *
- * Columns: header, body and pager share one centred column (base: full, md: 8 of 12,
+ * Columns: the header and body grids stop at max-w-container (1440) and centre; header, body
+ * and pager share one centred column (base: full, md: 8 of 12,
  * xl: 6 of 12); text inside it stops at a 65ch reading measure (RichText).
  */
-import ArrowLeft from "@lucide/astro/icons/arrow-left";
 import { sanityClient } from "sanity:client";
 import ArticlePager from "@/components/ArticlePager.astro";
 import ArticleToc from "@/components/ArticleToc.astro";
@@ -102,19 +102,11 @@ const jsonLd = [
     )}
   </Fragment>
 
-  <header class="grid-cols-layout px-container pt-40 pb-12 xl:pb-16">
-    <div class={`${column} flex flex-col gap-10 text-fg-primary`}>
-      <a
-        href="/journal"
-        class="group -m-1 flex w-fit items-center gap-1 rounded-xs p-1 text-label text-fg-secondary transition-colors outline-none hover:text-fg-primary focus-visible:ring-2 focus-visible:ring-interactive-focus-ring"
-      >
-        <ArrowLeft
-          aria-hidden="true"
-          class="size-4 transition-transform group-hover:-translate-x-0.5 motion-reduce:transition-none"
-        />
-        Journal
-      </a>
-      <div class="flex flex-col gap-6">
+  {/* One <article> for the whole post (header, cover, body), so its <h1> and <header> belong
+    to it. It staggers its parts like <main> does with sections. */}
+  <article class="animate-enter-stagger">
+    <header class="mx-auto grid-cols-layout max-w-container px-container pt-40 pb-12 xl:pb-16">
+      <div class={`${column} flex flex-col gap-6 text-fg-primary`}>
         <ul class="flex flex-wrap gap-1" aria-label="Article details">
           {post.category && (
             <li>
@@ -132,29 +124,29 @@ const jsonLd = [
         </ul>
         <h1 class="text-headline-xxl">{post.title}</h1>
         {post.excerpt && (
-          <p class="max-w-prose text-headline-md text-pretty text-fg-secondary">{post.excerpt}</p>
+          <p class="max-w-prose text-headline-md text-pretty text-fg-primary">{post.excerpt}</p>
         )}
       </div>
-    </div>
-  </header>
+    </header>
 
-  {cover && (
-    <div class="px-container">
-      <Media media={cover} aspect="landscape" sizes={coverSizes} priority class="rounded-none" />
-    </div>
-  )}
-
-  <div class="grid-cols-layout gap-y-16 px-container pt-12 pb-section xl:gap-y-24 xl:pt-16">
-    {headings.length > 1 && (
-      <aside class="hidden xl:col-span-2 xl:col-start-1 xl:row-start-1 xl:block">
-        <ArticleToc headings={headings} class="sticky top-24" />
-      </aside>
+    {cover && (
+      <div class="px-container">
+        <Media media={cover} aspect="landscape" sizes={coverSizes} priority />
+      </div>
     )}
-    <article class={`${column} xl:row-start-1`}>
-      <RichText value={body} />
-    </article>
-    <ArticlePager previous={post.previous} next={post.next} class={column} />
-  </div>
 
-  <FeaturedArticlesSection posts={recentPosts} heading="More from the journal" title="" />
+    <div class="mx-auto grid-cols-layout max-w-container gap-y-16 px-container pt-12 pb-section xl:gap-y-24 xl:pt-16">
+      {headings.length > 1 && (
+        <aside class="hidden xl:col-span-2 xl:col-start-1 xl:row-start-1 xl:block">
+          <ArticleToc headings={headings} class="sticky top-24" />
+        </aside>
+      )}
+      <div class={`${column} xl:row-start-1`}>
+        <RichText value={body} />
+      </div>
+      <ArticlePager previous={post.previous} next={post.next} class={column} />
+    </div>
+  </article>
+
+  <FeaturedArticlesSection posts={recentPosts} title="" />
 </PageLayout>
