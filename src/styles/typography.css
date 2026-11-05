@@ -38,6 +38,15 @@
   font-display: swap;
 }
 
+/* Geist Mono SemiBold: the rotating words in the home headline (preloaded on / only). */
+@font-face {
+  font-family: "Geist Mono";
+  src: url("/fonts/geist/GeistMono-SemiBold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Figma Theme › font family/* */
 @theme {
   --font-graphik: "Graphik", "Graphik Fallback", system-ui, sans-serif;
