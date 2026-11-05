@@ -7,7 +7,9 @@
  * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=2743-34179
  *
  * Images: srcset/sizes from the URL builder, LQIP blur behind the image, explicit dimensions.
- * Videos: the poster is a regular responsive <img>; the <video> sits on top.
+ * Videos: the poster is a regular responsive <img>; the <video> sits on top. Without an
+ *   uploaded poster, Bunny's own thumbnail is used (src/lib/bunny.ts); until it loads, or if
+ *   Bunny has none, the wrapper shows its bg-secondary background.
  * - Safari (and other browsers with native HLS) get the playlist as `src`.
  * - Everywhere else, hls.js/light is dynamic-imported, only once a video is within one
  *   viewport of the screen. Pages without video, and native-HLS browsers, never load it.
@@ -17,6 +19,7 @@
  */
 import Pause from "@lucide/astro/icons/pause";
 import Play from "@lucide/astro/icons/play";
+import { bunnyThumbnailCandidates, resolveBunnyThumbnail } from "@/lib/bunny";
 import { ASPECT, type AspectName } from "@/lib/media";
 import { cn } from "@/lib/utils";
 import { imageSrcSet, urlFor } from "@/sanity/image";
@@ -48,13 +51,25 @@ const height = Math.round(width / ratio);
 const image = resolved?.kind === "image" ? resolved.image : resolved?.video.poster;
 const video = resolved?.kind === "video" ? resolved.video : null;
 const alt = resolved?.kind === "image" ? (resolved.image.alt ?? "") : "";
+// No uploaded poster: Bunny's thumbnail (checked at build time; null if Bunny has none).
+const bunnyPoster =
+  video && !image?.asset
+    ? await resolveBunnyThumbnail(video.playlistUrl, String(Astro.site ?? Astro.url.origin))
+    : null;
+// If the chosen thumbnail fails in the browser anyway (Bunny's CDN can keep serving a cached
+// 404 for a while after it's created), swap to the first generated frame.
+const bunnyFallback = bunnyThumbnailCandidates(video?.playlistUrl).find(
+  (url) => url !== bunnyPoster,
+);
 const playerPoster =
-  video?.playback === "player" && image?.asset
-    ? urlFor(image)
-        .width(1920)
-        .height(Math.round(1920 / (aspect === "hero" ? ASPECT.landscape : ASPECT[aspect])))
-        .fit("crop")
-        .url()
+  video?.playback === "player"
+    ? image?.asset
+      ? urlFor(image)
+          .width(1920)
+          .height(Math.round(1920 / (aspect === "hero" ? ASPECT.landscape : ASPECT[aspect])))
+          .fit("crop")
+          .url()
+      : (bunnyPoster ?? undefined)
     : undefined;
 ---
 
@@ -104,6 +119,19 @@ const playerPoster =
       />
     </picture>
   )}
+  {bunnyPoster && (
+    <img
+      src={bunnyPoster}
+      data-bunny-fallback={bunnyFallback}
+      width={width}
+      height={height}
+      alt=""
+      loading={priority ? "eager" : "lazy"}
+      decoding={priority ? "sync" : "async"}
+      fetchpriority={priority ? "high" : "auto"}
+      class="absolute inset-0 size-full object-cover"
+    />
+  )}
   {video && (
     <>
       {/* eslint-disable-next-line astro/jsx-a11y/media-has-caption -- ambient videos are muted
@@ -141,6 +169,18 @@ const playerPoster =
 </div>
 
 <script>
+  // Bunny poster that failed to load (e.g. a CDN still caching a 404 for a new thumbnail):
+  // swap to the first generated frame. Covers images that failed before this script ran.
+  document.querySelectorAll<HTMLImageElement>("img[data-bunny-fallback]").forEach((img) => {
+    const swap = () => {
+      const fallback = img.dataset.bunnyFallback;
+      delete img.dataset.bunnyFallback;
+      if (fallback && img.src !== fallback) img.src = fallback;
+    };
+    if (img.complete && img.naturalWidth === 0) swap();
+    else img.addEventListener("error", swap, { once: true });
+  });
+
   const HLS_TYPE = "application/vnd.apple.mpegurl";
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 

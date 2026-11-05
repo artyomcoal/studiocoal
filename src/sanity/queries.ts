@@ -214,7 +214,14 @@ export const SOCIAL_IMAGES_QUERY = defineQuery(
         select(heroMedia.kind == "video" => heroMedia.video.poster, heroMedia.image)
       ),
       coverImage
-    ){ asset, crop, hotspot }
+    ){ asset, crop, hotspot },
+    // A video visual without a poster: the card uses Bunny's thumbnail instead.
+    "videoPlaylist": select(
+      _type == "work" => coalesce(
+        select(listingMedia.kind == "video" => listingMedia.video.playlistUrl),
+        select(heroMedia.kind == "video" => heroMedia.video.playlistUrl)
+      )
+    )
   }`,
 );
 
@@ -240,7 +247,9 @@ export const WORK_TABLE_QUERY = defineQuery(
       "thumbnail": select(
         listingMedia.kind == "video" => listingMedia.video.poster,
         listingMedia.image
-      ){ asset, crop, hotspot }
+      ){ asset, crop, hotspot },
+      // A video without a poster: the table shows Bunny's thumbnail.
+      "thumbnailVideo": select(listingMedia.kind == "video" => listingMedia.video.playlistUrl)
     },
     "home": *[_type == "work" && _id in path("*") && defined(slug.current)]
       | order(coalesce(featured, false) desc, year desc, _createdAt desc) [0...${HOME_FEATURED_LIMIT}]._id

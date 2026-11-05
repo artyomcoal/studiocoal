@@ -1,4 +1,5 @@
 import { defineArrayMember, defineField, defineType } from "sanity";
+import { videoPreviewMedia } from "../components/BunnyThumbnail";
 import { SERVICES, serviceTitle } from "../../lib/services";
 import { previousSlugsField, slugField } from "./fields";
 import { mediaAspect } from "./media";
@@ -271,13 +272,14 @@ export const work = defineType({
       kind: "listingMedia.kind",
       image: "listingMedia.image",
       poster: "listingMedia.video.poster",
+      playlistUrl: "listingMedia.video.playlistUrl",
     },
     // List rows read "Client · Year · Featured", with the project types underneath.
-    prepare: ({ title, client, year, featured, services, kind, image, poster }) => ({
+    prepare: ({ title, client, year, featured, services, kind, image, poster, playlistUrl }) => ({
       title: title || "Untitled project",
       subtitle: [client, year, featured && "Featured"].filter(Boolean).join(" · "),
       description: ((services as string[] | undefined) ?? []).map(serviceTitle).join(", "),
-      media: kind === "video" ? poster : image,
+      media: kind === "video" ? videoPreviewMedia(poster, playlistUrl) : image,
     }),
   },
 });

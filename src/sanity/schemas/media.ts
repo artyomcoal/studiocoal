@@ -1,7 +1,11 @@
 import { defineField, defineType, type CustomValidator } from "sanity";
+import { videoPreviewMedia } from "../components/BunnyThumbnail";
 import { aspectMismatch, isHlsUrl, type AspectName } from "../../lib/media";
 
-/** A Bunny Stream video, played over HLS. The poster lives in Sanity (hotspot, LQIP). */
+/**
+ * A Bunny Stream video, played over HLS. The poster is optional: without one, the site and
+ * the Studio use Bunny's own thumbnail (src/lib/bunny.ts).
+ */
 export const bunnyVideo = defineType({
   name: "bunnyVideo",
   title: "Video",
@@ -27,8 +31,7 @@ export const bunnyVideo = defineType({
       type: "image",
       options: { hotspot: true },
       description:
-        "Shown while the video loads and when visitors prefer reduced motion. Use a frame from the video.",
-      validation: (rule) => rule.required(),
+        "Optional. Shown while the video loads and when visitors prefer reduced motion. Leave empty to use the video's thumbnail from Bunny (the one chosen in Bunny, or its first frame).",
     }),
     defineField({
       name: "alt",
@@ -54,8 +57,12 @@ export const bunnyVideo = defineType({
     }),
   ],
   preview: {
-    select: { title: "alt", subtitle: "playlistUrl", media: "poster" },
-    prepare: ({ title, subtitle, media }) => ({ title: title || "Video", subtitle, media }),
+    select: { title: "alt", subtitle: "playlistUrl", poster: "poster" },
+    prepare: ({ title, subtitle, poster }) => ({
+      title: title || "Video",
+      subtitle,
+      media: videoPreviewMedia(poster, subtitle),
+    }),
   },
 });
 
@@ -122,10 +129,15 @@ export const media = defineType({
       image: "image",
       videoAlt: "video.alt",
       poster: "video.poster",
+      playlistUrl: "video.playlistUrl",
     },
-    prepare: ({ kind, imageAlt, image, videoAlt, poster }) =>
+    prepare: ({ kind, imageAlt, image, videoAlt, poster, playlistUrl }) =>
       kind === "video"
-        ? { title: videoAlt || "Video", subtitle: "Video", media: poster }
+        ? {
+            title: videoAlt || "Video",
+            subtitle: "Video",
+            media: videoPreviewMedia(poster, playlistUrl),
+          }
         : { title: imageAlt || "Image", subtitle: "Image", media: image },
   },
 });

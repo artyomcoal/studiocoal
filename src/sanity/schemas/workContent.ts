@@ -1,4 +1,5 @@
 import { defineField, defineType } from "sanity";
+import { videoPreviewMedia } from "../components/BunnyThumbnail";
 import { mediaAspect } from "./media";
 
 /** Work project content block: one full-width visual, 16:9. */
@@ -15,11 +16,16 @@ export const mediaFullWidth = defineType({
     }),
   ],
   preview: {
-    select: { kind: "media.kind", image: "media.image", poster: "media.video.poster" },
-    prepare: ({ kind, image, poster }) => ({
+    select: {
+      kind: "media.kind",
+      image: "media.image",
+      poster: "media.video.poster",
+      playlistUrl: "media.video.playlistUrl",
+    },
+    prepare: ({ kind, image, poster, playlistUrl }) => ({
       title: "Full-width visual",
       subtitle: kind === "video" ? "16:9 · video" : "16:9 · image",
-      media: kind === "video" ? poster : image,
+      media: kind === "video" ? videoPreviewMedia(poster, playlistUrl) : image,
     }),
   },
 });
@@ -44,11 +50,16 @@ export const mediaPair = defineType({
     }),
   ],
   preview: {
-    select: { kind: "left.kind", image: "left.image", poster: "left.video.poster" },
-    prepare: ({ kind, image, poster }) => ({
+    select: {
+      kind: "left.kind",
+      image: "left.image",
+      poster: "left.video.poster",
+      playlistUrl: "left.video.playlistUrl",
+    },
+    prepare: ({ kind, image, poster, playlistUrl }) => ({
       title: "Two visuals side by side",
       subtitle: "2 × 4:5",
-      media: kind === "video" ? poster : image,
+      media: kind === "video" ? videoPreviewMedia(poster, playlistUrl) : image,
     }),
   },
 });

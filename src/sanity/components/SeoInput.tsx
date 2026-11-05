@@ -10,6 +10,7 @@
 import { createImageUrlBuilder, type SanityImageSource } from "@sanity/image-url";
 import type { CSSProperties, ReactNode } from "react";
 import { useClient, useFormValue, type ObjectInputProps } from "sanity";
+import { BunnyThumbnail } from "./BunnyThumbnail";
 import {
   CONTENT_PATHS,
   contentPath,
@@ -27,7 +28,7 @@ interface ImageValue {
 interface MediaValue {
   kind?: "image" | "video";
   image?: ImageValue;
-  video?: { poster?: ImageValue };
+  video?: { poster?: ImageValue; playlistUrl?: string };
 }
 interface SeoValue {
   title?: string;
@@ -62,6 +63,17 @@ function mediaImage(media?: MediaValue): ImageValue | undefined {
  * Social image in the site's order: the SEO image, else a card generated at build time with
  * the title over the page's main visual (src/lib/social-image.ts).
  */
+/** A Work video visual (listing, else hero) without a poster: Bunny's thumbnail is used. */
+function bunnyPlaylist(doc: DocumentValue): string | undefined {
+  for (const media of [doc.listingMedia, doc.heroMedia]) {
+    if (media?.kind === "video" && !media.video?.poster?.asset?._ref && media.video?.playlistUrl) {
+      return media.video.playlistUrl;
+    }
+    if (mediaImage(media)) return undefined;
+  }
+  return undefined;
+}
+
 function socialImage(doc: DocumentValue, seo?: SeoValue): [ImageValue | undefined, string] {
   if (seo?.image?.asset?._ref) return [seo.image, "from the field below"];
   if (doc._type === "work") {
@@ -69,6 +81,8 @@ function socialImage(doc: DocumentValue, seo?: SeoValue): [ImageValue | undefine
     if (listing) return [listing, "generated: the title over the listing visual"];
     const hero = mediaImage(doc.heroMedia);
     if (hero) return [hero, "generated: the title over the project hero"];
+    if (bunnyPlaylist(doc))
+      return [undefined, "generated: the title over the video's Bunny thumbnail"];
   }
   if (doc._type === "journal" && doc.coverImage?.asset?._ref) {
     return [doc.coverImage, "generated: the title over the cover image"];
@@ -129,15 +143,35 @@ export function SeoInput(props: ObjectInputProps) {
           />
           <Meta label="Social image" source={imageSource} />
         </ul>
-        {imageUrl ? (
+        {imageUrl || (!value?.image?.asset?._ref && bunnyPlaylist(doc)) ? (
           <figure style={{ margin: 0, display: "grid", gap: "0.5rem" }}>
-            <img
-              src={imageUrl}
-              alt=""
-              width={600}
-              height={315}
-              style={{ width: "100%", maxWidth: "20rem", height: "auto", borderRadius: "0.25rem" }}
-            />
+            {imageUrl ? (
+              <img
+                src={imageUrl}
+                alt=""
+                width={600}
+                height={315}
+                style={{
+                  width: "100%",
+                  maxWidth: "20rem",
+                  height: "auto",
+                  borderRadius: "0.25rem",
+                }}
+              />
+            ) : (
+              <span
+                style={{
+                  display: "block",
+                  width: "100%",
+                  maxWidth: "20rem",
+                  aspectRatio: "1200 / 630",
+                  overflow: "hidden",
+                  borderRadius: "0.25rem",
+                }}
+              >
+                <BunnyThumbnail playlistUrl={bunnyPlaylist(doc)} />
+              </span>
+            )}
             <figcaption style={muted}>
               {value?.image?.asset?._ref
                 ? "Share image, cropped to 1200 × 630"
