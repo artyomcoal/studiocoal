@@ -16,17 +16,23 @@
  * - "ambient" videos autoplay muted and looped while on screen, have a pause button
  *   (WCAG 2.2.2) and don't autoplay under prefers-reduced-motion.
  * - "player" videos show native controls and only load segments once played.
+ * Code-defined videos (`video` prop, e.g. the home showreels in src/lib/showreels.ts) are
+ *   Bunny playlists played as "ambient", with Bunny's thumbnail as the poster.
  */
 import Pause from "@lucide/astro/icons/pause";
 import Play from "@lucide/astro/icons/play";
 import { bunnyThumbnailCandidates, resolveBunnyThumbnail } from "@/lib/bunny";
 import { ASPECT, type AspectName } from "@/lib/media";
+import type { Showreel } from "@/lib/showreels";
 import { cn } from "@/lib/utils";
 import { imageSrcSet, urlFor } from "@/sanity/image";
 import { resolveMedia, type MediaData } from "@/sanity/media";
 
 interface Props {
-  media: MediaData | null | undefined;
+  /** A Sanity visual. */
+  media?: MediaData | null;
+  /** A Bunny video defined in code instead (ambient playback). Ignored when `media` resolves. */
+  video?: Showreel | null;
   /** Crop: portrait 4:5, landscape 16:9, square 1:1, thumbnail 4:3, hero 4:5 → 16:9 at md. */
   aspect: AspectName | "hero";
   /** The `sizes` attribute: how wide the visual renders at each breakpoint. */
@@ -36,7 +42,7 @@ interface Props {
   class?: string;
 }
 
-const { media, aspect, sizes, priority = false, class: className } = Astro.props;
+const { media, video: codeVideo, aspect, sizes, priority = false, class: className } = Astro.props;
 
 const resolved = resolveMedia(media);
 // Base crop. A hero adds a 16:9 <source> from md.
@@ -49,7 +55,17 @@ const width = { portrait: 1600, landscape: 1920, square: 1600, thumbnail: 800, g
 const height = Math.round(width / ratio);
 
 const image = resolved?.kind === "image" ? resolved.image : resolved?.video.poster;
-const video = resolved?.kind === "video" ? resolved.video : null;
+const video =
+  resolved?.kind === "video"
+    ? resolved.video
+    : !resolved && codeVideo?.playlistUrl
+      ? {
+          playlistUrl: codeVideo.playlistUrl,
+          playback: "ambient" as const,
+          alt: null,
+          poster: null,
+        }
+      : null;
 const alt = resolved?.kind === "image" ? (resolved.image.alt ?? "") : "";
 // No uploaded poster: Bunny's thumbnail (checked at build time; null if Bunny has none).
 const bunnyPoster =
