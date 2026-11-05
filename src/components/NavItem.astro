@@ -6,6 +6,7 @@
  * One link in the Navbar. States from Figma "Navbar / NavItem":
  * Default (fg-secondary), Hovered (interactive-secondary-active), Focus (interactive-secondary-active + FocusState ring),
  * Active = current page (interactive-secondary-active + fg-primary, aria-current="page").
+ * In the dark theme the Hovered/Focus/Active background is bg-tertiary instead (Figma).
  */
 import { cva } from "class-variance-authority";
 import { cn } from "@/lib/utils";
@@ -23,13 +24,13 @@ const navItemVariants = cva(
   [
     "flex h-8 shrink-0 items-center rounded-xs p-2 text-label whitespace-nowrap",
     "transition-colors duration-150 ease-out outline-none",
-    "hover:bg-interactive-secondary-active",
-    "focus-visible:bg-interactive-secondary-active focus-visible:ring-2 focus-visible:ring-interactive-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg-primary",
+    "hover:bg-interactive-secondary-active dark:hover:bg-bg-tertiary",
+    "focus-visible:bg-interactive-secondary-active dark:focus-visible:bg-bg-tertiary focus-visible:ring-2 focus-visible:ring-interactive-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg-primary",
   ],
   {
     variants: {
       active: {
-        true: "bg-interactive-secondary-active text-fg-primary",
+        true: "bg-interactive-secondary-active text-fg-primary dark:bg-bg-tertiary",
         false: "text-fg-secondary",
       },
     },
