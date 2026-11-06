@@ -13,9 +13,10 @@ test("direct visit renders without the entrance", async ({ page }) => {
   expect(animation).toBe("none");
 });
 
-test("in-site navigation plays the entrance", async ({ page, baseURL }) => {
+test("in-site navigation plays the entrance once the page is ready", async ({ page, baseURL }) => {
   await page.goto("/", { referer: `${baseURL}/` });
   await expect(page.locator("html")).toHaveClass(/nav-entered/);
+  await expect(page.locator("html")).toHaveClass(/nav-ready/);
   const animation = await page
     .locator(firstSection)
     .evaluate((el) => getComputedStyle(el).animationName);
@@ -33,6 +34,7 @@ test("reduced motion turns the entrance off", async ({ page, baseURL }) => {
 
 test("the entrance is a plain fade: no filter on any frame", async ({ page, baseURL }) => {
   await page.goto("/", { referer: `${baseURL}/` });
+  await expect(page.locator("html")).toHaveClass(/nav-ready/);
   const keyframes = await page.locator(firstSection).evaluate((el) =>
     el
       .getAnimations()
@@ -41,6 +43,25 @@ test("the entrance is a plain fade: no filter on any frame", async ({ page, base
   );
   expect(keyframes.length).toBeGreaterThan(0);
   for (const frame of keyframes) expect(frame.filter ?? "none").toBe("none");
+});
+
+test("sections stay hidden until the page is ready, then fade to full opacity", async ({
+  page,
+  baseURL,
+}) => {
+  // Hold nav-ready back by stalling the fonts: the sections must stay at opacity 0.
+  await page.route("**/*.woff2", () => {});
+  await page.goto("/", { referer: `${baseURL}/`, waitUntil: "domcontentloaded" });
+  await expect(page.locator("html")).toHaveClass(/nav-entered/);
+  const hidden = await page.locator(firstSection).evaluate((el) => getComputedStyle(el).opacity);
+  if (!(await page.locator("html").getAttribute("class"))?.includes("nav-ready")) {
+    expect(hidden).toBe("0");
+  }
+  // The 1s cap releases it even though a font never arrives.
+  await expect(page.locator("html")).toHaveClass(/nav-ready/, { timeout: 3000 });
+  await expect
+    .poll(() => page.locator(firstSection).evaluate((el) => getComputedStyle(el).opacity))
+    .toBe("1");
 });
 
 test("a reload doesn't replay the entrance", async ({ page, baseURL }) => {

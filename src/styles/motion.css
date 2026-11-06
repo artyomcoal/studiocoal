@@ -5,8 +5,11 @@
  * 1. Cross-document View Transitions: every navigation is a normal page load. The old page
  *    fades out; the header's nav pill and Get in touch button (view-transition-header,
  *    view-transition-header-action) are named groups that don't animate at all.
- * 2. Entrance: after an in-site navigation, BaseLayout adds `nav-entered` to <html> and the
- *    children of `animate-enter-stagger` fade in, one after another. Opacity only: a filter
+ * 2. Entrance: after an in-site navigation, BaseLayout adds `nav-entered` to <html> (sections
+ *    hidden), then `nav-ready` once the old page has faded out and the new page's fonts and
+ *    on-screen images are decoded. Then the children of `animate-enter-stagger` fade in, one
+ *    after another. Sequential, never overlapping: the old page fades out to the background
+ *    (navbar pinned), then the new page fades in, with nothing popping in. Opacity only: a filter
  *    (the old blur) re-rasterises text when it's removed, which shows as a jump at the end.
  *    Direct visits and reloads don't animate, so the first paint (and LCP) is never delayed.
  *    Works without View Transition support (Firefox).
@@ -27,7 +30,7 @@
   animation: vt-fade-out var(--motion-duration-exit) ease both;
 }
 
-/* The new page shows at once; its sections play the entrance instead. */
+/* The new page shows at once (its sections are still hidden); they play the entrance after. */
 ::view-transition-new(root) {
   mix-blend-mode: normal;
   animation: none;
@@ -72,6 +75,9 @@
   from {
     opacity: 0;
   }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Put on the Navbar's nav pill and its Get in touch button so they stay in place during
@@ -85,9 +91,14 @@
   view-transition-name: site-header-action;
 }
 
-/* One element. */
+/* One element. Hidden from the first frame of an in-site navigation (`nav-entered`), faded in
+ * once BaseLayout marks the page ready (`nav-ready`). The resting opacity is 0 and the fade
+ * runs to 1 and holds it (fill both), so no frame ever shows the content before its fade. */
 @utility animate-enter {
   :where(.nav-entered) & {
+    opacity: 0;
+  }
+  :where(.nav-ready) & {
     animation: page-enter var(--motion-duration-enter) var(--motion-ease-enter) both;
   }
 }
@@ -95,26 +106,30 @@
 /* Each child enters one stagger step after the previous, capped at the 6th. */
 @utility animate-enter-stagger {
   :where(.nav-entered) & > * {
+    opacity: 0;
+  }
+  :where(.nav-ready) & > * {
     animation: page-enter var(--motion-duration-enter) var(--motion-ease-enter) both;
   }
-  :where(.nav-entered) & > :nth-child(2) {
+  :where(.nav-ready) & > :nth-child(2) {
     animation-delay: calc(var(--motion-stagger) * 1);
   }
-  :where(.nav-entered) & > :nth-child(3) {
+  :where(.nav-ready) & > :nth-child(3) {
     animation-delay: calc(var(--motion-stagger) * 2);
   }
-  :where(.nav-entered) & > :nth-child(4) {
+  :where(.nav-ready) & > :nth-child(4) {
     animation-delay: calc(var(--motion-stagger) * 3);
   }
-  :where(.nav-entered) & > :nth-child(5) {
+  :where(.nav-ready) & > :nth-child(5) {
     animation-delay: calc(var(--motion-stagger) * 4);
   }
-  :where(.nav-entered) & > :nth-child(n + 6) {
+  :where(.nav-ready) & > :nth-child(n + 6) {
     animation-delay: calc(var(--motion-stagger) * 5);
   }
 }
 
-/* Reduced motion: the View Transition is turned off next to the opt-in, in BaseLayout. */
+/* Reduced motion: the View Transition is turned off next to the opt-in, and BaseLayout never
+ * adds nav-entered, so nothing is hidden. This only stops a stray animation. */
 @media (prefers-reduced-motion: reduce) {
   .animate-enter,
   .animate-enter-stagger > * {
