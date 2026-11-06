@@ -10,6 +10,7 @@ import Media from "@/components/Media.astro";
 import RichText from "@/components/RichText.astro";
 import ArticleToc from "@/components/ArticleToc.astro";
 import NavItem from "@/components/NavItem.astro";
+import VideoControl from "@/components/VideoControl.astro";
 import BlogListCard from "@/components/BlogListCard.astro";
 import WorkArchiveCard from "@/components/WorkArchiveCard.astro";
 import WorkListCard from "@/components/WorkListCard.astro";
@@ -546,6 +547,33 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
           ))}
         </ul>
       </div>
+    </section>
+
+    <section class="flex flex-col gap-6">
+      <h2 class="text-headline-lg">VideoControl</h2>
+      <p class="max-w-2xl text-body-sm text-fg-secondary">
+        Figma "Play Button" (node 53654:5885). The one play / pause control on every video (Media);
+        primitive colours, identical in light and dark. Hover or press each to see the Hover /
+        Pressed state. On the site it appears on hover of the video or its card, when paused, or
+        always on touch screens.
+      </p>
+      <ul class="flex flex-wrap items-end gap-6">
+        <li class="flex flex-col gap-2">
+          <div class="group/media relative size-20 overflow-hidden rounded-xs bg-neutral-600">
+            <VideoControl label="Pause video" class="opacity-100" />
+          </div>
+          <span class="text-caption-sm text-fg-tertiary">Pause (playing)</span>
+        </li>
+        <li class="flex flex-col gap-2">
+          <div
+            data-paused
+            class="group/media relative size-20 overflow-hidden rounded-xs bg-neutral-600"
+          >
+            <VideoControl label="Play video" class="opacity-100" />
+          </div>
+          <span class="text-caption-sm text-fg-tertiary">Play (paused)</span>
+        </li>
+      </ul>
     </section>
 
     <section class="flex flex-col gap-6">

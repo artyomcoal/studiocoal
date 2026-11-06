@@ -1,0 +1,67 @@
+---
+/**
+ * Video Control
+ * The site's one play / pause control, on every video (Media renders it for ambient and player
+ * videos alike; no browser-default controls). Figma "Play Button" (node 53654:5885).
+ *
+ * Primitive palette only, no theme tokens: it sits on video, so it looks the same in light and
+ * dark. Box neutral-200 at 40%, 60% on hover / press; icon neutral-50 (play 65%, pause 75%, full
+ * on hover / press); background blur md behind Play, sm behind Pause.
+ *
+ * Must sit inside a `group/media` element: it shows Play while that element has `data-paused`,
+ * Pause otherwise. Visibility: hidden until the video (or the card around it) is hovered, the
+ * video is paused or the control focused; always shown on touch screens. Media's script wires the click and the aria-label.
+ */
+import { cn } from "@/lib/utils";
+
+interface Props {
+  /** Accessible name in the initial state ("Pause video" or "Play video"). */
+  label: string;
+  class?: string;
+}
+
+const { label, class: className } = Astro.props;
+---
+
+<button
+  type="button"
+  data-slot="media-toggle"
+  aria-label={label}
+  class={cn(
+    "group/control absolute right-2 bottom-2 z-10 grid size-6 cursor-pointer place-items-center rounded-xs bg-neutral-200/40 text-neutral-50 backdrop-blur-sm *:col-start-1 *:row-start-1",
+    "transition-[opacity,background-color] hover:bg-neutral-200/60 active:bg-neutral-200/60 group-data-paused/media:backdrop-blur-md",
+    // Revealed by hovering the video, or the card it sits in (cards cover the video with their
+    // stretched link, so the video itself never gets the hover): group/card (Work cards), group
+    // (Services overview rows).
+    "opacity-0 group-hover/media:opacity-100 group-hover/card:opacity-100 group-hover:opacity-100 group-data-paused/media:opacity-100 focus-visible:opacity-100 pointer-coarse:opacity-100",
+    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interactive-focus-ring",
+    className,
+  )}
+>
+  {/* Pause (while playing) */}
+  <svg
+    aria-hidden="true"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    class="opacity-75 transition-opacity group-hover/control:opacity-100 group-active/control:opacity-100 group-data-paused/media:hidden"
+  >
+    <path
+      d="M11.1686 16H9.50156V8H11.1686V16ZM14.5016 16H12.8346V8H14.5016V16Z"
+      fill="currentColor"
+    />
+  </svg>
+  {/* Play (while paused) */}
+  <svg
+    aria-hidden="true"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    class="hidden opacity-65 transition-opacity group-hover/control:opacity-100 group-active/control:opacity-100 group-data-paused/media:block"
+  >
+    <path
+      d="M15.1941 11.4659C15.5999 11.7033 15.5999 12.2967 15.1941 12.5341L9.41148 15.9165C9.00568 16.1538 8.49844 15.8571 8.49844 15.3824V8.6176C8.49844 8.14288 9.00568 7.84618 9.41148 8.08354L15.1941 11.4659Z"
+      fill="currentColor"
+    />
+  </svg>
+</button>
