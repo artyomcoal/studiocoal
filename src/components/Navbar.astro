@@ -87,11 +87,13 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
           Hidden until the first hover / focus / press: until then the current item shows its own
           background (plain CSS, see NavItem), so a page load measures nothing and animates
           nothing. On that first interaction the pill takes over in the same frame (identical
-          pixels), then slides. Positioned with --pill-x / --pill-w by the script below. */}
+          pixels), then slides. Positioned with --pill-x / --pill-w by the script below.
+          It animates left + width, not translate: a translate animation gets its own compositing
+          layer, and iOS Safari drew that layer over the item text (inside this scrolling list). */}
       <li
         aria-hidden="true"
         data-nav-pill
-        class="pointer-events-none absolute top-0 left-0 z-0 h-8 w-(--pill-w) translate-x-(--pill-x) rounded-xs bg-interactive-secondary-active opacity-0 transition-[translate,width,opacity] duration-(--motion-duration-nav-pill) ease-(--motion-ease-nav-pill) data-instant:transition-none data-visible:opacity-100 motion-reduce:transition-none"
+        class="pointer-events-none absolute top-0 left-(--pill-x) z-0 h-8 w-(--pill-w) rounded-xs bg-interactive-secondary-active opacity-0 transition-[left,width,opacity] duration-(--motion-duration-nav-pill) ease-(--motion-ease-nav-pill) data-instant:transition-none data-visible:opacity-100 motion-reduce:transition-none"
       ></li>
       {items.map((item) => (
         <li>
@@ -186,7 +188,62 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
           show(active ?? null);
       });
       // Keep it aligned if the layout changes while it's showing.
-      new ResizeObserver(() => live && target && jump(target)).observe(list);
+      // Only on a real size change: a ResizeObserver also fires once when it starts observing,
+      // which snapped an in-flight slide (e.g. the one resumed on the next page) to its end.
+      let listSize = "";
+      new ResizeObserver(([entry]) => {
+        const size = `${entry.contentRect.width}x${entry.contentRect.height}`;
+        const changed = listSize !== "" && size !== listSize;
+        listSize = size;
+        if (changed && live && target) jump(target);
+      }).observe(list);
+
+      // Hand the slide over to the next page. A quick click can navigate while the pill is still
+      // a few px short of the item; the next page drew the item in its final place, so the pill
+      // snapped. The old page saves where the pill is as it goes away; the next page starts it
+      // there and finishes the slide.
+      let navigatingTo = null;
+      const save = () => {
+        if (!navigatingTo || !("visible" in pill.dataset)) return;
+        const box = pill.getBoundingClientRect();
+        const origin = list.getBoundingClientRect().left - list.scrollLeft;
+        sessionStorage.setItem(
+          "navPill",
+          JSON.stringify({ to: navigatingTo, x: box.left - origin, w: box.width, t: Date.now() }),
+        );
+      };
+      // pageswap (Chromium 124+, Safari 18.2+) fires while the page is still live; by pagehide the
+      // pill's animation is already frozen at an earlier point, so use that only as a fallback.
+      addEventListener("onpageswap" in window ? "pageswap" : "pagehide", save);
+      const resume = () => {
+        let saved = null;
+        try {
+          saved = JSON.parse(sessionStorage.getItem("navPill") ?? "null");
+          sessionStorage.removeItem("navPill");
+        } catch {
+          return;
+        }
+        if (!saved || !active || saved.to !== active.pathname || Date.now() - saved.t > 2000)
+          return;
+        const box = active.getBoundingClientRect();
+        const origin = list.getBoundingClientRect().left - list.scrollLeft;
+        if (Math.abs(saved.x - (box.left - origin)) < 0.5 && Math.abs(saved.w - box.width) < 0.5)
+          return; // it had already arrived: nothing to finish
+        // Before the first paint: the pill where the old page left it, then the rest of the slide
+        // (measured once the font is ready, so the target is exact).
+        live = true;
+        pill.dataset.instant = "";
+        pill.style.setProperty("--pill-x", `${saved.x}px`);
+        pill.style.setProperty("--pill-w", `${saved.w}px`);
+        pill.dataset.visible = "";
+        void pill.offsetWidth;
+        delete pill.dataset.instant;
+        active.dataset.pillLive = "";
+        target = active;
+        if (fontsReady) show(active);
+        else document.fonts.ready.then(() => target === active && show(active));
+      };
+      resume();
 
       // A click or tap makes that item current straight away: its text turns primary and the
       // current item's secondary (they fade, see NavItem), while the next page loads. The next
@@ -199,6 +256,7 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
         for (const other of items) delete other.dataset.entering;
         item.dataset.entering = "";
         if (active) active.dataset.leaving = "";
+        navigatingTo = item.pathname;
         moveTo(item);
       });
       // Back / forward cache: the page comes back as it was left, so reset to the load state.
