@@ -243,18 +243,19 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
       // a few px short of the item; the next page drew the item in its final place, so the pill
       // snapped. The old page saves where the pill is as it goes away; the next page starts it
       // there and finishes the slide.
-      // A click or tap starts the slide here and navigates after a short head start (37.5% of the
-      // slide: with the ease-out curve the pill has covered about 80% of the way). The next page
-      // plays the rest of the same slide (Web Animations API, same duration and easing) from the
-      // time already elapsed, while the page transition runs. One continuous motion, with no wait
-      // for the whole slide, and only its slow tail runs during the page load. Clock-based
-      // (Date.now), so it doesn't depend on when or how the old page goes away.
+      // A click or tap starts the slide here and navigates once it has visibly arrived: at 75% of
+      // the slide the ease-out curve has covered 99.7% of the way (under 1px on the longest
+      // move). Navigating earlier showed on iPhone: Safari freezes the old page from the moment the
+      // navigation starts until the next one is ready (~170ms), so the pill stopped short and then
+      // snapped. The next page plays what's left of the same slide (Web Animations API, same
+      // duration and easing) from the elapsed time. Clock-based (Date.now), so it doesn't depend
+      // on when or how the old page goes away.
       const raw = getComputedStyle(document.documentElement)
         .getPropertyValue("--motion-duration-nav-pill")
         .trim(); // the minified CSS writes 400ms as ".4s"
       const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
       const duration = reduce ? 0 : (parseFloat(raw) || 0.4) * (raw.endsWith("ms") ? 1 : 1000);
-      const headStart = duration * 0.375;
+      const headStart = duration * 0.75;
       const easing =
         getComputedStyle(document.documentElement)
           .getPropertyValue("--motion-ease-nav-pill")
