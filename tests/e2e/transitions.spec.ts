@@ -93,6 +93,15 @@ test("the navbar logo is inline SVG, so it's drawn in the new page's first frame
   expect(await logo.evaluate((el) => el.tagName.toLowerCase())).toBe("svg");
 });
 
+test("the new page's first frame waits for the navbar, so it's always in the transition", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const expectLink = page.locator('head link[rel="expect"][blocking="render"]');
+  await expect(expectLink).toHaveAttribute("href", "#site-header");
+  await expect(page.locator("#site-header")).toHaveAttribute("data-slot", "navbar");
+});
+
 test("the nav pill's blur moves to its transition group while a transition runs", async ({
   page,
 }) => {
