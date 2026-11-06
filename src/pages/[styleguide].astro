@@ -557,8 +557,12 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
         <a href="/" class="underline">
           the home page
         </a>{" "}
-        at 375 / 768 / 1440. Hover and Focus are shown with their classes applied; hover and tab to
-        the Default item to see them live.
+        at 375 / 768 / 1440.
+      </p>
+      <p class="max-w-2xl text-body-sm text-fg-secondary">
+        Nav items are text only. One shared pill (bg interactive-secondary-active, rounded-xs) sits
+        under the current page and slides to the hovered, focused or pressed item: hover the live
+        navbar above to see it. Text colours change only after navigating.
       </p>
       <ul class="flex flex-wrap items-end gap-6">
         <li class="flex flex-col gap-2">
@@ -566,25 +570,27 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
           <span class="text-caption-sm text-fg-tertiary">Default</span>
         </li>
         <li class="flex flex-col gap-2">
-          <NavItem href="#" class="bg-bg-translucent">
-            Menu Item
-          </NavItem>
-          <span class="text-caption-sm text-fg-tertiary">Hovered</span>
+          <span class="relative rounded-xs bg-interactive-secondary-active">
+            <NavItem href="#">Menu Item</NavItem>
+          </span>
+          <span class="text-caption-sm text-fg-tertiary">Pill under (hover / focus / press)</span>
         </li>
         <li class="flex flex-col gap-2">
           <NavItem
             href="#"
-            class="bg-bg-translucent ring-2 ring-interactive-focus-ring ring-offset-2 ring-offset-bg-primary"
+            class="ring-2 ring-interactive-focus-ring ring-offset-2 ring-offset-bg-primary"
           >
             Menu Item
           </NavItem>
-          <span class="text-caption-sm text-fg-tertiary">Focus</span>
+          <span class="text-caption-sm text-fg-tertiary">Focus ring</span>
         </li>
         <li class="flex flex-col gap-2">
-          <NavItem href="#" active>
-            Menu Item
-          </NavItem>
-          <span class="text-caption-sm text-fg-tertiary">Active (current page)</span>
+          <span class="relative rounded-xs bg-interactive-secondary-active">
+            <NavItem href="#" active>
+              Menu Item
+            </NavItem>
+          </span>
+          <span class="text-caption-sm text-fg-tertiary">Active (current page) + pill</span>
         </li>
       </ul>
     </section>

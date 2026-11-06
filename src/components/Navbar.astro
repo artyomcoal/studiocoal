@@ -4,8 +4,11 @@
  * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=5005-6313
  *
  * Behaviour modelled on standard-projects.com: a fixed, always-visible frosted pill with every
- * link visible at every breakpoint (no hamburger menu). The current section is the filled
- * item. The nav pill and the button are named View Transition groups, so they stay pinned
+ * link visible at every breakpoint (no hamburger menu). One shared pill sits under the current
+ * section's item (its own CSS background until the first interaction) and slides to whichever
+ * item is hovered, focused or pressed (touch), then back
+ * when the pointer leaves. Moving the pill never changes the text colours; clicking or tapping
+ * an item does, immediately (see NavItem). The nav pill and the button are named View Transition groups, so they stay pinned
  * between pages. The names sit on them, not on <header>: a named element is a backdrop root,
  * which would stop the pill's backdrop-blur from seeing the page.
  *
@@ -76,7 +79,22 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
     </a>
     <!-- When the links don't fit (narrow phones, wider font rendering on Android/Linux) they
          scroll sideways inside the pill instead of overflowing it. Scrollbar hidden: no utility. -->
-    <ul class="flex min-w-0 items-center gap-0.5 overflow-x-auto [scrollbar-width:none]">
+    <ul
+      data-nav-list
+      class="relative isolate flex min-w-0 items-center gap-0.5 overflow-x-auto [scrollbar-width:none]"
+    >
+      {/* The one shared pill, behind the items (z-0 under their z-10, in this isolated list).
+          Hidden until the first hover / focus / press: until then the current item shows its own
+          background (plain CSS, see NavItem), so a page load measures nothing and animates
+          nothing. On that first interaction the pill takes over in the same frame (identical
+          pixels), then slides. Positioned with --pill-x / --pill-w by the script below.
+          It animates left + width, not translate: a translate animation gets its own compositing
+          layer, and iOS Safari drew that layer over the item text (inside this scrolling list). */}
+      <li
+        aria-hidden="true"
+        data-nav-pill
+        class="pointer-events-none absolute top-0 left-(--pill-x) z-0 h-8 w-(--pill-w) rounded-xs bg-interactive-secondary-active opacity-0 transition-[left,width,opacity] duration-(--motion-duration-nav-pill) ease-(--motion-ease-nav-pill) data-instant:transition-none data-visible:opacity-100 motion-reduce:transition-none"
+      ></li>
       {items.map((item) => (
         <li>
           <NavItem href={item.href} active={isActive(item.href)}>
@@ -86,6 +104,238 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
       ))}
     </ul>
   </nav>
+  {/* Inline and right after the list, so the pill is under the current item before the first
+      paint (no flash, nothing to measure later on a View Transition's first frame). */}
+  <script is:inline>
+    (() => {
+      const list = document.querySelector("[data-nav-list]");
+      const pill = list?.querySelector("[data-nav-pill]");
+      if (!list || !pill) return;
+      const items = [...list.querySelectorAll("[data-slot=nav-item]")];
+      const active = items.find((item) => item.getAttribute("aria-current") === "page");
+      let target = null;
+      let live = false;
+
+      // Fractional (getBoundingClientRect, not offsetLeft / offsetWidth, which round), so the
+      // pill lands exactly on the current item's own background when it takes over.
+      const measure = (item) => {
+        const box = item.getBoundingClientRect();
+        const origin = list.getBoundingClientRect().left - list.scrollLeft;
+        pill.style.setProperty("--pill-x", `${box.left - origin}px`);
+        pill.style.setProperty("--pill-w", `${box.width}px`);
+      };
+      // Put the pill on an item with no transition at all, committed before anything else moves.
+      const jump = (item) => {
+        pill.dataset.instant = "";
+        measure(item);
+        void pill.offsetWidth;
+        delete pill.dataset.instant;
+      };
+      // Slide the pill to an item (null hides it). From hidden it appears on the item and fades in.
+      // Where the pill is right now (mid-slide included), relative to the list.
+      const current = () => {
+        const box = pill.getBoundingClientRect();
+        const origin = list.getBoundingClientRect().left - list.scrollLeft;
+        return { x: box.left - origin, w: box.width };
+      };
+      // The latest slide: from, to and start time (carried over to the next page, see below).
+      let slide = null;
+      // A slide carried over from the previous page (Web Animations API), while it runs.
+      let carried = null;
+      // Stop the carried-over slide where it is, so a new move starts from that exact spot.
+      const settle = () => {
+        if (!carried) return;
+        const here = current();
+        carried.cancel();
+        carried = null;
+        pill.dataset.instant = "";
+        pill.style.setProperty("--pill-x", `${here.x}px`);
+        pill.style.setProperty("--pill-w", `${here.w}px`);
+        void pill.offsetWidth;
+        delete pill.dataset.instant;
+      };
+      const show = (item) => {
+        // Already on (or sliding to) this item: let the slide finish.
+        if (item && item === target && "visible" in pill.dataset) return;
+        settle();
+        target = item;
+        if (!item) return delete pill.dataset.visible;
+        const appearing = !("visible" in pill.dataset);
+        if (appearing) jump(item);
+        const from = current();
+        measure(item);
+        pill.dataset.visible = "";
+        const box = item.getBoundingClientRect();
+        const origin = list.getBoundingClientRect().left - list.scrollLeft;
+        slide = appearing
+          ? null
+          : { fromX: from.x, fromW: from.w, toX: box.left - origin, toW: box.width, t: Date.now() };
+      };
+      // First interaction: the pill replaces the current item's own background in the same frame.
+      const engage = () => {
+        if (live) return;
+        live = true;
+        if (!active) return;
+        pill.dataset.instant = "";
+        measure(active);
+        pill.dataset.visible = "";
+        void pill.offsetWidth;
+        delete pill.dataset.instant;
+        active.dataset.pillLive = "";
+        target = active;
+      };
+
+      // Only once the fonts are ready: measured in the fallback font, the pill would be a few px
+      // off and snap when Graphik lands. That happened right after a navigation, when the browser
+      // reports the pointer (still over the clicked item) entering before the font is decoded.
+      let fontsReady = document.fonts?.status !== "loading";
+      let pending = null;
+      document.fonts?.ready.then(() => {
+        fontsReady = true;
+        if (pending) {
+          engage();
+          show(pending);
+          pending = null;
+        }
+      });
+      const moveTo = (item) => {
+        if (!fontsReady) return void (pending = item);
+        engage();
+        show(item);
+      };
+      // Touch moves the pill only from the click. iOS Safari treats a tap whose touch-start or
+      // hover handlers change what's on screen as a hover and fires no click, so moving the pill
+      // on pointerenter / pointerdown for touch sometimes swallowed the tap (pill moved, no
+      // navigation).
+      let touch = false;
+      for (const item of items) {
+        for (const type of ["pointerenter", "pointerdown"]) {
+          item.addEventListener(type, (event) => {
+            touch = event.pointerType === "touch";
+            if (!touch) moveTo(item);
+          });
+        }
+        item.addEventListener("focus", () => touch || moveTo(item));
+      }
+      // Back to the current item when a mouse leaves or focus moves out. Not after a touch: the
+      // tap is about to navigate, so the pill stays on the tapped item.
+      list.addEventListener("pointerleave", (event) => {
+        if (event.pointerType === "touch") return;
+        pending = null;
+        if (live) show(active ?? null);
+      });
+      list.addEventListener("focusout", (event) => {
+        if (live && !list.contains(event.relatedTarget) && !list.matches(":hover"))
+          show(active ?? null);
+      });
+      // Keep it aligned if the layout changes while it's showing.
+      // Only on a real size change: a ResizeObserver also fires once when it starts observing,
+      // which snapped an in-flight slide (e.g. the one resumed on the next page) to its end.
+      let listSize = "";
+      new ResizeObserver(([entry]) => {
+        const size = `${entry.contentRect.width}x${entry.contentRect.height}`;
+        const changed = listSize !== "" && size !== listSize;
+        listSize = size;
+        if (changed && live && target) jump(target);
+      }).observe(list);
+
+      // Hand the slide over to the next page. A quick click can navigate while the pill is still
+      // a few px short of the item; the next page drew the item in its final place, so the pill
+      // snapped. The old page saves where the pill is as it goes away; the next page starts it
+      // there and finishes the slide.
+      // A click or tap starts the slide here and navigates once it has visibly arrived: at 75% of
+      // the slide the ease-out curve has covered 99.7% of the way (under 1px on the longest
+      // move). Navigating earlier showed on iPhone: Safari freezes the old page from the moment the
+      // navigation starts until the next one is ready (~170ms), so the pill stopped short and then
+      // snapped. The next page plays what's left of the same slide (Web Animations API, same
+      // duration and easing) from the elapsed time. Clock-based (Date.now), so it doesn't depend
+      // on when or how the old page goes away.
+      const raw = getComputedStyle(document.documentElement)
+        .getPropertyValue("--motion-duration-nav-pill")
+        .trim(); // the minified CSS writes 400ms as ".4s"
+      const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const duration = reduce ? 0 : (parseFloat(raw) || 0.4) * (raw.endsWith("ms") ? 1 : 1000);
+      const headStart = duration * 0.75;
+      const easing =
+        getComputedStyle(document.documentElement)
+          .getPropertyValue("--motion-ease-nav-pill")
+          .trim() || "ease-out";
+      let navigation = 0;
+      const carryOver = () => {
+        let saved = null;
+        try {
+          saved = JSON.parse(sessionStorage.getItem("navPill") ?? "null");
+          sessionStorage.removeItem("navPill");
+        } catch {
+          return;
+        }
+        if (!saved || !active || saved.to !== active.pathname) return;
+        const elapsed = Date.now() - saved.t;
+        if (elapsed < 0 || elapsed >= duration) return; // it had already arrived
+        // Before the first paint: the pill takes over from the item's own background, resting on
+        // the target, with the rest of the slide playing on top of that.
+        live = true;
+        target = active;
+        pill.dataset.instant = "";
+        pill.style.setProperty("--pill-x", `${saved.toX}px`);
+        pill.style.setProperty("--pill-w", `${saved.toW}px`);
+        pill.dataset.visible = "";
+        void pill.offsetWidth;
+        delete pill.dataset.instant;
+        active.dataset.pillLive = "";
+        carried = pill.animate(
+          [
+            { left: `${saved.fromX}px`, width: `${saved.fromW}px` },
+            { left: `${saved.toX}px`, width: `${saved.toW}px` },
+          ],
+          { duration, easing },
+        );
+        carried.currentTime = elapsed;
+        carried.onfinish = () => (carried = null);
+      };
+      carryOver();
+
+      // A click or tap makes that item current straight away: its text turns primary and the
+      // current item's secondary (they fade, see NavItem) while the pill slides; the next page
+      // opens with the same colours. Not for a modified click (new tab / window).
+      list.addEventListener("click", (event) => {
+        const item = event.target.closest("[data-slot=nav-item]");
+        if (!item || item === active || event.defaultPrevented) return;
+        if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
+          return;
+        event.preventDefault();
+        for (const other of items) delete other.dataset.entering;
+        item.dataset.entering = "";
+        if (active) active.dataset.leaving = "";
+        moveTo(item);
+        const left = slide && target === item ? duration - (Date.now() - slide.t) : 0;
+        clearTimeout(navigation);
+        navigation = setTimeout(
+          () => {
+            if (slide && target === item)
+              sessionStorage.setItem("navPill", JSON.stringify({ to: item.pathname, ...slide }));
+            location.assign(item.href);
+          },
+          Math.max(0, Math.min(left, headStart)),
+        );
+      });
+      // Back / forward cache: the page comes back as it was left, so reset to the load state.
+      addEventListener("pageshow", (event) => {
+        if (!event.persisted) return;
+        live = false;
+        target = null;
+        clearTimeout(navigation);
+        carried?.cancel();
+        carried = null;
+        delete pill.dataset.visible;
+        for (const item of items) {
+          delete item.dataset.entering;
+          delete item.dataset.leaving;
+          delete item.dataset.pillLive;
+        }
+      });
+    })();
+  </script>
 
   <!-- One button for every breakpoint. On base its wrapper covers the dynamic viewport (h-dvh)
        and pins it to the bottom centre; from md it sits in the header row. -->

@@ -3,10 +3,14 @@
  * Nav Item
  * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=704-3403
  *
- * One link in the Navbar. States from Figma "Navbar / NavItem":
- * Default (fg-secondary), Hovered (interactive-secondary-active), Focus (interactive-secondary-active + FocusState ring),
- * Active = current page (interactive-secondary-active + fg-primary, aria-current="page").
- * In the dark theme the Hovered/Focus/Active background is bg-tertiary instead (Figma).
+ * One link in the Navbar. Its background is the Navbar's one shared pill (data-nav-pill), which
+ * slides under the hovered / focused / pressed item. Until the first interaction the current
+ * item shows the same background itself (plain CSS); the pill then takes over (data-pill-live).
+ * Text: Default fg-secondary, Active = current page (aria-current="page") fg-primary. Hover and
+ * focus never change the text colour. A click or tap does, at once: the Navbar's script sets
+ * data-entering on the clicked item (primary) and data-leaving on the current one
+ * (secondary), so the colours fade over while the next page loads.
+ * Focus keeps the FocusState ring.
  */
 import { cva } from "class-variance-authority";
 import { cn } from "@/lib/utils";
@@ -22,15 +26,23 @@ const { href, active = false, class: className } = Astro.props;
 
 const navItemVariants = cva(
   [
-    "flex h-8 shrink-0 items-center rounded-xs p-2 text-label whitespace-nowrap",
-    "transition-colors duration-150 ease-out outline-none",
-    "hover:bg-interactive-secondary-active dark:hover:bg-bg-tertiary",
-    "focus-visible:bg-interactive-secondary-active dark:focus-visible:bg-bg-tertiary focus-visible:ring-2 focus-visible:ring-interactive-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg-primary",
+    // relative: painted above the pill, which comes before the items in the list.
+    "relative z-10 flex h-8 shrink-0 items-center rounded-xs p-2 text-label whitespace-nowrap",
+    // The current item's own background, until the Navbar's shared pill takes over
+    // (data-pill-live). Plain CSS, so the first paint needs no script or measuring.
+    "aria-[current=page]:not-data-pill-live:bg-interactive-secondary-active",
+    // iOS Safari draws a grey tap highlight over a tapped link, on top of its text, for about
+    // half a second; the pill already shows the press. No token: it's an on/off switch.
+    "[-webkit-tap-highlight-color:transparent]",
+    // Text colour only: the background hand-over to the pill must be instant.
+    "transition-[color] duration-150 ease-out outline-none",
+    "focus-visible:ring-2 focus-visible:ring-interactive-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg-primary",
+    "data-entering:text-fg-primary data-leaving:text-fg-secondary",
   ],
   {
     variants: {
       active: {
-        true: "bg-interactive-secondary-active text-fg-primary dark:bg-bg-tertiary",
+        true: "text-fg-primary",
         false: "text-fg-secondary",
       },
     },
