@@ -13,17 +13,18 @@
  * - Safari (and other browsers with native HLS) get the playlist as `src`.
  * - Everywhere else, hls.js/light is dynamic-imported, only once a video is within one
  *   viewport of the screen. Pages without video, and native-HLS browsers, never load it.
- * - "ambient" videos autoplay muted and looped while on screen, have a pause button
- *   (WCAG 2.2.2) and don't autoplay under prefers-reduced-motion.
- * - "player" videos show native controls and only load segments once played.
+ * - Every video gets the site's one control, VideoControl (no browser-default controls).
+ * - "ambient" videos autoplay muted and looped while on screen, can be paused (WCAG 2.2.2) and
+ *   don't autoplay under prefers-reduced-motion.
+ * - "player" videos start paused (Play shown), play with sound and their first caption track
+ *   on, and only load segments once played.
  * Code-defined videos (`video` prop, e.g. the home showreels in src/lib/showreels.ts) are
  *   Bunny playlists played as "ambient", with Bunny's thumbnail as the poster.
  */
-import Pause from "@lucide/astro/icons/pause";
-import Play from "@lucide/astro/icons/play";
 import { bunnyThumbnailCandidates, resolveBunnyThumbnail } from "@/lib/bunny";
 import { ASPECT, type AspectName } from "@/lib/media";
 import type { Showreel } from "@/lib/showreels";
+import VideoControl from "@/components/VideoControl.astro";
 import { cn } from "@/lib/utils";
 import { imageSrcSet, urlFor } from "@/sanity/image";
 import { resolveMedia, type MediaData } from "@/sanity/media";
@@ -92,6 +93,7 @@ const playerPoster =
 <div
   data-slot="media"
   data-playback={video?.playback}
+  data-paused={video?.playback === "player" ? "" : undefined}
   class={cn(
     "group/media relative overflow-hidden rounded-sm bg-bg-secondary",
     {
@@ -165,21 +167,10 @@ const playerPoster =
         playsinline
         muted={video.playback === "ambient"}
         loop={video.playback === "ambient"}
-        controls={video.playback === "player"}
         aria-label={video.alt || undefined}
         aria-hidden={!video.alt && video.playback === "ambient" ? "true" : undefined}
       />
-      {video.playback === "ambient" && (
-        <button
-          type="button"
-          data-slot="media-toggle"
-          aria-label="Pause video"
-          class="absolute right-2 bottom-2 z-10 flex size-6 cursor-pointer items-center justify-center rounded-xs bg-bg-media-label text-neutral-50 opacity-0 backdrop-blur-sm transition-opacity group-hover/media:opacity-100 group-data-paused/media:opacity-100 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interactive-focus-ring pointer-coarse:opacity-100"
-        >
-          <Pause class="size-3 group-data-paused/media:hidden" aria-hidden="true" />
-          <Play class="hidden size-3 group-data-paused/media:block" aria-hidden="true" />
-        </button>
-      )}
+      <VideoControl label={video.playback === "player" ? "Play video" : "Pause video"} />
     </>
   )}
 </div>
@@ -278,20 +269,38 @@ const playerPoster =
 
     for (const video of videos) {
       nearby.observe(video);
+      const toggle = root(video).querySelector("[data-slot=media-toggle]");
+
+      if (video.dataset.playback === "player") {
+        // Player: Play starts it with sound and turns on its first caption track; it shows Play
+        // again when paused or finished.
+        toggle?.addEventListener("click", () => {
+          if (video.paused) {
+            const captions = [...video.textTracks].find(
+              (track) => track.kind === "subtitles" || track.kind === "captions",
+            );
+            if (captions && captions.mode === "disabled") captions.mode = "showing";
+            setPaused(video, false);
+            play(video);
+          } else pause(video);
+        });
+        video.addEventListener("pause", () => setPaused(video, true));
+        video.addEventListener("ended", () => setPaused(video, true));
+        video.addEventListener("play", () => setPaused(video, false));
+        continue;
+      }
       if (video.dataset.playback !== "ambient") continue;
 
       video.addEventListener("playing", () => root(video).setAttribute("data-playing", ""));
       if (reducedMotion.matches) setPaused(video, true);
       visible.observe(video);
 
-      root(video)
-        .querySelector("[data-slot=media-toggle]")
-        ?.addEventListener("click", () => {
-          const paused = !root(video).hasAttribute("data-paused");
-          setPaused(video, paused);
-          if (paused) pause(video);
-          else play(video);
-        });
+      toggle?.addEventListener("click", () => {
+        const paused = !root(video).hasAttribute("data-paused");
+        setPaused(video, paused);
+        if (paused) pause(video);
+        else play(video);
+      });
     }
   }
 </script>
