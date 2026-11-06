@@ -525,9 +525,46 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
        and pins it to the bottom centre; from md it sits in the header row. -->
   <div class="pointer-events-none fixed inset-x-0 top-0 flex h-dvh items-end justify-center p-4 md:static md:h-auto md:p-0">
     <!-- Keep clear of the iOS home indicator (no token for a device inset). -->
-    <div class="pointer-events-auto mb-[env(safe-area-inset-bottom)] view-transition-header-action md:mb-0">
+    <!-- Mobile: hides on scroll down (slides down off-screen) once the page has scrolled half the
+         viewport, and comes back on scroll up (script below). The slide clears the button, the
+         16px bottom gap (p-4) and the iOS home-indicator inset: arbitrary calc, no token for that
+         sum. md+ keeps it in place (top right). -->
+    <div
+      data-cta
+      class="pointer-events-auto mb-[env(safe-area-inset-bottom)] transition-transform duration-(--motion-duration-nav-pill) ease-(--motion-ease-nav-pill) view-transition-header-action data-hidden:translate-y-[calc(100%_+_var(--spacing)*4_+_env(safe-area-inset-bottom))] motion-reduce:transition-none md:mb-0 md:data-hidden:translate-y-0"
+    >
       <!-- The "Get in touch" button is the dialog's trigger, rendered by the modal. -->
       <GetInTouchModal />
     </div>
   </div>
 </header>
+
+<script is:inline>
+  // Get in touch, mobile: hide while scrolling down once the page has scrolled half the (dynamic)
+  // viewport; show again on any scroll up, near the top, on keyboard focus, from md up and on a
+  // back / forward cache restore. Movements under 8px are ignored (momentum, iOS address bar).
+  (() => {
+    const cta = document.querySelector("[data-cta]");
+    if (!cta) return;
+    const wide = matchMedia("(min-width: 48rem)");
+    const set = (hide) => cta.toggleAttribute("data-hidden", hide);
+    let lastY = scrollY;
+    addEventListener(
+      "scroll",
+      () => {
+        const y = scrollY;
+        if (wide.matches || y < innerHeight * 0.5) {
+          lastY = y;
+          return set(false);
+        }
+        if (Math.abs(y - lastY) < 8) return;
+        set(y > lastY && !cta.contains(document.activeElement));
+        lastY = y;
+      },
+      { passive: true },
+    );
+    cta.addEventListener("focusin", () => set(false));
+    wide.addEventListener("change", () => set(false));
+    addEventListener("pageshow", (event) => event.persisted && set(false));
+  })();
+</script>

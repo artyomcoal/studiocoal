@@ -85,3 +85,28 @@ test.describe("get in touch dialog", () => {
     expect(results.violations).toEqual([]);
   });
 });
+
+// Navbar: on mobile the Get in touch button slides away while scrolling down (past half the
+// viewport) and comes back on scroll up; from md it stays put.
+test("get in touch hides on scroll down and returns on scroll up (mobile only)", async ({
+  page,
+}) => {
+  await page.goto("/work/northlight");
+  const cta = page.locator("[data-cta]");
+  const scrollTo = async (y: number) => {
+    await page.evaluate((y) => window.scrollTo(0, y), y);
+    await page.waitForTimeout(100);
+  };
+  const half = await page.evaluate(() => innerHeight * 0.5);
+  await scrollTo(half * 0.5);
+  await expect(cta).not.toHaveAttribute("data-hidden", "");
+  await scrollTo(half + 200);
+  await scrollTo(half + 400);
+  if ((page.viewportSize()?.width ?? 0) >= 768) {
+    await expect(cta).not.toHaveAttribute("data-hidden", "");
+    return;
+  }
+  await expect(cta).toHaveAttribute("data-hidden", "");
+  await scrollTo(half + 300);
+  await expect(cta).not.toHaveAttribute("data-hidden", "");
+});
