@@ -3,6 +3,8 @@
  * About Principles Section
  * "Our how": header and a principles accordion (Headline MD triggers) in columns 1–5 at xl,
  * with the header at the top and the accordion bottom-aligned to a square visual in 7–12.
+ * The accordion grows downward: CSS bottom-aligns it (first paint matches Figma, no shift), then
+ * the script below pins its top there, so opening an item only moves the items under it.
  * Stacked below xl (header, accordion, visual). The visual is set in code, not Sanity: for now
  * a bg-secondary placeholder with a 4px radius (rounded-sm).
  * Figma: About / breakpoint=xl (frame 5044:17639), "our how"
@@ -39,7 +41,10 @@ const principles = [
 <section aria-labelledby="our-how" class={cn("px-container pb-section", className)}>
   <p class="border-t border-border-subtle py-6 text-eyebrow text-fg-primary uppercase">Our how</p>
   <div class="grid-cols-layout gap-y-12 pt-20">
-    <div class="col-span-full flex flex-col gap-12 xl:col-span-5 xl:justify-between">
+    <div
+      data-our-how-text
+      class="col-span-full flex flex-col gap-12 xl:col-span-5 xl:justify-between xl:data-pinned:justify-start"
+    >
       <h2 id="our-how" class="text-headline-xl text-fg-primary">
         The fundamental principles that shape our studio
       </h2>
@@ -53,8 +58,48 @@ const principles = [
       </Accordion>
     </div>
     <div
+      data-our-how-visual
       aria-hidden="true"
       class="col-span-full aspect-square rounded-sm bg-bg-secondary xl:col-span-6 xl:col-start-7"
     ></div>
   </div>
 </section>
+
+<script>
+  // xl: keep the accordion where justify-between puts it while closed, but pinned by its top, so
+  // an opening item pushes the items below it down instead of lifting the ones above. The offset
+  // is re-measured when the visual (which sets the row height) or the header resizes.
+  const text = document.querySelector<HTMLElement>("[data-our-how-text]");
+  const visual = document.querySelector<HTMLElement>("[data-our-how-visual]");
+  const header = text?.querySelector<HTMLElement>("h2");
+  const accordion = text?.querySelector<HTMLElement>("[data-slot=accordion]");
+  const xl = window.matchMedia("(min-width: 64rem)");
+
+  function pin() {
+    if (!text || !visual || !header || !accordion) return;
+    if (!xl.matches) {
+      delete text.dataset.pinned;
+      accordion.style.marginTop = "";
+      return;
+    }
+    // Fractional heights (getBoundingClientRect): offsetHeight rounds, which left the pinned
+    // accordion up to 1px off its justify-between position.
+    const height = (el: HTMLElement) => el.getBoundingClientRect().height;
+    // Closed height: the accordion minus any open panels.
+    let closed = height(accordion);
+    accordion
+      .querySelectorAll<HTMLElement>("[data-slot=accordion-content]:not([hidden])")
+      .forEach((panel) => (closed -= height(panel)));
+    const gap = parseFloat(getComputedStyle(text).rowGap) || 0;
+    const offset = height(visual) - height(header) - gap - closed;
+    accordion.style.marginTop = `${Math.max(0, offset)}px`;
+    text.dataset.pinned = "";
+  }
+
+  if (text && visual && header) {
+    const observer = new ResizeObserver(pin);
+    observer.observe(visual);
+    observer.observe(header);
+    xl.addEventListener("change", pin);
+  }
+</script>
