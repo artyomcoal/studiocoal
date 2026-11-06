@@ -9,6 +9,9 @@ import { graph, organization, serializeJsonLd, website } from "@/lib/structured-
 import { urlFor } from "@/sanity/image";
 import { SITE_SETTINGS_QUERY } from "@/sanity/queries";
 import "@/styles/globals.css";
+// Dev only: the dev server doesn't embed Graphik in the CSS (Vite inlines assets at build
+// time), so preload the file there, or the navbar shows the fallback font on every navigation.
+import graphikDevUrl from "@/assets/fonts/Graphik_Medium.woff2?url";
 
 interface Props {
   /** Page title without the site name. Omit on the home page. */
@@ -83,8 +86,12 @@ const structuredData = serializeJsonLd(
     <link rel="expect" href="#site-header" blocking="render" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
-    <!-- Graphik is embedded in the stylesheet (src/styles/typography.css), so it needs no
-         preload. Geist Mono is self-hosted (public/fonts/) and used above the fold: preload it. -->
+    <!-- Graphik is embedded in the stylesheet in builds (src/styles/typography.css), so it needs no
+         preload there; the dev server serves it as a file, so preload it in dev. Geist Mono is
+         self-hosted (public/fonts/) and used above the fold: preload it. -->
+    {import.meta.env.DEV && (
+      <link rel="preload" href={graphikDevUrl} as="font" type="font/woff2" crossorigin />
+    )}
     <link
       rel="preload"
       href="/fonts/geist/GeistMono-Medium.woff2"
@@ -166,6 +173,12 @@ const structuredData = serializeJsonLd(
     <slot name="head" />
   </head>
   <body>
+    <!-- Start decoding Graphik as soon as the stylesheet is ready (this runs right after it).
+         Otherwise Chromium only starts when it first lays out text, so a page's first frame
+         could still be drawn in the fallback font. -->
+    <script is:inline>
+      document.fonts.load("500 1em Graphik");
+    </script>
     <slot />
   </body>
 </html>
