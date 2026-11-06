@@ -245,6 +245,10 @@
   --motion-ease-dialog: cubic-bezier(0.23, 1, 0.32, 1);
   --motion-scale-dialog: 0.95;
 
+  /* Accordion: panel height + content fade, and the + → − icon morph. Value chosen by the owner. */
+  --motion-duration-accordion: 400ms;
+  --motion-ease-accordion: cubic-bezier(0.72, 0, 0.28, 1);
+
   /* Client logo swap (home Clients section): one random tile swaps its logo for an unseen one
    * every min–max ms; the old logo rises, blurs and fades out while the new one rises in from
    * below, unblurring. Values from the "Swappable" reference's custom example

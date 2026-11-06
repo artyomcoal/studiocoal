@@ -33,7 +33,7 @@ const arrow = "size-4 shrink-0 transition-transform motion-reduce:transition-non
     {previous && (
       <a href={`/journal/${previous.slug}`} rel="prev" class={tile}>
         <span class="text-eyebrow text-fg-secondary uppercase">Previous article</span>
-        <span class="flex items-end gap-2 text-headline-sm text-balance">
+        <span class="flex items-end gap-2 text-headline-sm">
           <ArrowLeft aria-hidden="true" class={cn(arrow, "group-hover:-translate-x-0.5")} />
           <span>{previous.title}</span>
         </span>
@@ -46,7 +46,7 @@ const arrow = "size-4 shrink-0 transition-transform motion-reduce:transition-non
         class={cn(tile, "md:col-start-2 md:items-end md:text-right")}
       >
         <span class="text-eyebrow text-fg-secondary uppercase">Next article</span>
-        <span class="flex items-end gap-2 text-headline-sm text-balance md:justify-end">
+        <span class="flex items-end gap-2 text-headline-sm md:justify-end">
           <span>{next.title}</span>
           <ArrowRight aria-hidden="true" class={cn(arrow, "group-hover:translate-x-0.5")} />
         </span>

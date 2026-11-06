@@ -45,7 +45,7 @@ const groups = [
 
 <section class={cn("grid-cols-layout px-container py-section", className)}>
   <div class="col-span-full flex flex-col gap-12 text-fg-primary md:col-span-10 md:col-start-2 xl:col-span-6 xl:col-start-4">
-    <h1 class="text-headline-lg text-balance">
+    <h1 class="text-headline-lg">
       <span class="text-fg-tertiary">{work.title}.</span> {work.excerpt}
     </h1>
 
@@ -74,7 +74,7 @@ const groups = [
           story.map(({ label, text }) => (
             <div class="flex flex-col gap-4">
               <h2 class="text-body-sm text-fg-secondary">{label}</h2>
-              <div class="flex flex-col gap-5 text-body-md text-pretty">
+              <div class="flex flex-col gap-5 text-body-md">
                 {text.map((paragraph) => (
                   <p class="whitespace-pre-line">{paragraph}</p>
                 ))}

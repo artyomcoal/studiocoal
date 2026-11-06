@@ -5,6 +5,9 @@
  *
  * Letter-spacing is a style property in Figma (not a variable): headlines -4%, body / label /
  * caption -3%, eyebrow +2% → converted to em.
+ *
+ * Wrapping: headlines balance their lines, body text wraps pretty (no orphans). Override per
+ * element with text-pretty / text-balance / text-wrap where a layout needs it.
  * New utility? Also add it to the font-size list in src/lib/utils.ts (tailwind-merge).
  */
 
@@ -135,6 +138,7 @@
   letter-spacing: -0.04em;
   font-size: var(--fontsize-headline-xxl);
   line-height: var(--lineheight-headline-xxl);
+  text-wrap: balance;
 }
 @utility text-headline-xl {
   font-family: var(--headline-font-family);
@@ -142,6 +146,7 @@
   letter-spacing: -0.04em;
   font-size: var(--fontsize-headline-xl);
   line-height: var(--lineheight-headline-xl);
+  text-wrap: balance;
 }
 @utility text-headline-lg {
   font-family: var(--headline-font-family);
@@ -149,6 +154,7 @@
   letter-spacing: -0.04em;
   font-size: var(--fontsize-headline-lg);
   line-height: var(--lineheight-headline-lg);
+  text-wrap: balance;
 }
 @utility text-headline-md {
   font-family: var(--headline-font-family);
@@ -156,6 +162,7 @@
   letter-spacing: -0.04em;
   font-size: var(--fontsize-headline-md);
   line-height: var(--lineheight-headline-md);
+  text-wrap: balance;
 }
 @utility text-headline-sm {
   font-family: var(--headline-font-family);
@@ -163,6 +170,7 @@
   letter-spacing: -0.04em;
   font-size: var(--fontsize-headline-sm);
   line-height: var(--lineheight-headline-sm);
+  text-wrap: balance;
 }
 @utility text-headline-xs {
   font-family: var(--headline-font-family);
@@ -170,6 +178,7 @@
   letter-spacing: -0.04em;
   font-size: var(--fontsize-headline-xs);
   line-height: var(--lineheight-headline-xs);
+  text-wrap: balance;
 }
 
 /* Body/* Medium */
@@ -179,6 +188,7 @@
   letter-spacing: -0.03em;
   font-size: var(--fontsize-body-lg);
   line-height: var(--lineheight-body-lg);
+  text-wrap: pretty;
 }
 @utility text-body-md {
   font-family: var(--body-font-family);
@@ -186,6 +196,7 @@
   letter-spacing: -0.03em;
   font-size: var(--fontsize-body-md);
   line-height: var(--lineheight-body-md);
+  text-wrap: pretty;
 }
 @utility text-body-sm {
   font-family: var(--body-font-family);
@@ -193,6 +204,7 @@
   letter-spacing: -0.03em;
   font-size: var(--fontsize-body-sm);
   line-height: var(--lineheight-body-sm);
+  text-wrap: pretty;
 }
 @utility text-body-xs {
   font-family: var(--body-font-family);
@@ -200,6 +212,7 @@
   letter-spacing: -0.03em;
   font-size: var(--fontsize-body-xs);
   line-height: var(--lineheight-body-xs);
+  text-wrap: pretty;
 }
 
 /* Labels/Label M Medium (uses the label-sm size variables, as in Figma) */

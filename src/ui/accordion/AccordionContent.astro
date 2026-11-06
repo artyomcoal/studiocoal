@@ -1,6 +1,13 @@
 ---
 // Studio Coal: Figma AccordionContent: body-sm, fg-primary, max-w-xl (576px), pr-6, 16px below the
 // trigger text (trigger has py-5, so the content pulls up by -mt-1), 20px bottom padding.
+// Motion: a CSS height transition (--motion-*-accordion) instead of upstream's tw-animate
+// accordion-down/up keyframes, so a click mid-animation reverses smoothly. @data-slot/accordion
+// sets --accordion-panel-height and data-starting-style / data-ending-style on this element.
+// Closing needs no h-0: the library pins the height in px, then sets it to 0px a frame later,
+// and a data-ending-style h-0 would jump from `auto` with no transition. The content fades in
+// (@starting-style, as the panel leaves display:none) and out with the height.
+// Off under prefers-reduced-motion.
 import { cn } from "@/lib/utils";
 import type { HTMLAttributes } from "astro/types";
 
@@ -15,16 +22,15 @@ const { class: className = "", ...rest } = Astro.props as Props;
   {...rest}
   data-slot="accordion-content"
   hidden
-  class="data-open:animate-accordion-down data-closed:animate-accordion-up overflow-hidden"
+  class="group/accordion-content h-(--accordion-panel-height) overflow-hidden transition-[height] duration-(--motion-duration-accordion) ease-(--motion-ease-accordion) data-starting-style:h-0 motion-reduce:transition-none"
 >
-  <div class={cn("h-(--accordion-panel-height) data-ending-style:h-0 data-starting-style:h-0")}>
-    <div
-      class={cn(
-        "-mt-1 max-w-xl pr-6 pb-5 text-body-sm text-fg-primary [&_a]:underline [&_a]:underline-offset-3 [&_p:not(:last-child)]:mb-4",
-        className,
-      )}
-    >
-      <slot />
-    </div>
+  <div
+    class={cn(
+      "-mt-1 max-w-xl pr-6 pb-5 text-body-sm text-fg-primary [&_a]:underline [&_a]:underline-offset-3 [&_p:not(:last-child)]:mb-4",
+      "transition-opacity duration-(--motion-duration-accordion) ease-(--motion-ease-accordion) group-data-ending-style/accordion-content:opacity-0 starting:opacity-0 motion-reduce:transition-none",
+      className,
+    )}
+  >
+    <slot />
   </div>
 </div>

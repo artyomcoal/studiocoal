@@ -49,10 +49,9 @@ const headingIds = new Map(outline(blocks).map((heading) => [heading.key, headin
 
 const blockClass: Record<string, string> = {
   normal: "mt-5 max-w-xl text-body-sm",
-  h2: "mt-14 max-w-xl scroll-mt-24 text-headline-lg text-balance",
-  h3: "mt-10 max-w-xl text-headline-md text-balance",
-  blockquote:
-    "my-10 max-w-xl border-l-2 border-border-strong py-1 pl-5 text-headline-md text-balance",
+  h2: "mt-14 max-w-xl scroll-mt-24 text-headline-lg",
+  h3: "mt-10 max-w-xl text-headline-md",
+  blockquote: "my-10 max-w-xl border-l-2 border-border-strong py-1 pl-5 text-headline-md",
 };
 const blockTag: Record<string, string> = {
   normal: "p",

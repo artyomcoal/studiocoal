@@ -76,7 +76,7 @@ const capabilities = [
     <div class="grid-cols-layout">
       <h2
         id="capabilities"
-        class="col-span-full text-headline-xl text-balance text-fg-primary md:col-span-8 xl:col-span-5"
+        class="col-span-full text-headline-xl text-fg-primary md:col-span-8 xl:col-span-5"
       >
         Thinking, making and building, without handoffs.
       </h2>
@@ -85,7 +85,7 @@ const capabilities = [
       {capabilities.map((capability) => (
         <li class="flex flex-col gap-6 rounded-sm bg-bg-secondary p-5 text-fg-primary">
           <h3 class="text-headline-sm">{capability.title}</h3>
-          <p class="text-body-sm text-pretty">{capability.text}</p>
+          <p class="text-body-sm">{capability.text}</p>
           <hr class="border-border-subtle" />
           <ul class="text-body-sm">
             {capability.items.map((item) => (
