@@ -12,12 +12,18 @@ interface Props extends HTMLAttributes<"button"> {
    * Headline MD (About: 18px base/md, 20px xl).
    */
   size?: "xs" | "md";
+  /**
+   * What the accordion sits on: the page (default) or a filled bg-secondary panel (filled). On a
+   * filled panel the icon box uses the interactive-secondary palette one step darker.
+   */
+  surface?: "default" | "filled";
 }
 
 const {
   class: className = "",
   asChild = false,
   size = "xs",
+  surface = "default",
   type = "button",
   ...rest
 } = Astro.props as Props;
@@ -25,11 +31,37 @@ const {
 // Studio Coal: restyled to Figma "AccordionItem" (node 672:1702). Changes from upstream:
 // - text from headline styles via `size`, interactive-primary color, hover/expanded/focus use -hover
 // - 20px vertical padding (py-5), Figma focus ring, plus icon in a 24px box instead of chevrons.
-//   The box has no fill at rest; bg-tertiary on hover / press / keyboard focus, and it stays
-//   while the item is open (owner, 2026-11-06). Same look on the page and on filled panels.
+//   Box fill (owner, 2026-11-06): interactive-secondary at rest, -hover on hover / keyboard focus,
+//   -active on press and while the item is open. `surface="filled"` (accordions on a bg-secondary
+//   panel) shifts that one step darker: -hover at rest, -active on hover and while open.
 // - the plus morphs to a minus when open: its vertical bar (own SVG, stacked in the same grid
 //   cell) rotates 90° onto the horizontal one (--motion-*-accordion, off under reduced motion)
 // - cursor-pointer: Tailwind v4 Preflight leaves <button> on the default cursor
+// Icon box: rest → hover (also keyboard focus) → active, and active stays while the item is open.
+// On a filled panel everything is one step darker, so the box still stands out from the panel.
+const iconVariants = cva(
+  [
+    "pointer-events-none grid size-6 shrink-0 place-items-center rounded-xs text-fg-primary transition-colors *:col-start-1 *:row-start-1",
+  ],
+  {
+    variants: {
+      surface: {
+        default: [
+          "bg-interactive-secondary",
+          "group-hover/accordion-trigger:bg-interactive-secondary-hover group-focus-visible/accordion-trigger:bg-interactive-secondary-hover",
+          "group-active/accordion-trigger:bg-interactive-secondary-active group-aria-expanded/accordion-trigger:bg-interactive-secondary-active",
+        ],
+        filled: [
+          "bg-interactive-secondary-hover",
+          "group-hover/accordion-trigger:bg-interactive-secondary-active group-focus-visible/accordion-trigger:bg-interactive-secondary-active",
+          "group-active/accordion-trigger:bg-interactive-secondary-active group-aria-expanded/accordion-trigger:bg-interactive-secondary-active",
+        ],
+      },
+    },
+    defaultVariants: { surface: "default" },
+  },
+);
+
 const triggerVariants = cva(
   [
     "group/accordion-trigger relative flex flex-1 cursor-pointer items-center justify-between gap-4 py-5 text-left",
@@ -77,7 +109,7 @@ const triggerVariants = cva(
         <span
           data-slot="accordion-trigger-icon"
           aria-hidden="true"
-          class="pointer-events-none grid size-6 shrink-0 place-items-center rounded-xs text-fg-primary transition-colors group-hover/accordion-trigger:bg-bg-tertiary group-focus-visible/accordion-trigger:bg-bg-tertiary group-active/accordion-trigger:bg-bg-tertiary group-aria-expanded/accordion-trigger:bg-bg-tertiary *:col-start-1 *:row-start-1"
+          class={iconVariants({ surface })}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
