@@ -11,10 +11,14 @@
  * New utility? Also add it to the font-size list in src/lib/utils.ts (tailwind-merge).
  */
 
-/* Graphik Medium (licensed), self-hosted from public/fonts/graphik/ and preloaded in BaseLayout. */
+/* Graphik Medium (licensed). Embedded in this stylesheet as a data URL at build time (see
+ * build.assetsInlineLimit in astro.config.mjs), not loaded as a separate file. The stylesheet is
+ * cached and render-blocking, so the font is ready for the first frame of every page. As a file
+ * it often wasn't on the first frame of a page transition (iOS Safari reported it as "error",
+ * then loaded it a frame later), so the navbar text redrew in the new font mid-transition. */
 @font-face {
   font-family: "Graphik";
-  src: url("/fonts/graphik/Graphik_Medium.woff2") format("woff2");
+  src: url("../assets/fonts/Graphik_Medium.woff2") format("woff2");
   font-weight: 500;
   font-style: normal;
   font-display: swap;
