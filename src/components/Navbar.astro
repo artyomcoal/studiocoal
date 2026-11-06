@@ -132,7 +132,7 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
               href={`/journal/${article.newer.slug}`}
               rel="prev"
               aria-label={`Newer article: ${article.newer.title}`}
-              class={cn(arrow, "text-fg-secondary hover:text-fg-primary")}
+              class={cn(arrow, "text-fg-primary hover:text-fg-secondary")}
             >
               <ChevronLeft aria-hidden="true" class="size-4" />
             </a>
@@ -149,7 +149,7 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
               href={`/journal/${article.older.slug}`}
               rel="next"
               aria-label={`Older article: ${article.older.title}`}
-              class={cn(arrow, "text-fg-secondary hover:text-fg-primary")}
+              class={cn(arrow, "text-fg-primary hover:text-fg-secondary")}
             >
               <ChevronRight aria-hidden="true" class="size-4" />
             </a>
