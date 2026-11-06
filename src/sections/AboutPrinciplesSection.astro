@@ -82,13 +82,16 @@ const principles = [
       accordion.style.marginTop = "";
       return;
     }
+    // Fractional heights (getBoundingClientRect): offsetHeight rounds, which left the pinned
+    // accordion up to 1px off its justify-between position.
+    const height = (el: HTMLElement) => el.getBoundingClientRect().height;
     // Closed height: the accordion minus any open panels.
-    let closed = accordion.offsetHeight;
+    let closed = height(accordion);
     accordion
       .querySelectorAll<HTMLElement>("[data-slot=accordion-content]:not([hidden])")
-      .forEach((panel) => (closed -= panel.offsetHeight));
+      .forEach((panel) => (closed -= height(panel)));
     const gap = parseFloat(getComputedStyle(text).rowGap) || 0;
-    const offset = visual.offsetHeight - header.offsetHeight - gap - closed;
+    const offset = height(visual) - height(header) - gap - closed;
     accordion.style.marginTop = `${Math.max(0, offset)}px`;
     text.dataset.pinned = "";
   }
