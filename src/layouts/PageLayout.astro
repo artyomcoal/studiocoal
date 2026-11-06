@@ -2,7 +2,7 @@
 /**
  * Page layout: BaseLayout + page structure for every marketing page.
  *
- * - Navbar: rendered on every page. Its nav pill and button have `view-transition-header(-action)`, so they stay pinned
+ * - Navbar: rendered on every page (`article` adds its mobile article bar on journal posts). Its nav pill and button have `view-transition-header(-action)`, so they stay pinned
  *   during page transitions (src/styles/motion.css).
  * - default slot: the page sections. Each top-level child of <main> plays the staggered
  *   entrance after an in-site navigation, so pass sections directly, not one wrapper.
@@ -13,12 +13,17 @@ import Footer from "@/components/Footer.astro";
 import Navbar from "@/components/Navbar.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 
-type Props = Parameters<typeof BaseLayout>[0];
+type Props = Parameters<typeof BaseLayout>[0] & {
+  /** Journal articles: the Navbar's mobile article bar (title + newer / older arrows). */
+  article?: Parameters<typeof Navbar>[0]["article"];
+};
+
+const { article, ...props } = Astro.props;
 ---
 
-<BaseLayout {...Astro.props}>
+<BaseLayout {...props}>
   <slot name="head" slot="head" />
-  <Navbar />
+  <Navbar article={article} />
   <main class="animate-enter-stagger">
     <slot />
   </main>

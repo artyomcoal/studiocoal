@@ -84,6 +84,7 @@ const jsonLd = [
 ---
 
 <PageLayout
+  article={{ title: post.title ?? "", newer: post.previous, older: post.next }}
   title={seo.title}
   description={seo.description}
   image={ogImage}

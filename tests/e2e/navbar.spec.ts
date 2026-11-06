@@ -185,4 +185,41 @@ test.describe("navbar", () => {
       await expect.poll(() => pillMatches(page, "Journal")).toBe(true);
     });
   });
+  test.describe("journal article bar (mobile)", () => {
+    test("scrolling down swaps the nav items for the article bar, scrolling up swaps back", async ({
+      page,
+    }) => {
+      test.skip((page.viewportSize()?.width ?? 0) >= 768, "mobile only");
+      await page.goto("/journal/quiet-interfaces");
+      const nav = page.getByRole("navigation", { name: "Main" });
+      const bar = nav.locator("[data-nav-article]");
+      const list = nav.locator("[data-nav-list]");
+      await expect(nav).not.toHaveAttribute("data-mode", "article");
+      expect(await bar.evaluate((el) => (el as HTMLElement).inert)).toBe(true);
+
+      await page.evaluate(() => window.scrollTo(0, 400));
+      await page.evaluate(() => window.scrollBy(0, 200));
+      await expect(nav).toHaveAttribute("data-mode", "article");
+      expect(await list.evaluate((el) => (el as HTMLElement).inert)).toBe(true);
+      expect(await bar.evaluate((el) => (el as HTMLElement).inert)).toBe(false);
+      // One line: the title truncates instead of wrapping.
+      const title = bar.locator(".truncate");
+      await title.evaluate((el) => (el.textContent = "A very long article title ".repeat(6)));
+      const box = await title.boundingBox();
+      expect(box!.height).toBeLessThanOrEqual(20);
+      expect(await title.evaluate((el) => el.scrollWidth > el.clientWidth)).toBe(true);
+      // Arrows point at the neighbouring posts (or are disabled at the ends).
+      for (const link of await bar.locator("a").all())
+        expect(await link.getAttribute("href")).toMatch(/^\/journal\/[^/]+$/);
+
+      await page.evaluate(() => window.scrollBy(0, -200));
+      await expect(nav).not.toHaveAttribute("data-mode", "article");
+      expect(await list.evaluate((el) => (el as HTMLElement).inert)).toBe(false);
+    });
+
+    test("other pages have no article bar", async ({ page }) => {
+      await page.goto("/work");
+      await expect(page.locator("[data-nav-article]")).toHaveCount(0);
+    });
+  });
 });
