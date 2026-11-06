@@ -134,7 +134,19 @@ export const WORK_QUERY = defineQuery(
       _type,
       _type == "mediaFullWidth" => { "media": media${media} },
       _type == "mediaPair" => { "left": left${media}, "right": right${media} }
-    }
+    },
+    // Navbar arrows: the projects either side in the archive order (year desc, _createdAt desc).
+    // "previous" comes before (newer), "next" after (older); ties fall back to _id.
+    "previous": *[_type == "work" && defined(slug.current) && (
+      coalesce(year, 0) > coalesce(^.year, 0) ||
+      (coalesce(year, 0) == coalesce(^.year, 0) && (_createdAt > ^._createdAt ||
+        (_createdAt == ^._createdAt && _id > ^._id)))
+    )] | order(coalesce(year, 0) asc, _createdAt asc, _id asc)[0]{ title, "slug": slug.current },
+    "next": *[_type == "work" && defined(slug.current) && (
+      coalesce(year, 0) < coalesce(^.year, 0) ||
+      (coalesce(year, 0) == coalesce(^.year, 0) && (_createdAt < ^._createdAt ||
+        (_createdAt == ^._createdAt && _id < ^._id)))
+    )] | order(coalesce(year, 0) desc, _createdAt desc, _id desc)[0]{ title, "slug": slug.current }
   }`,
 );
 
