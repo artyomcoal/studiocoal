@@ -185,11 +185,10 @@ test.describe("navbar", () => {
       await expect.poll(() => pillMatches(page, "Journal")).toBe(true);
     });
   });
-  test.describe("journal article bar (mobile)", () => {
+  test.describe("journal article bar", () => {
     test("scrolling down swaps the nav items for the article bar, scrolling up swaps back", async ({
       page,
     }) => {
-      test.skip((page.viewportSize()?.width ?? 0) >= 768, "mobile only");
       await page.goto("/journal/quiet-interfaces");
       const nav = page.getByRole("navigation", { name: "Main" });
       const bar = nav.locator("[data-nav-article]");
@@ -220,7 +219,6 @@ test.describe("navbar", () => {
     test("an article arrow opens the next article with the article bar already shown", async ({
       page,
     }) => {
-      test.skip((page.viewportSize()?.width ?? 0) >= 768, "mobile only");
       await page.goto("/journal/quiet-interfaces");
       const nav = page.getByRole("navigation", { name: "Main" });
       await page.evaluate(() => window.scrollTo(0, 400));

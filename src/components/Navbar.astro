@@ -33,8 +33,8 @@ interface ArticleLink {
 interface Props {
   class?: string;
   /**
-   * Journal article: on mobile the nav items give way to this bar (newer / older arrows and the
-   * article title) while the reader scrolls down. Figma "Navbar - Article" (node 53645:5245).
+   * Journal article: the nav items give way to this bar (newer / older arrows and the article
+   * title) while the reader scrolls down, at every breakpoint. Figma "Navbar - Article" (node 53645:5245).
    */
   article?: { title: string; newer?: ArticleLink | null; older?: ArticleLink | null };
 }
@@ -95,7 +95,7 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
          scroll sideways inside the pill instead of overflowing it. Scrollbar hidden: no utility. -->
     <!-- The nav items and (on journal articles) the article bar share one grid cell; this box
          masks them, so neither shows outside it while they slide (items up and out, the bar up
-         from below). data-mode="article" on the nav switches them (mobile only, script below). -->
+         from below). data-mode="article" on the nav switches them (script below). -->
     <div class="grid min-w-0 overflow-hidden">
       <ul
         data-nav-list
@@ -125,7 +125,7 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
         <div
           data-nav-article
           inert
-          class="col-start-1 row-start-1 flex h-8 w-0 min-w-full translate-y-full items-center justify-between gap-2 px-1 transition-transform duration-(--motion-duration-nav-pill) ease-(--motion-ease-nav-pill) group-data-[mode=article]/nav:translate-y-0 motion-reduce:transition-none md:hidden"
+          class="col-start-1 row-start-1 flex h-8 w-0 min-w-full translate-y-full items-center justify-between gap-2 px-1 transition-transform duration-(--motion-duration-nav-pill) ease-(--motion-ease-nav-pill) group-data-[mode=article]/nav:translate-y-0 motion-reduce:transition-none"
         >
           {article.newer?.slug ? (
             <a
@@ -165,7 +165,7 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
   {/* Inline and right after the list, so the pill is under the current item before the first
       paint (no flash, nothing to measure later on a View Transition's first frame). */}
   {article && <script is:inline>
-    // Journal article, mobile (as on bakkenbaeck.com):
+    // Journal article, every breakpoint (as on bakkenbaeck.com):
     // - scrolling down shows the article bar (past the first 80px);
     // - scrolling up brings the nav items back, but only once the page has been scrolled at least
     //   100px, so a nudge or the iOS bounce at the top doesn't switch it;
@@ -177,7 +177,6 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
       const list = nav?.querySelector("[data-nav-list]");
       const bar = nav?.querySelector("[data-nav-article]");
       if (!nav || !list || !bar) return;
-      const wide = matchMedia("(min-width: 48rem)");
       let article = false;
       const set = (on) => {
         if (on === article) return;
@@ -195,7 +194,7 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
       } catch {
         /* Storage blocked: open with the nav items. */
       }
-      if (fromArrow && !wide.matches) set(true);
+      if (fromArrow) set(true);
       bar.addEventListener("click", (event) => {
         const link = event.target.closest("a[href]");
         if (!link) return;
@@ -213,10 +212,6 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
         () => {
           const y = scrollY;
           furthest = Math.max(furthest, y);
-          if (wide.matches) {
-            lastY = y;
-            return set(false);
-          }
           if (Math.abs(y - lastY) < 8) return;
           if (y > lastY) {
             if (y >= 80) set(true);
@@ -227,7 +222,6 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
         },
         { passive: true },
       );
-      wide.addEventListener("change", () => set(false));
       addEventListener("pageshow", (event) => event.persisted && set(false));
     })();
   </script>}
