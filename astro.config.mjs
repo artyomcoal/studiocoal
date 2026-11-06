@@ -96,6 +96,12 @@ export default defineConfig({
   ],
   vite: {
     plugins: [tailwindcss()],
+    build: {
+      // Embed Graphik in the CSS (src/styles/typography.css explains why); everything else keeps
+      // Vite's default (inline below 4 KB).
+      assetsInlineLimit: (file, content) =>
+        file.endsWith("Graphik_Medium.woff2") ? true : content.length < 4096,
+    },
     // Dev only: pre-bundle the Studio's Vision tool at startup. Otherwise Vite finds it on the
     // first /studio visit, re-bundles and reloads the page (a blank Studio and "Outdated
     // Optimize Dep" errors until then).

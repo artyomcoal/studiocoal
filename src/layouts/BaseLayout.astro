@@ -83,14 +83,8 @@ const structuredData = serializeJsonLd(
     <link rel="expect" href="#site-header" blocking="render" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
-    <!-- Self-hosted fonts (public/fonts/). Both are used above the fold, so preload them. -->
-    <link
-      rel="preload"
-      href="/fonts/graphik/Graphik_Medium.woff2"
-      as="font"
-      type="font/woff2"
-      crossorigin
-    />
+    <!-- Graphik is embedded in the stylesheet (src/styles/typography.css), so it needs no
+         preload. Geist Mono is self-hosted (public/fonts/) and used above the fold: preload it. -->
     <link
       rel="preload"
       href="/fonts/geist/GeistMono-Medium.woff2"
@@ -98,18 +92,54 @@ const structuredData = serializeJsonLd(
       type="font/woff2"
       crossorigin
     />
-    <!-- Entrance animation only after an in-site navigation (src/styles/motion.css).
-         Runs before first paint; direct visits and reloads (which keep the referrer) stay
-         static so LCP isn't delayed. -->
+    <!-- Entrance animation (src/styles/motion.css), only after an in-site navigation: direct
+         visits, reloads and reduced motion stay static, so LCP isn't delayed. Runs before first
+         paint. `nav-entered` hides the sections; `nav-ready` fades them in once
+         1. the page transition (if any) has finished, so the old page's fade-out and the new
+            page's fade-in never overlap, and
+         2. the fonts and the images on screen are decoded, so nothing pops in mid-fade.
+         A 1s cap keeps a slow image from holding the page back. -->
     <script is:inline>
       try {
+        const root = document.documentElement;
         const nav = performance.getEntriesByType("navigation")[0];
         if (
           nav?.type !== "reload" &&
+          !matchMedia("(prefers-reduced-motion: reduce)").matches &&
           document.referrer &&
           new URL(document.referrer).origin === location.origin
         ) {
-          document.documentElement.classList.add("nav-entered");
+          root.classList.add("nav-entered");
+          const transitionDone = new Promise((resolve) => {
+            if (!("onpagereveal" in window)) return resolve();
+            addEventListener(
+              "pagereveal",
+              (event) =>
+                event.viewTransition
+                  ? event.viewTransition.finished.then(resolve, resolve)
+                  : resolve(),
+              { once: true },
+            );
+          });
+          const pageReady = new Promise((resolve) => {
+            addEventListener(
+              "DOMContentLoaded",
+              () => {
+                const onScreen = [...document.querySelectorAll("main img")].filter(
+                  (img) => img.getBoundingClientRect().top < innerHeight,
+                );
+                Promise.all([
+                  document.fonts.ready,
+                  ...onScreen.map((img) => img.decode().catch(() => {})),
+                ]).then(resolve);
+              },
+              { once: true },
+            );
+          });
+          const cap = new Promise((resolve) => setTimeout(resolve, 1000));
+          Promise.race([Promise.all([transitionDone, pageReady]), cap]).then(() =>
+            root.classList.add("nav-ready"),
+          );
         }
       } catch {
         /* Malformed referrer: no entrance. */
