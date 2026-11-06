@@ -269,6 +269,22 @@ test.describe("navbar", () => {
       await expect(nav).not.toHaveAttribute("data-mode", "article");
     });
 
+    test("the logomark slides the nav items back before going home", async ({ page }) => {
+      await page.goto("/journal/quiet-interfaces");
+      const nav = page.getByRole("navigation", { name: "Main" });
+      await page.evaluate(() => window.scrollTo(0, 400));
+      await page.evaluate(() => window.scrollBy(0, 200));
+      await expect(nav).toHaveAttribute("data-mode", "article");
+      // Right after the click: still on the article, already back in nav mode (sliding).
+      const atClick = await page.evaluate(() => {
+        const nav = document.querySelector<HTMLElement>('nav[aria-label="Main"]')!;
+        nav.querySelector<HTMLAnchorElement>('a[href="/"]')!.click();
+        return { mode: nav.dataset.mode ?? null, path: location.pathname };
+      });
+      expect(atClick).toEqual({ mode: null, path: "/journal/quiet-interfaces" });
+      await page.waitForURL((url) => url.pathname === "/");
+    });
+
     test("other pages have no article bar", async ({ page }) => {
       await page.goto("/services");
       await expect(page.locator("[data-nav-article]")).toHaveCount(0);

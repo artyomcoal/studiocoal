@@ -204,7 +204,8 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
     // - scrolling up brings the nav items back, but only once the page has been scrolled at least
     //   100px, so a nudge or the iOS bounce at the top doesn't switch it;
     // - arriving from an article arrow keeps the article bar from the first frame (set before
-    //   paint, no slide), until the reader scrolls up.
+    //   paint, no slide), until the reader scrolls up;
+    // - the logomark slides the nav items back (as on scroll up) before going home.
     // Small movements are ignored (momentum tails, the iOS address bar). The hidden layer is inert.
     (() => {
       const nav = document.querySelector('nav[aria-label="Main"]');
@@ -287,7 +288,32 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
         },
         { passive: true },
       );
-      addEventListener("pageshow", (event) => event.persisted && set(false));
+      // The logomark while the article bar shows: the nav items come back with the same slide as
+      // on scroll up, and the home page opens once it has visibly finished (75% of the slide: the
+      // ease-out has covered 99.7% of the 32px by then), so the pinned header doesn't swap in one
+      // frame. Same slide-first timing as the nav pill below. Not for a modified click.
+      const home = nav.querySelector('a[href="/"]');
+      let leaving = 0;
+      home?.addEventListener("click", (event) => {
+        if (!article || event.defaultPrevented) return;
+        if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
+          return;
+        if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+        event.preventDefault();
+        set(false);
+        const raw = getComputedStyle(document.documentElement)
+          .getPropertyValue("--motion-duration-nav-pill")
+          .trim(); // the minified CSS writes 400ms as ".4s"
+        const duration = (parseFloat(raw) || 0.4) * (raw.endsWith("ms") ? 1 : 1000);
+        clearTimeout(leaving);
+        leaving = setTimeout(() => location.assign(home.href), duration * 0.75);
+      });
+
+      addEventListener("pageshow", (event) => {
+        if (!event.persisted) return;
+        clearTimeout(leaving);
+        set(false);
+      });
     })();
   </script>}
   <script is:inline>
