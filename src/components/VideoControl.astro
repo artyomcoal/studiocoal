@@ -5,7 +5,8 @@
  * videos alike; no browser-default controls). Figma "Play Button" (node 53654:5885).
  *
  * Primitive palette only, no theme tokens: it sits on video, so it looks the same in light and
- * dark. Box neutral-200 at 40%, 60% on hover / press; icon neutral-50 (play 65%, pause 75%, full
+ * dark. Box neutral-900 at 40%, 60% on hover / press (darker than Figma's neutral-200, which
+ * disappeared on light footage); icon neutral-50 (play 65%, pause 75%, full
  * on hover / press); background blur md behind Play, sm behind Pause.
  *
  * Must sit inside a `group/media` element: it shows Play while that element has `data-paused`,
@@ -28,8 +29,8 @@ const { label, class: className } = Astro.props;
   data-slot="media-toggle"
   aria-label={label}
   class={cn(
-    "group/control absolute right-2 bottom-2 z-10 grid size-6 cursor-pointer place-items-center rounded-xs bg-neutral-200/40 text-neutral-50 backdrop-blur-sm *:col-start-1 *:row-start-1",
-    "transition-[opacity,background-color] hover:bg-neutral-200/60 active:bg-neutral-200/60 group-data-paused/media:backdrop-blur-md",
+    "group/control absolute right-2 bottom-2 z-10 grid size-6 cursor-pointer place-items-center rounded-xs bg-neutral-900/40 text-neutral-50 backdrop-blur-sm *:col-start-1 *:row-start-1",
+    "transition-[opacity,background-color] hover:bg-neutral-900/60 active:bg-neutral-900/60 group-data-paused/media:backdrop-blur-md",
     // Revealed by hovering the video, or the card it sits in (cards cover the video with their
     // stretched link, so the video itself never gets the hover): group/card (Work cards), group
     // (Services overview rows).
