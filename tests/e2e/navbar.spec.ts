@@ -88,4 +88,50 @@ test.describe("navbar", () => {
     await page.keyboard.press("Tab");
     await expect(page.getByRole("link", { name: "Work", exact: true })).toBeFocused();
   });
+  test.describe("shared pill", () => {
+    // The pill box vs an item's box, in viewport pixels.
+    const pillMatches = (page: import("@playwright/test").Page, label: string) =>
+      page.evaluate((label) => {
+        const pill = document.querySelector("[data-nav-pill]")!.getBoundingClientRect();
+        const item = [...document.querySelectorAll("[data-slot=nav-item]")]
+          .find((el) => el.textContent?.trim() === label)!
+          .getBoundingClientRect();
+        return Math.abs(pill.left - item.left) < 1 && Math.abs(pill.width - item.width) < 1;
+      }, label);
+
+    test("sits under the current page's item on load, and is hidden on home", async ({ page }) => {
+      await expect(page.locator("[data-nav-pill]")).toHaveCSS("opacity", "0");
+      await page.goto("/work");
+      await expect(page.locator("[data-nav-pill]")).toHaveCSS("opacity", "1");
+      expect(await pillMatches(page, "Work")).toBe(true);
+    });
+
+    test("slides to a hovered item and back, without changing the text colours", async ({
+      page,
+      isMobile,
+    }) => {
+      test.skip(!!isMobile, "hover");
+      await page.goto("/work");
+      const nav = page.getByRole("navigation", { name: "Main" });
+      const work = nav.getByRole("link", { name: "Work", exact: true });
+      const about = nav.getByRole("link", { name: "About", exact: true });
+      const workColor = await work.evaluate((el) => getComputedStyle(el).color);
+      const aboutColor = await about.evaluate((el) => getComputedStyle(el).color);
+      await about.hover();
+      await expect.poll(() => pillMatches(page, "About")).toBe(true);
+      await expect(work).toHaveCSS("color", workColor);
+      await expect(about).toHaveCSS("color", aboutColor);
+      await page.mouse.move(5, 500);
+      await expect.poll(() => pillMatches(page, "Work")).toBe(true);
+    });
+
+    test("follows keyboard focus", async ({ page }) => {
+      await page.goto("/work");
+      await page
+        .getByRole("navigation", { name: "Main" })
+        .getByRole("link", { name: "Journal", exact: true })
+        .focus();
+      await expect.poll(() => pillMatches(page, "Journal")).toBe(true);
+    });
+  });
 });

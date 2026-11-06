@@ -4,8 +4,10 @@
  * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=5005-6313
  *
  * Behaviour modelled on standard-projects.com: a fixed, always-visible frosted pill with every
- * link visible at every breakpoint (no hamburger menu). The current section is the filled
- * item. The nav pill and the button are named View Transition groups, so they stay pinned
+ * link visible at every breakpoint (no hamburger menu). One shared pill sits under the current
+ * section's item and slides to whichever item is hovered, focused or pressed (touch), then back
+ * when the pointer leaves. Moving the pill never changes the text colours: only navigating does,
+ * and those hand over after the page transition (see NavItem). The nav pill and the button are named View Transition groups, so they stay pinned
  * between pages. The names sit on them, not on <header>: a named element is a backdrop root,
  * which would stop the pill's backdrop-blur from seeing the page.
  *
@@ -76,7 +78,17 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
     </a>
     <!-- When the links don't fit (narrow phones, wider font rendering on Android/Linux) they
          scroll sideways inside the pill instead of overflowing it. Scrollbar hidden: no utility. -->
-    <ul class="flex min-w-0 items-center gap-0.5 overflow-x-auto [scrollbar-width:none]">
+    <ul
+      data-nav-list
+      class="relative flex min-w-0 items-center gap-0.5 overflow-x-auto [scrollbar-width:none]"
+    >
+      {/* The one shared pill. Positioned by the script below (--pill-x / --pill-w), behind the
+          items (it comes first, and the items are position: relative). */}
+      <li
+        aria-hidden="true"
+        data-nav-pill
+        class="pointer-events-none absolute top-0 left-0 h-8 w-(--pill-w) translate-x-(--pill-x) rounded-xs bg-interactive-secondary-active opacity-0 transition-[translate,width,opacity] duration-(--motion-duration-nav-pill) ease-(--motion-ease-nav-pill) data-instant:transition-opacity data-visible:opacity-100 motion-reduce:transition-none"
+      ></li>
       {items.map((item) => (
         <li>
           <NavItem href={item.href} active={isActive(item.href)}>
@@ -86,6 +98,83 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
       ))}
     </ul>
   </nav>
+  {/* Inline and right after the list, so the pill is under the current item before the first
+      paint (no flash, nothing to measure later on a View Transition's first frame). */}
+  <script is:inline>
+    (() => {
+      const list = document.querySelector("[data-nav-list]");
+      const pill = list?.querySelector("[data-nav-pill]");
+      if (!list || !pill) return;
+      const items = [...list.querySelectorAll("[data-slot=nav-item]")];
+      const active = items.find((item) => item.getAttribute("aria-current") === "page");
+      let target = null;
+
+      // Move the pill to an item (null hides it). `instant` places it without sliding: used for
+      // the first placement, re-measuring, and appearing from hidden (it then only fades in).
+      const place = (item, instant = false) => {
+        target = item;
+        if (!item) {
+          delete pill.dataset.visible;
+          return;
+        }
+        if (instant || !("visible" in pill.dataset)) pill.dataset.instant = "";
+        pill.style.setProperty("--pill-x", `${item.offsetLeft}px`);
+        pill.style.setProperty("--pill-w", `${item.offsetWidth}px`);
+        pill.dataset.visible = "";
+        if ("instant" in pill.dataset) {
+          void pill.offsetWidth; // apply the jump before sliding is allowed again
+          requestAnimationFrame(() => delete pill.dataset.instant);
+        }
+      };
+      place(active ?? null, true);
+
+      for (const item of items) {
+        item.addEventListener("pointerenter", () => place(item));
+        item.addEventListener("pointerdown", () => place(item)); // touch: press moves it too
+        item.addEventListener("focus", () => place(item));
+      }
+      // Back to the current item when a mouse leaves or focus moves out. Not after a touch: the
+      // tap is about to navigate, so the pill stays on the tapped item.
+      list.addEventListener("pointerleave", (event) => {
+        if (event.pointerType !== "touch") place(active ?? null);
+      });
+      list.addEventListener("focusout", (event) => {
+        if (!list.contains(event.relatedTarget) && !list.matches(":hover")) place(active ?? null);
+      });
+      // Re-measure when the font or the layout changes, and on a back/forward cache restore.
+      const remeasure = () => place(target, true);
+      document.fonts?.ready.then(remeasure);
+      new ResizeObserver(remeasure).observe(list);
+      addEventListener("pageshow", (event) => event.persisted && place(active ?? null, true));
+
+      // After an in-site navigation, keep the previous colours until the page transition has
+      // finished (BaseLayout adds nav-ready), then let them fade over.
+      const root = document.documentElement;
+      if (!root.classList.contains("nav-entered")) return;
+      let from = "";
+      try {
+        from = new URL(document.referrer).pathname;
+      } catch {
+        return;
+      }
+      const previous = items.find(
+        (item) => from === item.pathname || from.startsWith(`${item.pathname}/`),
+      );
+      if (previous === active) return;
+      if (active) active.dataset.entering = "";
+      if (previous) previous.dataset.leaving = "";
+      const handOver = () => {
+        if (active) delete active.dataset.entering;
+        if (previous) delete previous.dataset.leaving;
+      };
+      if (root.classList.contains("nav-ready")) return handOver();
+      new MutationObserver((_, observer) => {
+        if (!root.classList.contains("nav-ready")) return;
+        observer.disconnect();
+        handOver();
+      }).observe(root, { attributes: true, attributeFilter: ["class"] });
+    })();
+  </script>
 
   <!-- One button for every breakpoint. On base its wrapper covers the dynamic viewport (h-dvh)
        and pins it to the bottom centre; from md it sits in the header row. -->

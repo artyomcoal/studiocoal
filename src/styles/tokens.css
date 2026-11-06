@@ -251,6 +251,11 @@
    * ease-in-out barely moved for ~100ms, then snapped through the middle. */
   --motion-ease-accordion: cubic-bezier(0.22, 1, 0.36, 1);
 
+  /* Navbar: the one shared pill sliding between nav items (owner, 2026-11-06). Ease-out: it
+   * moves on the first frame and settles softly. */
+  --motion-duration-nav-pill: 400ms;
+  --motion-ease-nav-pill: cubic-bezier(0.22, 1, 0.36, 1);
+
   /* Client logo swap (home Clients section): one random tile swaps its logo for an unseen one
    * every min–max ms; the old logo rises, blurs and fades out while the new one rises in from
    * below, unblurring. Values from the "Swappable" reference's custom example
