@@ -165,9 +165,13 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
   {/* Inline and right after the list, so the pill is under the current item before the first
       paint (no flash, nothing to measure later on a View Transition's first frame). */}
   {article && <script is:inline>
-    // Journal article, mobile: scrolling down swaps the nav items for the article bar, scrolling
-    // up (or being near the top) brings them back, as on bakkenbaeck.com. Small movements are
-    // ignored (momentum tails, the iOS address bar). The hidden layer is inert.
+    // Journal article, mobile (as on bakkenbaeck.com):
+    // - scrolling down shows the article bar (past the first 80px);
+    // - scrolling up brings the nav items back, but only once the page has been scrolled at least
+    //   100px, so a nudge or the iOS bounce at the top doesn't switch it;
+    // - arriving from an article arrow keeps the article bar from the first frame (set before
+    //   paint, no slide), until the reader scrolls up.
+    // Small movements are ignored (momentum tails, the iOS address bar). The hidden layer is inert.
     (() => {
       const nav = document.querySelector('nav[aria-label="Main"]');
       const list = nav?.querySelector("[data-nav-list]");
@@ -183,17 +187,42 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
         list.inert = on;
         bar.inert = !on;
       };
+      // An arrow click marks the next page, which then opens in article mode.
+      let fromArrow = false;
+      try {
+        fromArrow = sessionStorage.getItem("navArticleMode") === location.pathname;
+        sessionStorage.removeItem("navArticleMode");
+      } catch {
+        /* Storage blocked: open with the nav items. */
+      }
+      if (fromArrow && !wide.matches) set(true);
+      bar.addEventListener("click", (event) => {
+        const link = event.target.closest("a[href]");
+        if (!link) return;
+        try {
+          sessionStorage.setItem("navArticleMode", link.pathname);
+        } catch {
+          /* Storage blocked: the next page opens with the nav items. */
+        }
+      });
+
       let lastY = scrollY;
+      let furthest = scrollY;
       addEventListener(
         "scroll",
         () => {
           const y = scrollY;
-          if (wide.matches || y < 80) {
+          furthest = Math.max(furthest, y);
+          if (wide.matches) {
             lastY = y;
             return set(false);
           }
           if (Math.abs(y - lastY) < 8) return;
-          set(y > lastY);
+          if (y > lastY) {
+            if (y >= 80) set(true);
+          } else if (furthest >= 100) {
+            set(false);
+          }
           lastY = y;
         },
         { passive: true },

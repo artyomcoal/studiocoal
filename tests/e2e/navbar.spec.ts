@@ -217,6 +217,34 @@ test.describe("navbar", () => {
       expect(await list.evaluate((el) => (el as HTMLElement).inert)).toBe(false);
     });
 
+    test("an article arrow opens the next article with the article bar already shown", async ({
+      page,
+    }) => {
+      test.skip((page.viewportSize()?.width ?? 0) >= 768, "mobile only");
+      await page.goto("/journal/quiet-interfaces");
+      const nav = page.getByRole("navigation", { name: "Main" });
+      await page.evaluate(() => window.scrollTo(0, 400));
+      await page.evaluate(() => window.scrollBy(0, 200));
+      await expect(nav).toHaveAttribute("data-mode", "article");
+      const arrow = nav.locator("[data-nav-article] a").first();
+      const href = (await arrow.getAttribute("href"))!;
+      await arrow.click();
+      await page.waitForURL(`**${href}`);
+      await expect(nav).toHaveAttribute("data-mode", "article");
+      // A nudge at the top doesn't switch back; scrolling up after 100px does. Each step waits a
+      // frame or two, so every scroll position fires its own scroll event.
+      const scrollTo = async (y: number) => {
+        await page.evaluate((y) => window.scrollTo(0, y), y);
+        await page.waitForTimeout(100);
+      };
+      await scrollTo(20);
+      await scrollTo(0);
+      await expect(nav).toHaveAttribute("data-mode", "article");
+      await scrollTo(300);
+      await scrollTo(200);
+      await expect(nav).not.toHaveAttribute("data-mode", "article");
+    });
+
     test("other pages have no article bar", async ({ page }) => {
       await page.goto("/work");
       await expect(page.locator("[data-nav-article]")).toHaveCount(0);
