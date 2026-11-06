@@ -6,11 +6,14 @@
  * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=5044-18949
  *
  * Columns: 6 from column 4 at xl, 10 from column 2 at md, full width at base.
+ * Challenge / solution / outcome: stacked text at xl; an accordion on a filled panel below xl
+ * (Figma Work Single md/base, node 53472:4359), with the same content.
  * Empty fields are skipped, and a divider only shows when there's something on both sides.
  */
 import { paragraphs } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { WORK_QUERY_RESULT } from "@/sanity/types";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/ui/accordion";
 import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
 
@@ -70,17 +73,39 @@ const groups = [
             ))}
           </dl>
         )}
-        {group === "story" &&
-          story.map(({ label, text }) => (
-            <div class="flex flex-col gap-4">
-              <h2 class="text-body-sm text-fg-secondary">{label}</h2>
-              <div class="flex flex-col gap-5 text-body-md">
-                {text.map((paragraph) => (
-                  <p class="whitespace-pre-line">{paragraph}</p>
-                ))}
-              </div>
+        {group === "story" && (
+          <>
+            {/* xl: the three topics as stacked text blocks. */}
+            <div class="hidden flex-col gap-12 xl:flex">
+              {story.map(({ label, text }) => (
+                <div class="flex flex-col gap-4">
+                  <h2 class="text-body-sm text-fg-secondary">{label}</h2>
+                  <div class="flex flex-col gap-5 text-body-md">
+                    {text.map((paragraph) => (
+                      <p class="whitespace-pre-line">{paragraph}</p>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
+            {/* md and base: the same content in an accordion on a filled panel (Figma 53472:4359):
+                bg-secondary, rounded-sm, 20px sides, dividers between items only. */}
+            <Accordion class="rounded-sm bg-bg-secondary px-5 xl:hidden">
+              {story.map(({ label, text }) => (
+                <AccordionItem value={label} class="first:border-t-0">
+                  <AccordionTrigger size="xs" class="focus-visible:ring-offset-bg-secondary">
+                    {label}
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    {text.map((paragraph) => (
+                      <p class="whitespace-pre-line">{paragraph}</p>
+                    ))}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </>
+        )}
         {group === "results" && (
           <div class="flex flex-col gap-4">
             <h2 class="text-body-sm text-fg-secondary">Measurable results</h2>
