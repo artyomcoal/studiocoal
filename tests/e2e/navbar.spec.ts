@@ -229,6 +229,10 @@ test.describe("navbar", () => {
       await arrow.click();
       await page.waitForURL(`**${href}`);
       await expect(nav).toHaveAttribute("data-mode", "article");
+      // The title swap ends with only the new title, at rest; the previous one is gone.
+      const bar = nav.locator("[data-nav-article]");
+      await expect(bar.locator("[data-nav-title-prev]")).toBeHidden();
+      await expect(bar.locator("[data-nav-title-current]")).not.toHaveAttribute("data-from", "");
       // A nudge at the top doesn't switch back; scrolling up after 100px does. Each step waits a
       // frame or two, so every scroll position fires its own scroll event.
       const scrollTo = async (y: number) => {
