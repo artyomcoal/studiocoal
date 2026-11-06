@@ -202,7 +202,7 @@ test.describe("navbar", () => {
       expect(await list.evaluate((el) => (el as HTMLElement).inert)).toBe(true);
       expect(await bar.evaluate((el) => (el as HTMLElement).inert)).toBe(false);
       // One line: the title truncates instead of wrapping.
-      const title = bar.locator(".truncate");
+      const title = bar.locator("[data-nav-title-current]");
       await title.evaluate((el) => (el.textContent = "A very long article title ".repeat(6)));
       const box = await title.boundingBox();
       expect(box!.height).toBeLessThanOrEqual(20);
