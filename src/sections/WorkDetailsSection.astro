@@ -43,7 +43,7 @@ const groups = [
 ].filter(Boolean);
 ---
 
-<section class={cn("grid-cols-layout px-container py-section", className)}>
+<section class={cn("mx-auto grid-cols-layout max-w-container px-container py-section", className)}>
   <div class="col-span-full flex flex-col gap-12 text-fg-primary md:col-span-10 md:col-start-2 xl:col-span-6 xl:col-start-4">
     <h1 class="text-headline-lg">
       <span class="text-fg-tertiary">{work.title}.</span> {work.excerpt}
