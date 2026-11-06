@@ -6,8 +6,8 @@
  * Behaviour modelled on standard-projects.com: a fixed, always-visible frosted pill with every
  * link visible at every breakpoint (no hamburger menu). One shared pill sits under the current
  * section's item and slides to whichever item is hovered, focused or pressed (touch), then back
- * when the pointer leaves. Moving the pill never changes the text colours: only navigating does,
- * and those hand over after the page transition (see NavItem). The nav pill and the button are named View Transition groups, so they stay pinned
+ * when the pointer leaves. Moving the pill never changes the text colours; clicking or tapping
+ * an item does, immediately (see NavItem). The nav pill and the button are named View Transition groups, so they stay pinned
  * between pages. The names sit on them, not on <header>: a named element is a backdrop root,
  * which would stop the pill's backdrop-blur from seeing the page.
  *
@@ -147,32 +147,27 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
       new ResizeObserver(remeasure).observe(list);
       addEventListener("pageshow", (event) => event.persisted && place(active ?? null, true));
 
-      // After an in-site navigation, keep the previous colours until the page transition has
-      // finished (BaseLayout adds nav-ready), then let them fade over.
-      const root = document.documentElement;
-      if (!root.classList.contains("nav-entered")) return;
-      let from = "";
-      try {
-        from = new URL(document.referrer).pathname;
-      } catch {
-        return;
-      }
-      const previous = items.find(
-        (item) => from === item.pathname || from.startsWith(`${item.pathname}/`),
-      );
-      if (previous === active) return;
-      if (active) active.dataset.entering = "";
-      if (previous) previous.dataset.leaving = "";
-      const handOver = () => {
-        if (active) delete active.dataset.entering;
-        if (previous) delete previous.dataset.leaving;
-      };
-      if (root.classList.contains("nav-ready")) return handOver();
-      new MutationObserver((_, observer) => {
-        if (!root.classList.contains("nav-ready")) return;
-        observer.disconnect();
-        handOver();
-      }).observe(root, { attributes: true, attributeFilter: ["class"] });
+      // A click or tap makes that item current straight away: its text turns primary and the
+      // current item's secondary (they fade, see NavItem), while the next page loads. The next
+      // page renders with the same colours. Not for a modified click (new tab / window).
+      list.addEventListener("click", (event) => {
+        const item = event.target.closest("[data-slot=nav-item]");
+        if (!item || item === active || event.defaultPrevented) return;
+        if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
+          return;
+        for (const other of items) delete other.dataset.entering;
+        item.dataset.entering = "";
+        if (active) active.dataset.leaving = "";
+        place(item);
+      });
+      // Back / forward cache: the page comes back as it was left, so undo the click state.
+      addEventListener("pageshow", (event) => {
+        if (!event.persisted) return;
+        for (const item of items) {
+          delete item.dataset.entering;
+          delete item.dataset.leaving;
+        }
+      });
     })();
   </script>
 

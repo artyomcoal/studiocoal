@@ -6,9 +6,9 @@
  * One link in the Navbar. Text only: the background is the Navbar's one shared pill
  * (data-nav-pill), which slides under the hovered / focused / current item.
  * Text: Default fg-secondary, Active = current page (aria-current="page") fg-primary. Hover and
- * focus never change the text colour. After a navigation the colours hand over once the page
- * transition ends: data-entering (new current item, still secondary) and data-leaving (previous
- * one, still primary) are set by the Navbar's script and then removed, so the colours fade.
+ * focus never change the text colour. A click or tap does, at once: the Navbar's script sets
+ * data-entering on the clicked item (primary) and data-leaving on the current one
+ * (secondary), so the colours fade over while the next page loads.
  * Focus keeps the FocusState ring.
  */
 import { cva } from "class-variance-authority";
@@ -29,7 +29,7 @@ const navItemVariants = cva(
     "relative flex h-8 shrink-0 items-center rounded-xs p-2 text-label whitespace-nowrap",
     "transition-colors duration-150 ease-out outline-none",
     "focus-visible:ring-2 focus-visible:ring-interactive-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg-primary",
-    "data-entering:text-fg-secondary data-leaving:text-fg-primary",
+    "data-entering:text-fg-primary data-leaving:text-fg-secondary",
   ],
   {
     variants: {

@@ -125,6 +125,36 @@ test.describe("navbar", () => {
       await expect.poll(() => pillMatches(page, "Work")).toBe(true);
     });
 
+    test("a click swaps the text colours at once, before the next page loads", async ({ page }) => {
+      // Read the final colours (transition off) in the click event itself, on the old page.
+      await page.addInitScript(() =>
+        addEventListener("click", () => {
+          const colour = (label: string) => {
+            const el = [...document.querySelectorAll<HTMLElement>("[data-slot=nav-item]")].find(
+              (item) => item.textContent?.trim() === label,
+            )!;
+            el.style.transition = "none";
+            return getComputedStyle(el).color;
+          };
+          sessionStorage.setItem("navColours", JSON.stringify([colour("Work"), colour("About")]));
+        }),
+      );
+      await page.goto("/work");
+      const nav = page.getByRole("navigation", { name: "Main" });
+      const before = await Promise.all(
+        ["Work", "About"].map((name) =>
+          nav.getByRole("link", { name, exact: true }).evaluate((el) => getComputedStyle(el).color),
+        ),
+      );
+      await nav.getByRole("link", { name: "About", exact: true }).click();
+      await page.waitForURL("**/about");
+      const [work, about] = JSON.parse(
+        (await page.evaluate(() => sessionStorage.getItem("navColours")))!,
+      );
+      expect(about).toBe(before[0]); // About took the current (primary) colour
+      expect(work).toBe(before[1]); // Work took the secondary colour
+    });
+
     test("follows keyboard focus", async ({ page }) => {
       await page.goto("/work");
       await page
