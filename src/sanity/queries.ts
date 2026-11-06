@@ -163,9 +163,10 @@ export const JOURNAL_QUERY = defineQuery(
     seo,
     coverImage${image},
     body[]{ ..., _type == "imageWithAlt" => ${image} },
-    // Article pager: the next newer and the next older post.
-    "previous": *[_type == "journal" && defined(slug.current) && publishedAt > ^.publishedAt] | order(publishedAt asc)[0]{ title, "slug": slug.current },
-    "next": *[_type == "journal" && defined(slug.current) && publishedAt < ^.publishedAt] | order(publishedAt desc)[0]{ title, "slug": slug.current }
+    // Article pager / navbar arrows: the next newer and the next older post. Posts with the same
+    // publishedAt are ordered by _id, so every post has a defined neighbour either way.
+    "previous": *[_type == "journal" && defined(slug.current) && (publishedAt > ^.publishedAt || (publishedAt == ^.publishedAt && _id > ^._id))] | order(publishedAt asc, _id asc)[0]{ title, "slug": slug.current },
+    "next": *[_type == "journal" && defined(slug.current) && (publishedAt < ^.publishedAt || (publishedAt == ^.publishedAt && _id < ^._id))] | order(publishedAt desc, _id desc)[0]{ title, "slug": slug.current }
   }`,
 );
 
