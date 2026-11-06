@@ -93,7 +93,11 @@ const groups = [
             <Accordion class="rounded-sm bg-bg-secondary px-5 xl:hidden">
               {story.map(({ label, text }) => (
                 <AccordionItem value={label} class="first:border-t-0">
-                  <AccordionTrigger size="xs" class="focus-visible:ring-offset-bg-secondary">
+                  <AccordionTrigger
+                    size="xs"
+                    surface="filled"
+                    class="focus-visible:ring-offset-bg-secondary"
+                  >
                     {label}
                   </AccordionTrigger>
                   <AccordionContent>
