@@ -1,16 +1,14 @@
 ---
 /**
  * Journal article page: header (meta, title, excerpt), 16:9 cover (4px radius), rich text body
- * with an "On this page" list beside it on xl, a previous / next pager and the latest other
- * articles.
+ * with an "On this page" list beside it on xl, and the latest other articles. Newer / older
+ * navigation lives in the Navbar's article bar (no pager after the body).
  * Figma: Article Template / breakpoint=xl|md|base (frames 5068:9132, 53350:13666, 53350:14038)
  *
- * Columns: the header and body grids stop at max-w-container (1440) and centre; header, body
- * and pager share one centred column (base: full, md: 8 of 12,
- * xl: 6 of 12); text inside it stops at a 65ch reading measure (RichText).
+ * Columns: the header and body grids stop at max-w-container (1440) and centre; header and
+ * body share one centred column (base: full, md: 8 of 12, xl: 6 of 12); text inside it stops at a 65ch reading measure (RichText).
  */
 import { sanityClient } from "sanity:client";
-import ArticlePager from "@/components/ArticlePager.astro";
 import ArticleToc from "@/components/ArticleToc.astro";
 import Media from "@/components/Media.astro";
 import RichText from "@/components/RichText.astro";
@@ -43,7 +41,7 @@ if (!post) throw new Error(`Journal post "${slug}" not found`);
 const body = post.body ?? [];
 const headings = outline(body);
 const minutes = readingMinutes(body);
-/** The centred reading column (header, body, pager). */
+/** The centred reading column (header, body). */
 const column = "col-span-full md:col-span-8 md:col-start-3 xl:col-span-6 xl:col-start-4";
 
 const cover: MediaData | null = post.coverImage?.asset
@@ -84,6 +82,7 @@ const jsonLd = [
 ---
 
 <PageLayout
+  article={{ title: post.title ?? "", newer: post.previous, older: post.next }}
   title={seo.title}
   description={seo.description}
   image={ogImage}
@@ -144,7 +143,6 @@ const jsonLd = [
       <div class={`${column} xl:row-start-1`}>
         <RichText value={body} />
       </div>
-      <ArticlePager previous={post.previous} next={post.next} class={column} />
     </div>
   </article>
 

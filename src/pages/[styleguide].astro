@@ -8,7 +8,6 @@ import Footer from "@/components/Footer.astro";
 import GetInTouchModal from "@/components/GetInTouchModal.astro";
 import Media from "@/components/Media.astro";
 import RichText from "@/components/RichText.astro";
-import ArticlePager from "@/components/ArticlePager.astro";
 import ArticleToc from "@/components/ArticleToc.astro";
 import NavItem from "@/components/NavItem.astro";
 import BlogListCard from "@/components/BlogListCard.astro";
@@ -808,22 +807,6 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
         headings.
       </p>
       <ArticleToc headings={demoOutline} class="max-w-60" />
-    </section>
-
-    <section class="flex flex-col gap-6">
-      <h2 class="text-headline-lg">ArticlePager</h2>
-      <p class="text-body-sm text-fg-secondary">
-        End of an article: previous (newer) and next (older) post. Next stays in the right column
-        when it's alone.
-      </p>
-      <div class="flex max-w-3xl flex-col gap-6">
-        <ArticlePager
-          previous={{ title: "Why we stay a small studio", slug: "small-studio" }}
-          next={{ title: "Notes on making quiet interfaces", slug: "quiet-interfaces" }}
-        />
-        <ArticlePager previous={null} next={{ title: "Next only", slug: "quiet-interfaces" }} />
-        <ArticlePager previous={{ title: "Previous only", slug: "small-studio" }} next={null} />
-      </div>
     </section>
 
     <section class="flex flex-col gap-6">

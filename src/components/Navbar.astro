@@ -16,6 +16,8 @@
  * centred (6px sides) and the button is fixed to the bottom centre of the dynamic viewport
  * (h-dvh), 16px from the bottom edge.
  */
+import ChevronLeft from "@lucide/astro/icons/chevron-left";
+import ChevronRight from "@lucide/astro/icons/chevron-right";
 import LogoMark from "@/assets/studio-coal-mark.svg";
 import NavItem from "@/components/NavItem.astro";
 import { cn } from "@/lib/utils";
@@ -23,11 +25,23 @@ import { sanityClient } from "sanity:client";
 import { SITE_SETTINGS_QUERY } from "@/sanity/queries";
 import GetInTouchModal from "@/components/GetInTouchModal.astro";
 
-interface Props {
-  class?: string;
+interface ArticleLink {
+  title: string | null;
+  slug: string | null;
 }
 
-const { class: className } = Astro.props;
+interface Props {
+  class?: string;
+  /**
+   * Journal article: the nav items give way to this bar (newer / older arrows and the article
+   * title) while the reader scrolls down, at every breakpoint. Figma "Navbar - Article" (node 53645:5245).
+   */
+  article?: { title: string; newer?: ArticleLink | null; older?: ArticleLink | null };
+}
+
+const { class: className, article } = Astro.props;
+const arrow =
+  "flex size-6 shrink-0 items-center justify-center rounded-xs outline-none focus-visible:ring-2 focus-visible:ring-interactive-focus-ring";
 
 /** Default nav; Sanity Site settings › Navigation overrides it when filled in. */
 const defaultItems = [
@@ -60,7 +74,7 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
   {/* backdrop-blur-[20px]: the design asks for a 20px blur; Tailwind's blur scale has no 20px step (lg 16px, xl 24px). */}
   <nav
     aria-label="Main"
-    class="pointer-events-auto flex max-w-full min-w-0 items-center gap-1 rounded-sm bg-bg-translucent p-1 backdrop-blur-[20px] view-transition-header"
+    class="group/nav pointer-events-auto flex max-w-full min-w-0 items-center gap-1 rounded-sm bg-bg-translucent p-1 backdrop-blur-[20px] view-transition-header"
   >
     <a
       href="/"
@@ -79,33 +93,138 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
     </a>
     <!-- When the links don't fit (narrow phones, wider font rendering on Android/Linux) they
          scroll sideways inside the pill instead of overflowing it. Scrollbar hidden: no utility. -->
-    <ul
-      data-nav-list
-      class="relative isolate flex min-w-0 items-center gap-0.5 overflow-x-auto [scrollbar-width:none]"
-    >
-      {/* The one shared pill, behind the items (z-0 under their z-10, in this isolated list).
+    <!-- The nav items and (on journal articles) the article bar share one grid cell; this box
+         masks them, so neither shows outside it while they slide (items up and out, the bar up
+         from below). data-mode="article" on the nav switches them (script below). -->
+    <div class="grid min-w-0 overflow-hidden">
+      <ul
+        data-nav-list
+        class="relative isolate col-start-1 row-start-1 flex min-w-0 items-center gap-0.5 overflow-x-auto transition-transform duration-(--motion-duration-nav-pill) ease-(--motion-ease-nav-pill) [scrollbar-width:none] group-data-[mode=article]/nav:-translate-y-full motion-reduce:transition-none"
+      >
+        {/* The one shared pill, behind the items (z-0 under their z-10, in this isolated list).
           Hidden until the first hover / focus / press: until then the current item shows its own
           background (plain CSS, see NavItem), so a page load measures nothing and animates
           nothing. On that first interaction the pill takes over in the same frame (identical
           pixels), then slides. Positioned with --pill-x / --pill-w by the script below.
           It animates left + width, not translate: a translate animation gets its own compositing
           layer, and iOS Safari drew that layer over the item text (inside this scrolling list). */}
-      <li
-        aria-hidden="true"
-        data-nav-pill
-        class="pointer-events-none absolute top-0 left-(--pill-x) z-0 h-8 w-(--pill-w) rounded-xs bg-interactive-secondary-active opacity-0 transition-[left,width,opacity] duration-(--motion-duration-nav-pill) ease-(--motion-ease-nav-pill) data-instant:transition-none data-visible:opacity-100 motion-reduce:transition-none"
-      ></li>
-      {items.map((item) => (
-        <li>
-          <NavItem href={item.href} active={isActive(item.href)}>
-            {item.label}
-          </NavItem>
-        </li>
-      ))}
-    </ul>
+        <li
+          aria-hidden="true"
+          data-nav-pill
+          class="pointer-events-none absolute top-0 left-(--pill-x) z-0 h-8 w-(--pill-w) rounded-xs bg-interactive-secondary-active opacity-0 transition-[left,width,opacity] duration-(--motion-duration-nav-pill) ease-(--motion-ease-nav-pill) data-instant:transition-none data-visible:opacity-100 motion-reduce:transition-none"
+        ></li>
+        {items.map((item) => (
+          <li>
+            <NavItem href={item.href} active={isActive(item.href)}>
+              {item.label}
+            </NavItem>
+          </li>
+        ))}
+      </ul>
+      {article && (
+        <div
+          data-nav-article
+          inert
+          class="col-start-1 row-start-1 flex h-8 w-0 min-w-full translate-y-full items-center justify-between gap-2 px-1 transition-transform duration-(--motion-duration-nav-pill) ease-(--motion-ease-nav-pill) group-data-[mode=article]/nav:translate-y-0 motion-reduce:transition-none"
+        >
+          {article.newer?.slug ? (
+            <a
+              href={`/journal/${article.newer.slug}`}
+              rel="prev"
+              aria-label={`Newer article: ${article.newer.title}`}
+              class={cn(arrow, "text-fg-primary hover:text-fg-secondary")}
+            >
+              <ChevronLeft aria-hidden="true" class="size-4" />
+            </a>
+          ) : (
+            <span aria-hidden="true" class={cn(arrow, "text-fg-secondary")}>
+              <ChevronLeft class="size-4" />
+            </span>
+          )}
+          <span class="min-w-0 truncate text-center text-label text-fg-primary">
+            {article.title}
+          </span>
+          {article.older?.slug ? (
+            <a
+              href={`/journal/${article.older.slug}`}
+              rel="next"
+              aria-label={`Older article: ${article.older.title}`}
+              class={cn(arrow, "text-fg-primary hover:text-fg-secondary")}
+            >
+              <ChevronRight aria-hidden="true" class="size-4" />
+            </a>
+          ) : (
+            <span aria-hidden="true" class={cn(arrow, "text-fg-secondary")}>
+              <ChevronRight class="size-4" />
+            </span>
+          )}
+        </div>
+      )}
+    </div>
   </nav>
   {/* Inline and right after the list, so the pill is under the current item before the first
       paint (no flash, nothing to measure later on a View Transition's first frame). */}
+  {article && <script is:inline>
+    // Journal article, every breakpoint (as on bakkenbaeck.com):
+    // - scrolling down shows the article bar (past the first 80px);
+    // - scrolling up brings the nav items back, but only once the page has been scrolled at least
+    //   100px, so a nudge or the iOS bounce at the top doesn't switch it;
+    // - arriving from an article arrow keeps the article bar from the first frame (set before
+    //   paint, no slide), until the reader scrolls up.
+    // Small movements are ignored (momentum tails, the iOS address bar). The hidden layer is inert.
+    (() => {
+      const nav = document.querySelector('nav[aria-label="Main"]');
+      const list = nav?.querySelector("[data-nav-list]");
+      const bar = nav?.querySelector("[data-nav-article]");
+      if (!nav || !list || !bar) return;
+      let article = false;
+      const set = (on) => {
+        if (on === article) return;
+        article = on;
+        if (on) nav.dataset.mode = "article";
+        else delete nav.dataset.mode;
+        list.inert = on;
+        bar.inert = !on;
+      };
+      // An arrow click marks the next page, which then opens in article mode.
+      let fromArrow = false;
+      try {
+        fromArrow = sessionStorage.getItem("navArticleMode") === location.pathname;
+        sessionStorage.removeItem("navArticleMode");
+      } catch {
+        /* Storage blocked: open with the nav items. */
+      }
+      if (fromArrow) set(true);
+      bar.addEventListener("click", (event) => {
+        const link = event.target.closest("a[href]");
+        if (!link) return;
+        try {
+          sessionStorage.setItem("navArticleMode", link.pathname);
+        } catch {
+          /* Storage blocked: the next page opens with the nav items. */
+        }
+      });
+
+      let lastY = scrollY;
+      let furthest = scrollY;
+      addEventListener(
+        "scroll",
+        () => {
+          const y = scrollY;
+          furthest = Math.max(furthest, y);
+          if (Math.abs(y - lastY) < 8) return;
+          if (y > lastY) {
+            if (y >= 80) set(true);
+          } else if (furthest >= 100) {
+            set(false);
+          }
+          lastY = y;
+        },
+        { passive: true },
+      );
+      addEventListener("pageshow", (event) => event.persisted && set(false));
+    })();
+  </script>}
   <script is:inline>
     (() => {
       const list = document.querySelector("[data-nav-list]");
