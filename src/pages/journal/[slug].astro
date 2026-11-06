@@ -1,6 +1,8 @@
 ---
 /**
- * Journal article page: header (meta, title, excerpt), 16:9 cover (4px radius), rich text body
+ * Journal article page: header (meta, title, excerpt), 16:9 cover (4px radius), rich text body.
+ * Headings sit one step below the site's defaults: title Headline XL (not XXL), excerpt
+ * Headline MD, and in the body H2 Headline LG, H3 Headline MD (RichText).
  * with an "On this page" list beside it on xl, a previous / next pager and the latest other
  * articles.
  * Figma: Article Template / breakpoint=xl|md|base (frames 5068:9132, 53350:13666, 53350:14038)
@@ -122,7 +124,7 @@ const jsonLd = [
             <Badge class="normal-case">{minutes} min read</Badge>
           </li>
         </ul>
-        <h1 class="text-headline-xxl">{post.title}</h1>
+        <h1 class="text-headline-xl">{post.title}</h1>
         {post.excerpt && (
           <p class="max-w-prose text-headline-md text-pretty text-fg-primary">{post.excerpt}</p>
         )}
