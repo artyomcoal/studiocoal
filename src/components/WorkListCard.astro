@@ -44,7 +44,7 @@ const description = work.summary ?? work.excerpt;
 >
   <Media media={work.listingMedia} aspect="portrait" sizes={sizes} priority={priority} />
   <div class="flex flex-col gap-3">
-    <div class="flex flex-col gap-1">
+    <div class="flex flex-col gap-1 md:pr-6">
       <Heading class="text-headline-sm">
         <a href={`/work/${work.slug}`} class="outline-none after:absolute after:inset-0">
           {work.title}
