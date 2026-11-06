@@ -138,27 +138,11 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
         const origin = list.getBoundingClientRect().left - list.scrollLeft;
         return { x: box.left - origin, w: box.width };
       };
-      // The latest slide: from, to and start time. A nav click saves it, so the next page can
-      // carry on with the same slide (see below).
+      // The latest slide: from, to and start time (a click waits for it to end, see below).
       let slide = null;
-      // A slide carried over from the previous page (Web Animations API), if one is still running.
-      let carried = null;
-      // Stop the carried-over slide where it is, so a new move starts from that exact spot.
-      const settle = () => {
-        if (!carried) return;
-        const here = current();
-        carried.cancel();
-        carried = null;
-        pill.dataset.instant = "";
-        pill.style.setProperty("--pill-x", `${here.x}px`);
-        pill.style.setProperty("--pill-w", `${here.w}px`);
-        void pill.offsetWidth;
-        delete pill.dataset.instant;
-      };
       const show = (item) => {
-        // Already on (or carrying over to) this item: let the slide finish.
+        // Already on (or sliding to) this item: let the slide finish.
         if (item && item === target && "visible" in pill.dataset) return;
-        settle();
         target = item;
         if (!item) return delete pill.dataset.visible;
         const appearing = !("visible" in pill.dataset);
@@ -235,77 +219,41 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
       // a few px short of the item; the next page drew the item in its final place, so the pill
       // snapped. The old page saves where the pill is as it goes away; the next page starts it
       // there and finishes the slide.
-      // Carry a slide over to the next page. A click or tap navigates while the pill is still
-      // sliding (on touch, almost at once), and the next page drew the item in its final place, so
-      // the pill jumped. The click saves the slide (from, to, start time); the next page plays the
-      // same slide with the same duration and easing from the time already elapsed, so it simply
-      // keeps going while the page transition runs. Both pages share the clock (Date.now), so this
-      // doesn't depend on when or how the old page goes away.
-      const saveSlide = (item) => {
-        if (!slide) return;
-        sessionStorage.setItem("navPill", JSON.stringify({ to: item.pathname, ...slide }));
-      };
-      const carryOver = () => {
-        let saved = null;
-        try {
-          saved = JSON.parse(sessionStorage.getItem("navPill") ?? "null");
-          sessionStorage.removeItem("navPill");
-        } catch {
-          return;
-        }
-        if (!saved || !active || saved.to !== active.pathname) return;
-        if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-        const tokens = getComputedStyle(document.documentElement);
-        // The minified CSS writes 400ms as ".4s": read the unit.
-        const raw = tokens.getPropertyValue("--motion-duration-nav-pill").trim();
-        const duration = (parseFloat(raw) || 0.4) * (raw.endsWith("ms") ? 1 : 1000);
-        const easing = tokens.getPropertyValue("--motion-ease-nav-pill").trim() || "ease-out";
-        const elapsed = Date.now() - saved.t;
-        if (elapsed < 0 || elapsed >= duration) return; // it had already arrived
-        // Before the first paint: the pill takes over from the item's own background, resting on
-        // the target, with the rest of the slide playing on top of that.
-        live = true;
-        target = active;
-        pill.dataset.instant = "";
-        pill.style.setProperty("--pill-x", `${saved.toX}px`);
-        pill.style.setProperty("--pill-w", `${saved.toW}px`);
-        pill.dataset.visible = "";
-        void pill.offsetWidth;
-        delete pill.dataset.instant;
-        active.dataset.pillLive = "";
-        carried = pill.animate(
-          [
-            { left: `${saved.fromX}px`, width: `${saved.fromW}px` },
-            { left: `${saved.toX}px`, width: `${saved.toW}px` },
-          ],
-          { duration, easing },
-        );
-        carried.currentTime = elapsed;
-        carried.onfinish = () => (carried = null);
-      };
-      carryOver();
+      // Slide first, then navigate. On a click or tap the pill slides to the item on this page
+      // (idle, so the animation is smooth), and the navigation starts when the slide ends: at
+      // most the slide's remaining time, nothing if a hover had already brought it there. The
+      // next page then opens with the pill already in place.
+      const raw = getComputedStyle(document.documentElement)
+        .getPropertyValue("--motion-duration-nav-pill")
+        .trim(); // the minified CSS writes 400ms as ".4s"
+      const duration = matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? 0
+        : (parseFloat(raw) || 0.4) * (raw.endsWith("ms") ? 1 : 1000);
+      let navigation = 0;
 
       // A click or tap makes that item current straight away: its text turns primary and the
-      // current item's secondary (they fade, see NavItem), while the next page loads. The next
-      // page renders with the same colours. Not for a modified click (new tab / window).
+      // current item's secondary (they fade, see NavItem) while the pill slides; then the next
+      // page loads, with the same colours. Not for a modified click (new tab / window).
       list.addEventListener("click", (event) => {
         const item = event.target.closest("[data-slot=nav-item]");
         if (!item || item === active || event.defaultPrevented) return;
         if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
           return;
+        event.preventDefault();
         for (const other of items) delete other.dataset.entering;
         item.dataset.entering = "";
         if (active) active.dataset.leaving = "";
         moveTo(item);
-        saveSlide(item);
+        const left = slide && target === item ? duration - (Date.now() - slide.t) : 0;
+        clearTimeout(navigation);
+        navigation = setTimeout(() => location.assign(item.href), Math.max(0, left));
       });
       // Back / forward cache: the page comes back as it was left, so reset to the load state.
       addEventListener("pageshow", (event) => {
         if (!event.persisted) return;
         live = false;
         target = null;
-        carried?.cancel();
-        carried = null;
+        clearTimeout(navigation);
         delete pill.dataset.visible;
         for (const item of items) {
           delete item.dataset.entering;
