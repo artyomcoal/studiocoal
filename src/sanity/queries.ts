@@ -64,11 +64,10 @@ export const CLIENTS_QUERY = defineQuery(
   `*[_type == "siteSettings" && _id == "siteSettings"][0].clients[defined(logo.asset)]{ _key, name, logo }`,
 );
 
-/** About page photos from site settings. */
+/** About page gallery photos from site settings. */
 export const ABOUT_MEDIA_QUERY = defineQuery(
   `*[_type == "siteSettings" && _id == "siteSettings"][0]{
-    "gallery": aboutGallery[defined(asset)]${image},
-    "principlesImage": aboutPrinciplesImage${image}
+    "gallery": aboutGallery[defined(asset)]${image}
   }`,
 );
 
