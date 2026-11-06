@@ -38,10 +38,11 @@ interface Props {
 }
 
 const { class: className, article } = Astro.props;
-// Article arrows (Figma 53645:5250): a 24px box in the interactive-secondary palette (default /
-// hover / pressed, transition-colors like the accordion icon boxes) with a sharp chevron.
+// Article arrows (Figma 53645:5250): a 24px box with a sharp chevron. No fill at rest; links get
+// interactive-secondary-hover on hover and -active when pressed (transition-colors, like the
+// accordion icon boxes).
 const arrow =
-  "flex size-6 shrink-0 items-center justify-center rounded-xs bg-interactive-secondary outline-none transition-colors focus-visible:ring-2 focus-visible:ring-interactive-focus-ring";
+  "flex size-6 shrink-0 items-center justify-center rounded-xs outline-none transition-colors focus-visible:ring-2 focus-visible:ring-interactive-focus-ring";
 const arrowLink = "hover:bg-interactive-secondary-hover active:bg-interactive-secondary-active";
 // Figma's path, stroke 1.5, default (butt) caps and miter join: square ends, a sharp point.
 const chevron = { left: "M14 16L10 12L14 8", right: "M10 8L14 12L10 16" };
