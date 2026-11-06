@@ -31,3 +31,36 @@ test("the control pauses and resumes an ambient video", async ({ page }) => {
   await expect(media).not.toHaveAttribute("data-paused", "");
   await expect(toggle).toHaveAttribute("aria-label", "Pause video");
 });
+
+test("when autoplay is refused, the control shows Play and a tap starts the video", async ({
+  page,
+}) => {
+  // iOS Low Power Mode and data saver reject play() without a user gesture. Stubbed: every
+  // play() is refused until the control is clicked.
+  await page.addInitScript(() => {
+    const play = HTMLMediaElement.prototype.play;
+    let gesture = false;
+    document.addEventListener(
+      "click",
+      (event) => {
+        if ((event.target as Element).closest("[data-slot=media-toggle]")) gesture = true;
+      },
+      true,
+    );
+    HTMLMediaElement.prototype.play = function () {
+      if (!gesture) return Promise.reject(new DOMException("autoplay refused", "NotAllowedError"));
+      return play.call(this);
+    };
+  });
+  await page.goto("/");
+  const media = page.locator("[data-slot=media][data-playback=ambient]").first();
+  test.skip((await media.count()) === 0, "no ambient video on the home page");
+  await media.scrollIntoViewIfNeeded();
+  const toggle = media.locator("[data-slot=media-toggle]");
+  await expect(media).toHaveAttribute("data-paused", "");
+  await expect(toggle).toHaveAttribute("aria-label", "Play video");
+  await expect(toggle).toHaveCSS("opacity", "1");
+  await toggle.click({ force: true });
+  await expect(media).not.toHaveAttribute("data-paused", "");
+  await expect(toggle).toHaveAttribute("aria-label", "Pause video");
+});

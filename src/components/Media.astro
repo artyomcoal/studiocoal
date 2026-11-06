@@ -212,17 +212,31 @@ const playerPoster =
     hls.loadSource(src);
     hls.attachMedia(video);
     // Play may have been requested before the source existed.
-    if (video.dataset.wantsPlay !== undefined) void video.play().catch(() => {});
+    if (video.dataset.wantsPlay !== undefined) void start(video);
   }
 
   function root(video: HTMLVideoElement) {
     return video.closest<HTMLElement>("[data-slot=media]")!;
   }
 
+  /** Autoplay refused (iOS Low Power Mode, data saver, browser settings): show Play, so the
+   * video doesn't sit on its poster behind a Pause button. A tap is a user gesture, so Play
+   * then works. Other rejections (AbortError when pause() interrupts a load) are ignored. */
+  function playFailed(video: HTMLVideoElement, error: unknown) {
+    if (error instanceof DOMException && error.name === "NotAllowedError") {
+      delete video.dataset.wantsPlay;
+      setPaused(video, true);
+    }
+  }
+
+  function start(video: HTMLVideoElement) {
+    return video.play().catch((error: unknown) => playFailed(video, error));
+  }
+
   function play(video: HTMLVideoElement) {
     video.dataset.wantsPlay = "";
-    if (video.currentSrc || video.src) void video.play().catch(() => {});
-    else void attach(video).then(() => video.play().catch(() => {}));
+    if (video.currentSrc || video.src) void start(video);
+    else void attach(video).then(() => start(video));
   }
 
   function pause(video: HTMLVideoElement) {
@@ -230,7 +244,7 @@ const playerPoster =
     video.pause();
   }
 
-  /** User pause (button) or reduced motion: shows the Play state on the toggle. */
+  /** User pause (button), reduced motion or refused autoplay: shows the Play state on the toggle. */
   function setPaused(video: HTMLVideoElement, paused: boolean) {
     const el = root(video);
     el.toggleAttribute("data-paused", paused);
