@@ -114,9 +114,13 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
       let target = null;
       let live = false;
 
+      // Fractional (getBoundingClientRect, not offsetLeft / offsetWidth, which round), so the
+      // pill lands exactly on the current item's own background when it takes over.
       const measure = (item) => {
-        pill.style.setProperty("--pill-x", `${item.offsetLeft}px`);
-        pill.style.setProperty("--pill-w", `${item.offsetWidth}px`);
+        const box = item.getBoundingClientRect();
+        const origin = list.getBoundingClientRect().left - list.scrollLeft;
+        pill.style.setProperty("--pill-x", `${box.left - origin}px`);
+        pill.style.setProperty("--pill-w", `${box.width}px`);
       };
       // Put the pill on an item with no transition at all, committed before anything else moves.
       const jump = (item) => {
@@ -147,18 +151,35 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
         target = active;
       };
 
+      // Only once the fonts are ready: measured in the fallback font, the pill would be a few px
+      // off and snap when Graphik lands. That happened right after a navigation, when the browser
+      // reports the pointer (still over the clicked item) entering before the font is decoded.
+      let fontsReady = document.fonts?.status !== "loading";
+      let pending = null;
+      document.fonts?.ready.then(() => {
+        fontsReady = true;
+        if (pending) {
+          engage();
+          show(pending);
+          pending = null;
+        }
+      });
+      const moveTo = (item) => {
+        if (!fontsReady) return void (pending = item);
+        engage();
+        show(item);
+      };
       for (const item of items) {
         for (const type of ["pointerenter", "pointerdown", "focus"]) {
-          item.addEventListener(type, () => {
-            engage();
-            show(item);
-          });
+          item.addEventListener(type, () => moveTo(item));
         }
       }
       // Back to the current item when a mouse leaves or focus moves out. Not after a touch: the
       // tap is about to navigate, so the pill stays on the tapped item.
       list.addEventListener("pointerleave", (event) => {
-        if (live && event.pointerType !== "touch") show(active ?? null);
+        if (event.pointerType === "touch") return;
+        pending = null;
+        if (live) show(active ?? null);
       });
       list.addEventListener("focusout", (event) => {
         if (live && !list.contains(event.relatedTarget) && !list.matches(":hover"))
@@ -178,8 +199,7 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
         for (const other of items) delete other.dataset.entering;
         item.dataset.entering = "";
         if (active) active.dataset.leaving = "";
-        engage();
-        show(item);
+        moveTo(item);
       });
       // Back / forward cache: the page comes back as it was left, so reset to the load state.
       addEventListener("pageshow", (event) => {

@@ -31,6 +31,9 @@ const navItemVariants = cva(
     // The current item's own background, until the Navbar's shared pill takes over
     // (data-pill-live). Plain CSS, so the first paint needs no script or measuring.
     "aria-[current=page]:not-data-pill-live:bg-interactive-secondary-active",
+    // iOS Safari draws a grey tap highlight over a tapped link, on top of its text, for about
+    // half a second; the pill already shows the press. No token: it's an on/off switch.
+    "[-webkit-tap-highlight-color:transparent]",
     // Text colour only: the background hand-over to the pill must be instant.
     "transition-[color] duration-150 ease-out outline-none",
     "focus-visible:ring-2 focus-visible:ring-interactive-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg-primary",
