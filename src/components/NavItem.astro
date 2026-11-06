@@ -3,8 +3,9 @@
  * Nav Item
  * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=704-3403
  *
- * One link in the Navbar. Text only: the background is the Navbar's one shared pill
- * (data-nav-pill), which slides under the hovered / focused / current item.
+ * One link in the Navbar. Its background is the Navbar's one shared pill (data-nav-pill), which
+ * slides under the hovered / focused / pressed item. Until the first interaction the current
+ * item shows the same background itself (plain CSS); the pill then takes over (data-pill-live).
  * Text: Default fg-secondary, Active = current page (aria-current="page") fg-primary. Hover and
  * focus never change the text colour. A click or tap does, at once: the Navbar's script sets
  * data-entering on the clicked item (primary) and data-leaving on the current one
@@ -26,8 +27,12 @@ const { href, active = false, class: className } = Astro.props;
 const navItemVariants = cva(
   [
     // relative: painted above the pill, which comes before the items in the list.
-    "relative flex h-8 shrink-0 items-center rounded-xs p-2 text-label whitespace-nowrap",
-    "transition-colors duration-150 ease-out outline-none",
+    "relative z-10 flex h-8 shrink-0 items-center rounded-xs p-2 text-label whitespace-nowrap",
+    // The current item's own background, until the Navbar's shared pill takes over
+    // (data-pill-live). Plain CSS, so the first paint needs no script or measuring.
+    "aria-[current=page]:not-data-pill-live:bg-interactive-secondary-active",
+    // Text colour only: the background hand-over to the pill must be instant.
+    "transition-[color] duration-150 ease-out outline-none",
     "focus-visible:ring-2 focus-visible:ring-interactive-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg-primary",
     "data-entering:text-fg-primary data-leaving:text-fg-secondary",
   ],

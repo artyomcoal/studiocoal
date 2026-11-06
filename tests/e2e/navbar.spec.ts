@@ -99,10 +99,31 @@ test.describe("navbar", () => {
         return Math.abs(pill.left - item.left) < 1 && Math.abs(pill.width - item.width) < 1;
       }, label);
 
-    test("sits under the current page's item on load, and is hidden on home", async ({ page }) => {
-      await expect(page.locator("[data-nav-pill]")).toHaveCSS("opacity", "0");
+    test("on load the current item has its own background and the pill is hidden", async ({
+      page,
+    }) => {
+      // Nothing is measured or animated on load: the pill only takes over on interaction.
       await page.goto("/work");
+      const pill = page.locator("[data-nav-pill]");
+      await expect(pill).toHaveCSS("opacity", "0");
+      expect(await pill.evaluate((el) => el.getAnimations().length)).toBe(0);
+      const work = page
+        .getByRole("navigation", { name: "Main" })
+        .getByRole("link", { name: "Work", exact: true });
+      await expect(work).not.toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+    });
+
+    test("takes over from the current item's background, then follows the pointer", async ({
+      page,
+    }) => {
+      await page.goto("/work");
+      const nav = page.getByRole("navigation", { name: "Main" });
+      const work = nav.getByRole("link", { name: "Work", exact: true });
+      const fill = await work.evaluate((el) => getComputedStyle(el).backgroundColor);
+      await work.hover();
       await expect(page.locator("[data-nav-pill]")).toHaveCSS("opacity", "1");
+      await expect(page.locator("[data-nav-pill]")).toHaveCSS("background-color", fill);
+      await expect(work).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
       expect(await pillMatches(page, "Work")).toBe(true);
     });
 

@@ -5,7 +5,8 @@
  *
  * Behaviour modelled on standard-projects.com: a fixed, always-visible frosted pill with every
  * link visible at every breakpoint (no hamburger menu). One shared pill sits under the current
- * section's item and slides to whichever item is hovered, focused or pressed (touch), then back
+ * section's item (its own CSS background until the first interaction) and slides to whichever
+ * item is hovered, focused or pressed (touch), then back
  * when the pointer leaves. Moving the pill never changes the text colours; clicking or tapping
  * an item does, immediately (see NavItem). The nav pill and the button are named View Transition groups, so they stay pinned
  * between pages. The names sit on them, not on <header>: a named element is a backdrop root,
@@ -80,14 +81,17 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
          scroll sideways inside the pill instead of overflowing it. Scrollbar hidden: no utility. -->
     <ul
       data-nav-list
-      class="relative flex min-w-0 items-center gap-0.5 overflow-x-auto [scrollbar-width:none]"
+      class="relative isolate flex min-w-0 items-center gap-0.5 overflow-x-auto [scrollbar-width:none]"
     >
-      {/* The one shared pill. Positioned by the script below (--pill-x / --pill-w), behind the
-          items (it comes first, and the items are position: relative). */}
+      {/* The one shared pill, behind the items (z-0 under their z-10, in this isolated list).
+          Hidden until the first hover / focus / press: until then the current item shows its own
+          background (plain CSS, see NavItem), so a page load measures nothing and animates
+          nothing. On that first interaction the pill takes over in the same frame (identical
+          pixels), then slides. Positioned with --pill-x / --pill-w by the script below. */}
       <li
         aria-hidden="true"
         data-nav-pill
-        class="pointer-events-none absolute top-0 left-0 h-8 w-(--pill-w) translate-x-(--pill-x) rounded-xs bg-interactive-secondary-active opacity-0 transition-[translate,width,opacity] duration-(--motion-duration-nav-pill) ease-(--motion-ease-nav-pill) data-instant:transition-opacity data-visible:opacity-100 motion-reduce:transition-none"
+        class="pointer-events-none absolute top-0 left-0 z-0 h-8 w-(--pill-w) translate-x-(--pill-x) rounded-xs bg-interactive-secondary-active opacity-0 transition-[translate,width,opacity] duration-(--motion-duration-nav-pill) ease-(--motion-ease-nav-pill) data-instant:transition-none data-visible:opacity-100 motion-reduce:transition-none"
       ></li>
       {items.map((item) => (
         <li>
@@ -108,44 +112,60 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
       const items = [...list.querySelectorAll("[data-slot=nav-item]")];
       const active = items.find((item) => item.getAttribute("aria-current") === "page");
       let target = null;
+      let live = false;
 
-      // Move the pill to an item (null hides it). `instant` places it without sliding: used for
-      // the first placement, re-measuring, and appearing from hidden (it then only fades in).
-      const place = (item, instant = false) => {
-        target = item;
-        if (!item) {
-          delete pill.dataset.visible;
-          return;
-        }
-        if (instant || !("visible" in pill.dataset)) pill.dataset.instant = "";
+      const measure = (item) => {
         pill.style.setProperty("--pill-x", `${item.offsetLeft}px`);
         pill.style.setProperty("--pill-w", `${item.offsetWidth}px`);
-        pill.dataset.visible = "";
-        if ("instant" in pill.dataset) {
-          void pill.offsetWidth; // apply the jump before sliding is allowed again
-          requestAnimationFrame(() => delete pill.dataset.instant);
-        }
       };
-      place(active ?? null, true);
+      // Put the pill on an item with no transition at all, committed before anything else moves.
+      const jump = (item) => {
+        pill.dataset.instant = "";
+        measure(item);
+        void pill.offsetWidth;
+        delete pill.dataset.instant;
+      };
+      // Slide the pill to an item (null hides it). From hidden it appears on the item and fades in.
+      const show = (item) => {
+        target = item;
+        if (!item) return delete pill.dataset.visible;
+        if (!("visible" in pill.dataset)) jump(item);
+        measure(item);
+        pill.dataset.visible = "";
+      };
+      // First interaction: the pill replaces the current item's own background in the same frame.
+      const engage = () => {
+        if (live) return;
+        live = true;
+        if (!active) return;
+        pill.dataset.instant = "";
+        measure(active);
+        pill.dataset.visible = "";
+        void pill.offsetWidth;
+        delete pill.dataset.instant;
+        active.dataset.pillLive = "";
+        target = active;
+      };
 
       for (const item of items) {
-        item.addEventListener("pointerenter", () => place(item));
-        item.addEventListener("pointerdown", () => place(item)); // touch: press moves it too
-        item.addEventListener("focus", () => place(item));
+        for (const type of ["pointerenter", "pointerdown", "focus"]) {
+          item.addEventListener(type, () => {
+            engage();
+            show(item);
+          });
+        }
       }
       // Back to the current item when a mouse leaves or focus moves out. Not after a touch: the
       // tap is about to navigate, so the pill stays on the tapped item.
       list.addEventListener("pointerleave", (event) => {
-        if (event.pointerType !== "touch") place(active ?? null);
+        if (live && event.pointerType !== "touch") show(active ?? null);
       });
       list.addEventListener("focusout", (event) => {
-        if (!list.contains(event.relatedTarget) && !list.matches(":hover")) place(active ?? null);
+        if (live && !list.contains(event.relatedTarget) && !list.matches(":hover"))
+          show(active ?? null);
       });
-      // Re-measure when the font or the layout changes, and on a back/forward cache restore.
-      const remeasure = () => place(target, true);
-      document.fonts?.ready.then(remeasure);
-      new ResizeObserver(remeasure).observe(list);
-      addEventListener("pageshow", (event) => event.persisted && place(active ?? null, true));
+      // Keep it aligned if the layout changes while it's showing.
+      new ResizeObserver(() => live && target && jump(target)).observe(list);
 
       // A click or tap makes that item current straight away: its text turns primary and the
       // current item's secondary (they fade, see NavItem), while the next page loads. The next
@@ -158,14 +178,19 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
         for (const other of items) delete other.dataset.entering;
         item.dataset.entering = "";
         if (active) active.dataset.leaving = "";
-        place(item);
+        engage();
+        show(item);
       });
-      // Back / forward cache: the page comes back as it was left, so undo the click state.
+      // Back / forward cache: the page comes back as it was left, so reset to the load state.
       addEventListener("pageshow", (event) => {
         if (!event.persisted) return;
+        live = false;
+        target = null;
+        delete pill.dataset.visible;
         for (const item of items) {
           delete item.dataset.entering;
           delete item.dataset.leaving;
+          delete item.dataset.pillLive;
         }
       });
     })();
