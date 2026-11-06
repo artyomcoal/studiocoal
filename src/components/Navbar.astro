@@ -31,13 +31,22 @@ interface ArticleLink {
 interface Props {
   class?: string;
   /**
-   * Journal article: the nav items give way to this bar (newer / older arrows and the article
-   * title) while the reader scrolls down, at every breakpoint. Figma "Navbar - Article" (node 53645:5245).
+   * Journal article or work item: the nav items give way to this bar (newer / older arrows and
+   * the title) while the reader scrolls down, at every breakpoint. Figma "Navbar - Article" (node 53645:5245).
    */
-  article?: { title: string; newer?: ArticleLink | null; older?: ArticleLink | null };
+  article?: {
+    title: string;
+    newer?: ArticleLink | null;
+    older?: ArticleLink | null;
+    /** Collection path for the arrows: "/journal" (default) or "/work". */
+    base?: "/journal" | "/work";
+  };
 }
 
 const { class: className, article } = Astro.props;
+const base = article?.base ?? "/journal";
+const newerLabel = base === "/work" ? "Previous project" : "Newer article";
+const olderLabel = base === "/work" ? "Next project" : "Older article";
 // Article arrows (Figma 53645:5250): a 24px box with a sharp chevron. No fill at rest; links get
 // interactive-secondary-hover on hover and -active when pressed (transition-colors, like the
 // accordion icon boxes).
@@ -97,7 +106,7 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
     </a>
     <!-- When the links don't fit (narrow phones, wider font rendering on Android/Linux) they
          scroll sideways inside the pill instead of overflowing it. Scrollbar hidden: no utility. -->
-    <!-- The nav items and (on journal articles) the article bar share one grid cell; this box
+    <!-- The nav items and (on journal articles and work items) the article bar share one grid cell; this box
          masks them, so neither shows outside it while they slide (items up and out, the bar up
          from below). data-mode="article" on the nav switches them (script below). -->
     <div class="grid min-w-0 overflow-hidden">
@@ -133,9 +142,9 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
         >
           {article.newer?.slug ? (
             <a
-              href={`/journal/${article.newer.slug}`}
+              href={`${base}/${article.newer.slug}`}
               rel="prev"
-              aria-label={`Newer article: ${article.newer.title}`}
+              aria-label={`${newerLabel}: ${article.newer.title}`}
               class={cn(arrow, arrowLink, "text-fg-primary")}
             >
               <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -167,9 +176,9 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
           </span>
           {article.older?.slug ? (
             <a
-              href={`/journal/${article.older.slug}`}
+              href={`${base}/${article.older.slug}`}
               rel="next"
-              aria-label={`Older article: ${article.older.title}`}
+              aria-label={`${olderLabel}: ${article.older.title}`}
               class={cn(arrow, arrowLink, "text-fg-primary")}
             >
               <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -190,7 +199,7 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
   {/* Inline and right after the list, so the pill is under the current item before the first
       paint (no flash, nothing to measure later on a View Transition's first frame). */}
   {article && <script is:inline>
-    // Journal article, every breakpoint (as on bakkenbaeck.com):
+    // Journal article or work item, every breakpoint (as on bakkenbaeck.com):
     // - scrolling down shows the article bar (past the first 80px);
     // - scrolling up brings the nav items back, but only once the page has been scrolled at least
     //   100px, so a nudge or the iOS bounce at the top doesn't switch it;

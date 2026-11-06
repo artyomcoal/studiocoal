@@ -247,8 +247,30 @@ test.describe("navbar", () => {
       await expect(nav).not.toHaveAttribute("data-mode", "article");
     });
 
+    test("work items get the same bar, with arrows to the neighbouring projects", async ({
+      page,
+    }) => {
+      await page.goto("/work/northlight");
+      const nav = page.getByRole("navigation", { name: "Main" });
+      const bar = nav.locator("[data-nav-article]");
+      await expect(bar.locator("[data-nav-title-current]")).not.toBeEmpty();
+      for (const link of await bar.locator("a").all()) {
+        expect(await link.getAttribute("href")).toMatch(/^\/work\/[^/]+$/);
+        expect(await link.getAttribute("aria-label")).toMatch(/^(Previous|Next) project: /);
+      }
+      const scrollTo = async (y: number) => {
+        await page.evaluate((y) => window.scrollTo(0, y), y);
+        await page.waitForTimeout(100);
+      };
+      await scrollTo(300);
+      await scrollTo(500);
+      await expect(nav).toHaveAttribute("data-mode", "article");
+      await scrollTo(380);
+      await expect(nav).not.toHaveAttribute("data-mode", "article");
+    });
+
     test("other pages have no article bar", async ({ page }) => {
-      await page.goto("/work");
+      await page.goto("/services");
       await expect(page.locator("[data-nav-article]")).toHaveCount(0);
     });
   });
