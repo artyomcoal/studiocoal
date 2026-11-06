@@ -563,7 +563,7 @@ export type CLIENTS_QUERY_RESULT = Array<{
 
 // Source: src/sanity/queries.ts
 // Variable: ABOUT_MEDIA_QUERY
-// Query: *[_type == "siteSettings" && _id == "siteSettings"][0]{    "gallery": aboutGallery[defined(asset)]{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }},    "principlesImage": aboutPrinciplesImage{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }}  }
+// Query: *[_type == "siteSettings" && _id == "siteSettings"][0]{    "gallery": aboutGallery[defined(asset)]{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }}  }
 export type ABOUT_MEDIA_QUERY_RESULT = {
   gallery: Array<{
     _key: string;
@@ -581,21 +581,6 @@ export type ABOUT_MEDIA_QUERY_RESULT = {
       aspectRatio: number;
     } | null;
   }> | null;
-  principlesImage: {
-    _type: "imageWithAlt";
-    asset?: SanityImageAssetReference;
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    alt?: string;
-    caption?: string;
-    lqip: string | null;
-    dimensions: {
-      width: number;
-      height: number;
-      aspectRatio: number;
-    } | null;
-  } | null;
 } | null;
 
 // Source: src/sanity/queries.ts
@@ -1768,7 +1753,7 @@ export type JOURNAL_TABLE_QUERY_RESULT = {
 declare global {
   interface SanityQueries {
     '*[_type == "siteSettings" && _id == "siteSettings"][0].clients[defined(logo.asset)]{ _key, name, logo }': CLIENTS_QUERY_RESULT;
-    '*[_type == "siteSettings" && _id == "siteSettings"][0]{\n    "gallery": aboutGallery[defined(asset)]{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n},\n    "principlesImage": aboutPrinciplesImage{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n}\n  }': ABOUT_MEDIA_QUERY_RESULT;
+    '*[_type == "siteSettings" && _id == "siteSettings"][0]{\n    "gallery": aboutGallery[defined(asset)]{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n}\n  }': ABOUT_MEDIA_QUERY_RESULT;
     '*[_type == "siteSettings" && _id == "siteSettings"][0]': SITE_SETTINGS_QUERY_RESULT;
     '*[_type == "work" && defined(slug.current)] | order(coalesce(featured, false) desc, year desc, _createdAt desc) [0...$limit] {\n  _id,\n  title,\n  "slug": slug.current,\n  client,\n  year,\n  services,\n  // Short description for the card; the long one is the fallback (cut to two lines).\n  summary,\n  excerpt,\n  listingMedia{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n}\n}': FEATURED_WORK_QUERY_RESULT;
     '*[_type == "work" && defined(slug.current) && slug.current != $slug] | order(year desc, _createdAt desc) [0...$limit] {\n  _id,\n  title,\n  "slug": slug.current,\n  client,\n  year,\n  services,\n  // Short description for the card; the long one is the fallback (cut to two lines).\n  summary,\n  excerpt,\n  listingMedia{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n}\n}': RECENT_WORK_QUERY_RESULT;
