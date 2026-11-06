@@ -16,8 +16,6 @@
  * centred (6px sides) and the button is fixed to the bottom centre of the dynamic viewport
  * (h-dvh), 16px from the bottom edge.
  */
-import ChevronLeft from "@lucide/astro/icons/chevron-left";
-import ChevronRight from "@lucide/astro/icons/chevron-right";
 import LogoMark from "@/assets/studio-coal-mark.svg";
 import NavItem from "@/components/NavItem.astro";
 import { cn } from "@/lib/utils";
@@ -40,8 +38,13 @@ interface Props {
 }
 
 const { class: className, article } = Astro.props;
+// Article arrows (Figma 53645:5250): a 24px box in the interactive-secondary palette (default /
+// hover / pressed, transition-colors like the accordion icon boxes) with a sharp chevron.
 const arrow =
-  "flex size-6 shrink-0 items-center justify-center rounded-xs outline-none focus-visible:ring-2 focus-visible:ring-interactive-focus-ring";
+  "flex size-6 shrink-0 items-center justify-center rounded-xs bg-interactive-secondary outline-none transition-colors focus-visible:ring-2 focus-visible:ring-interactive-focus-ring";
+const arrowLink = "hover:bg-interactive-secondary-hover active:bg-interactive-secondary-active";
+// Figma's path, stroke 1.5, default (butt) caps and miter join: square ends, a sharp point.
+const chevron = { left: "M14 16L10 12L14 8", right: "M10 8L14 12L10 16" };
 
 /** Default nav; Sanity Site settings › Navigation overrides it when filled in. */
 const defaultItems = [
@@ -132,13 +135,17 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
               href={`/journal/${article.newer.slug}`}
               rel="prev"
               aria-label={`Newer article: ${article.newer.title}`}
-              class={cn(arrow, "text-fg-primary hover:text-fg-secondary")}
+              class={cn(arrow, arrowLink, "text-fg-primary")}
             >
-              <ChevronLeft aria-hidden="true" class="size-4" />
+              <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d={chevron.left} stroke="currentColor" stroke-width="1.5" />
+              </svg>
             </a>
           ) : (
             <span aria-hidden="true" class={cn(arrow, "text-fg-secondary")}>
-              <ChevronLeft class="size-4" />
+              <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d={chevron.left} stroke="currentColor" stroke-width="1.5" />
+              </svg>
             </span>
           )}
           <span class="min-w-0 truncate text-center text-label text-fg-primary">
@@ -149,13 +156,17 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
               href={`/journal/${article.older.slug}`}
               rel="next"
               aria-label={`Older article: ${article.older.title}`}
-              class={cn(arrow, "text-fg-primary hover:text-fg-secondary")}
+              class={cn(arrow, arrowLink, "text-fg-primary")}
             >
-              <ChevronRight aria-hidden="true" class="size-4" />
+              <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d={chevron.right} stroke="currentColor" stroke-width="1.5" />
+              </svg>
             </a>
           ) : (
             <span aria-hidden="true" class={cn(arrow, "text-fg-secondary")}>
-              <ChevronRight class="size-4" />
+              <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d={chevron.right} stroke="currentColor" stroke-width="1.5" />
+              </svg>
             </span>
           )}
         </div>
