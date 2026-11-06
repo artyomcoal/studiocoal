@@ -24,8 +24,9 @@ const {
 
 // Studio Coal: restyled to Figma "AccordionItem" (node 672:1702). Changes from upstream:
 // - text from headline styles via `size`, interactive-primary color, hover/expanded/focus use -hover
-// - 20px vertical padding (py-5), Figma focus ring, plus icon in a 24px box (bg-secondary,
-//   bg-tertiary on hover/press) instead of chevrons
+// - 20px vertical padding (py-5), Figma focus ring, plus icon in a 24px box instead of chevrons.
+//   The box has no fill at rest; bg-tertiary on hover / press / keyboard focus, and it stays
+//   while the item is open (owner, 2026-11-06). Same look on the page and on filled panels.
 // - the plus morphs to a minus when open: its vertical bar (own SVG, stacked in the same grid
 //   cell) rotates 90° onto the horizontal one (--motion-*-accordion, off under reduced motion)
 // - cursor-pointer: Tailwind v4 Preflight leaves <button> on the default cursor
@@ -76,7 +77,7 @@ const triggerVariants = cva(
         <span
           data-slot="accordion-trigger-icon"
           aria-hidden="true"
-          class="pointer-events-none grid size-6 shrink-0 place-items-center rounded-xs bg-bg-secondary text-fg-primary transition-colors group-hover/accordion-trigger:bg-bg-tertiary group-active/accordion-trigger:bg-bg-tertiary *:col-start-1 *:row-start-1"
+          class="pointer-events-none grid size-6 shrink-0 place-items-center rounded-xs text-fg-primary transition-colors group-hover/accordion-trigger:bg-bg-tertiary group-focus-visible/accordion-trigger:bg-bg-tertiary group-active/accordion-trigger:bg-bg-tertiary group-aria-expanded/accordion-trigger:bg-bg-tertiary *:col-start-1 *:row-start-1"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
