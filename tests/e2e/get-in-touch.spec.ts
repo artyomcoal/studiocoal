@@ -87,7 +87,8 @@ test.describe("get in touch dialog", () => {
 });
 
 // Navbar: on mobile the Get in touch button slides away while scrolling down (past half the
-// viewport) and comes back on scroll up; from md it stays put.
+// viewport) and comes back on scroll up. From md it doesn't move on its own: the whole header
+// slides instead (navbar.spec.ts).
 test("get in touch hides on scroll down and returns on scroll up (mobile only)", async ({
   page,
 }) => {

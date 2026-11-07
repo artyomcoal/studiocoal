@@ -81,6 +81,10 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
     // Base: the pill is centred with 6px sides (Figma base frame: 363px pill in 375px),
     // since five links don't fit inside 16px padding. From md: pill left, button right.
     "pointer-events-none fixed inset-x-0 top-0 z-50 flex items-center justify-center px-1.5 py-4 md:justify-between md:p-4",
+    // md+: the whole header slides up out of view while scrolling down, and back on scroll up
+    // (script at the end). Base never gets a transform: it would make the header the containing
+    // block of the fixed, bottom-centred Get in touch wrapper.
+    "transition-transform duration-(--motion-duration-nav-pill) ease-(--motion-ease-nav-pill) motion-reduce:transition-none md:data-hidden:-translate-y-full",
     className,
   )}
 >
@@ -566,31 +570,41 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
 </header>
 
 <script is:inline>
-  // Get in touch, mobile: hide while scrolling down once the page has scrolled half the (dynamic)
-  // viewport; show again on any scroll up, near the top, on keyboard focus, from md up and on a
-  // back / forward cache restore. Movements under 8px are ignored (momentum, iOS address bar).
+  // Hide on scroll down, once the page has scrolled half the (dynamic) viewport; show again on any
+  // scroll up, near the top, on keyboard focus and on a back / forward cache restore. Movements
+  // under 8px are ignored (momentum, iOS address bar).
+  // - Base: only Get in touch hides (slides down off-screen); the nav stays.
+  // - md+: the whole header slides up (nav and Get in touch). Not on journal articles and work
+  //   items: there, scrolling down swaps the nav for the article bar, which must stay visible.
   (() => {
-    const cta = document.querySelector("[data-cta]");
-    if (!cta) return;
+    const header = document.querySelector("[data-slot=navbar]");
+    const cta = header?.querySelector("[data-cta]");
+    if (!header || !cta) return;
     const wide = matchMedia("(min-width: 48rem)");
-    const set = (hide) => cta.toggleAttribute("data-hidden", hide);
+    const article = header.querySelector("[data-nav-article]") !== null;
+    let hidden = false;
+    const set = (hide) => {
+      hidden = hide;
+      cta.toggleAttribute("data-hidden", hide && !wide.matches);
+      header.toggleAttribute("data-hidden", hide && wide.matches && !article);
+    };
     let lastY = scrollY;
     addEventListener(
       "scroll",
       () => {
         const y = scrollY;
-        if (wide.matches || y < innerHeight * 0.5) {
+        if (y < innerHeight * 0.5) {
           lastY = y;
           return set(false);
         }
         if (Math.abs(y - lastY) < 8) return;
-        set(y > lastY && !cta.contains(document.activeElement));
+        set(y > lastY && !header.contains(document.activeElement));
         lastY = y;
       },
       { passive: true },
     );
-    cta.addEventListener("focusin", () => set(false));
-    wide.addEventListener("change", () => set(false));
+    header.addEventListener("focusin", () => set(false));
+    wide.addEventListener("change", () => set(hidden));
     addEventListener("pageshow", (event) => event.persisted && set(false));
   })();
 </script>
