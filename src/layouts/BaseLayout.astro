@@ -66,6 +66,11 @@ const structuredData = serializeJsonLd(
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Both themes, dark first (as in tokens.css). Declared here, before any stylesheet, so the
+         browser's own canvas is already dark (or light, per the OS) on a page's first frame and
+         during page transitions. Without it the canvas defaulted to white until the stylesheet
+         applied, and a transition sometimes flashed a blank white page. -->
+    <meta name="color-scheme" content="dark light" />
     <!-- Cross-document View Transition opt-in (src/styles/motion.css). Inline and first on
          purpose: Chrome reads the opt-in as soon as the new page may render, and from the
          external stylesheet it often wasn't applied yet, so the transition was skipped. -->

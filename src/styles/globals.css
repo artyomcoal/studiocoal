@@ -66,7 +66,10 @@
     @apply border-border outline-ring/50;
   }
   html {
-    @apply font-sans;
+    /* The page background on <html> too, not only <body>: a View Transition captures the root
+     * element, and without its own background the old page was sometimes drawn as a blank white
+     * snapshot fading out over the new page. */
+    @apply bg-background font-sans;
     /* Always reserve the scrollbar's space (classic scrollbars on Windows / Linux), so the
      * dialog's scroll lock never shifts the page and fixed elements stay put. No effect with
      * overlay scrollbars (macOS, iOS, Android). */
