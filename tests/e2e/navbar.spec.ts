@@ -88,6 +88,52 @@ test.describe("navbar", () => {
     await page.keyboard.press("Tab");
     await expect(page.getByRole("link", { name: "Work", exact: true })).toBeFocused();
   });
+  test("from md the header slides up on scroll down and back on scroll up", async ({ page }) => {
+    // beforeEach opened "/". Base: the header never hides (only Get in touch does).
+    const header = page.locator("[data-slot=navbar]");
+    const scrollTo = async (y: number) => {
+      await page.evaluate((y) => window.scrollTo(0, y), y);
+      await page.waitForTimeout(100);
+    };
+    const half = await page.evaluate(() => innerHeight * 0.5);
+    await scrollTo(half * 0.5);
+    await expect(header).not.toHaveAttribute("data-hidden", "");
+    await scrollTo(half + 200);
+    await scrollTo(half + 400);
+    if ((page.viewportSize()?.width ?? 0) < 768) {
+      await expect(header).not.toHaveAttribute("data-hidden", "");
+      return;
+    }
+    await expect(header).toHaveAttribute("data-hidden", "");
+    // Fully out of view: its bottom edge at or above the top of the viewport.
+    await expect
+      .poll(async () => (await header.boundingBox())!.y + (await header.boundingBox())!.height)
+      .toBeLessThanOrEqual(0);
+    await scrollTo(half + 300);
+    await expect(header).not.toHaveAttribute("data-hidden", "");
+    // Keyboard focus brings it back too.
+    await scrollTo(half + 500);
+    await expect(header).toHaveAttribute("data-hidden", "");
+    await page.getByRole("link", { name: "Studio Coal home" }).focus();
+    await expect(header).not.toHaveAttribute("data-hidden", "");
+  });
+
+  test("journal articles and work items keep the header (the article bar shows instead)", async ({
+    page,
+  }) => {
+    await page.goto("/journal/quiet-interfaces");
+    const header = page.locator("[data-slot=navbar]");
+    for (const y of [300, 700, 1100]) {
+      await page.evaluate((y) => window.scrollTo(0, y), y);
+      await page.waitForTimeout(100);
+    }
+    await expect(header).not.toHaveAttribute("data-hidden", "");
+    await expect(page.getByRole("navigation", { name: "Main" })).toHaveAttribute(
+      "data-mode",
+      "article",
+    );
+  });
+
   test.describe("shared pill", () => {
     // The pill box vs an item's box, in viewport pixels.
     const pillMatches = (page: import("@playwright/test").Page, label: string) =>
