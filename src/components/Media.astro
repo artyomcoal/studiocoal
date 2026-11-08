@@ -8,8 +8,9 @@
  *
  * Images: srcset/sizes from the URL builder, LQIP blur behind the image, explicit dimensions.
  * Videos: the poster is a regular responsive <img>; the <video> sits on top. Without an
- *   uploaded poster, Bunny's own thumbnail is used (src/lib/bunny.ts); until it loads, or if
- *   Bunny has none, the wrapper shows its bg-secondary background.
+ *   uploaded poster, Bunny's own thumbnail is used (src/lib/bunny.ts), resized at build time
+ *   to a srcset of small WebPs (src/pages/posters/[file].ts); until it loads, or if Bunny has
+ *   none, the wrapper shows its bg-secondary background.
  * - Safari (and other browsers with native HLS) get the playlist as `src`.
  * - Everywhere else, hls.js/light is dynamic-imported, only once a video is within one
  *   viewport of the screen. Pages without video, and native-HLS browsers, never load it.
@@ -21,12 +22,18 @@
  * Code-defined videos (`video` prop, e.g. the home showreels in src/lib/showreels.ts) are
  *   Bunny playlists played as "ambient", with Bunny's thumbnail as the poster.
  */
-import { bunnyThumbnailCandidates, resolveBunnyThumbnail } from "@/lib/bunny";
+import {
+  bunnyPosterPath,
+  bunnyPosterSrcSet,
+  bunnyThumbnailCandidates,
+  resolveBunnyThumbnail,
+} from "@/lib/bunny";
 import { ASPECT, type AspectName } from "@/lib/media";
 import type { Showreel } from "@/lib/showreels";
 import VideoControl from "@/components/VideoControl.astro";
 import { cn } from "@/lib/utils";
 import { imageSrcSet, urlFor } from "@/sanity/image";
+import { bunnyPosters } from "@/sanity/posters";
 import { resolveMedia, type MediaData } from "@/sanity/media";
 
 interface Props {
@@ -78,6 +85,14 @@ const bunnyPoster =
 const bunnyFallback = bunnyThumbnailCandidates(video?.playlistUrl).find(
   (url) => url !== bunnyPoster,
 );
+// The same thumbnail resized at build time (src/pages/posters/[file].ts): a srcset of small
+// WebPs instead of the ~23 MB full-size frame. Prerendered pages only: a server-rendered draft
+// preview can show a video published after the last build, whose files don't exist yet.
+const resizedPoster =
+  bunnyPoster && video?.playlistUrl && Astro.isPrerendered
+    ? (await bunnyPosters()).get(video.playlistUrl)
+    : undefined;
+const resized = resizedPoster?.thumbnail === bunnyPoster ? resizedPoster : undefined;
 const playerPoster =
   video?.playback === "player"
     ? image?.asset
@@ -86,7 +101,9 @@ const playerPoster =
           .height(Math.round(1920 / (aspect === "hero" ? ASPECT.landscape : ASPECT[aspect])))
           .fit("crop")
           .url()
-      : (bunnyPoster ?? undefined)
+      : resized
+        ? bunnyPosterPath(resized.videoId, 1440)
+        : (bunnyPoster ?? undefined)
     : undefined;
 ---
 
@@ -139,8 +156,10 @@ const playerPoster =
   )}
   {bunnyPoster && (
     <img
-      src={bunnyPoster}
-      data-bunny-fallback={bunnyFallback}
+      src={resized ? bunnyPosterPath(resized.videoId, 960) : bunnyPoster}
+      srcset={resized ? bunnyPosterSrcSet(resized.videoId) : undefined}
+      sizes={resized ? sizes : undefined}
+      data-bunny-fallback={resized ? undefined : bunnyFallback}
       width={width}
       height={height}
       alt=""

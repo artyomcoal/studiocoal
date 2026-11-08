@@ -291,3 +291,12 @@ export const JOURNAL_TABLE_QUERY = defineQuery(
       | order(coalesce(featured, false) desc, publishedAt desc) [0...${HOME_JOURNAL_LIMIT}]._id
   }`,
 );
+
+/**
+ * Build time: every published document, searched for Bunny videos so their posters can be
+ * resized (src/sanity/posters.ts). Videos can sit at any depth (media fields, galleries, rich
+ * text), so the content is walked in code rather than projected here.
+ */
+export const BUNNY_CONTENT_QUERY = defineQuery(
+  `*[!(_id in path("drafts.**")) && !(_type match "sanity.*") && !(_type match "system.*")]`,
+);

@@ -1757,6 +1757,162 @@ export type JOURNAL_TABLE_QUERY_RESULT = {
   home: Array<string>;
 };
 
+// Source: src/sanity/queries.ts
+// Variable: BUNNY_CONTENT_QUERY
+// Query: *[!(_id in path("drafts.**")) && !(_type match "sanity.*") && !(_type match "system.*")]
+export type BUNNY_CONTENT_QUERY_RESULT = Array<
+  | {
+      _id: string;
+      _type: "assist.instruction.context";
+      _createdAt: string;
+      _updatedAt: string;
+      _rev: string;
+      title?: string;
+      context?: Array<{
+        children?: Array<{
+          marks?: Array<string>;
+          text?: string;
+          _type: "span";
+          _key: string;
+        }>;
+        style?: "normal";
+        listItem?: never;
+        markDefs?: null;
+        level?: number;
+        _type: "block";
+        _key: string;
+      }>;
+    }
+  | {
+      _id: string;
+      _type: "deliverable";
+      _createdAt: string;
+      _updatedAt: string;
+      _rev: string;
+      title: string;
+      description?: string;
+      projectTypes?: Array<string>;
+    }
+  | {
+      _id: string;
+      _type: "journal";
+      _createdAt: string;
+      _updatedAt: string;
+      _rev: string;
+      title: string;
+      slug: Slug;
+      publishedAt: string;
+      category?: string;
+      excerpt?: string;
+      coverImage?: ImageWithAlt;
+      body?: RichText;
+      featured?: boolean;
+      seo?: Seo;
+      previousSlugs?: Array<string>;
+    }
+  | {
+      _id: string;
+      _type: "siteSettings";
+      _createdAt: string;
+      _updatedAt: string;
+      _rev: string;
+      title: string;
+      description?: string;
+      navigation?: Array<
+        {
+          _key: string;
+        } & Link
+      >;
+      email?: string;
+      phone?: string;
+      address?: string;
+      social?: Array<
+        {
+          _key: string;
+        } & Link
+      >;
+      clients?: Array<{
+        name: string;
+        logo: {
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          _type: "image";
+        };
+        _type: "client";
+        _key: string;
+      }>;
+      aboutGallery?: Array<
+        {
+          _key: string;
+        } & ImageWithAlt
+      >;
+      aboutPrinciplesImage?: ImageWithAlt;
+      footerLinks?: Array<
+        {
+          _key: string;
+        } & Link
+      >;
+      seo?: Seo;
+      redirects?: Array<{
+        from: string;
+        to: string;
+        permanent?: boolean;
+        _type: "redirect";
+        _key: string;
+      }>;
+    }
+  | {
+      _id: string;
+      _type: "work";
+      _createdAt: string;
+      _updatedAt: string;
+      _rev: string;
+      title: string;
+      slug: Slug;
+      summary?: string;
+      excerpt?: string;
+      featured?: boolean;
+      client?: string;
+      year?: number;
+      websiteUrl?: string;
+      industry?: Array<string>;
+      services?: Array<string>;
+      deliverables?: Array<
+        {
+          _key: string;
+        } & DeliverableReference
+      >;
+      challenge?: string;
+      solution?: string;
+      outcome?: string;
+      results?: Array<{
+        value: string;
+        label: string;
+        _type: "result";
+        _key: string;
+      }>;
+      listingMedia: Media;
+      archiveMedia: Array<
+        {
+          _key: string;
+        } & Media
+      >;
+      heroMedia: Media;
+      content?: Array<
+        | ({
+            _key: string;
+          } & MediaFullWidth)
+        | ({
+            _key: string;
+          } & MediaPair)
+      >;
+      seo?: Seo;
+      previousSlugs?: Array<string>;
+    }
+>;
+
 // Query TypeMap
 declare global {
   interface SanityQueries {
@@ -1780,6 +1936,7 @@ declare global {
     '*[_type in ["work", "journal"] && defined(slug.current) && !defined(seo.image.asset)]{\n    _type,\n    "slug": slug.current,\n    title,\n    "visual": select(\n      _type == "work" => coalesce(\n        select(listingMedia.kind == "video" => listingMedia.video.poster, listingMedia.image),\n        select(heroMedia.kind == "video" => heroMedia.video.poster, heroMedia.image)\n      ),\n      coverImage\n    ){ asset, crop, hotspot },\n    // A video visual without a poster: the card uses Bunny\'s thumbnail instead.\n    "videoPlaylist": select(\n      _type == "work" => coalesce(\n        select(listingMedia.kind == "video" => listingMedia.video.playlistUrl),\n        select(heroMedia.kind == "video" => heroMedia.video.playlistUrl)\n      )\n    )\n  }': SOCIAL_IMAGES_QUERY_RESULT;
     '{\n    "docs": *[_type == "work" && (_id in path("*") || _id in path("drafts.*"))]{\n      _id,\n      _createdAt,\n      _updatedAt,\n      title,\n      "slug": slug.current,\n      client,\n      year,\n      services,\n      featured,\n      "noIndex": seo.noIndex == true,\n      "thumbnail": select(\n        listingMedia.kind == "video" => listingMedia.video.poster,\n        listingMedia.image\n      ){ asset, crop, hotspot },\n      // A video without a poster: the table shows Bunny\'s thumbnail.\n      "thumbnailVideo": select(listingMedia.kind == "video" => listingMedia.video.playlistUrl)\n    },\n    "home": *[_type == "work" && _id in path("*") && defined(slug.current)]\n      | order(coalesce(featured, false) desc, year desc, _createdAt desc) [0...6]._id\n  }': WORK_TABLE_QUERY_RESULT;
     '{\n    "docs": *[_type == "journal" && (_id in path("*") || _id in path("drafts.*"))]{\n      _id,\n      _createdAt,\n      _updatedAt,\n      title,\n      "slug": slug.current,\n      category,\n      publishedAt,\n      featured,\n      "noIndex": seo.noIndex == true,\n      "thumbnail": coverImage{ asset, crop, hotspot }\n    },\n    "home": *[_type == "journal" && _id in path("*") && defined(slug.current)]\n      | order(coalesce(featured, false) desc, publishedAt desc) [0...4]._id\n  }': JOURNAL_TABLE_QUERY_RESULT;
+    '*[!(_id in path("drafts.**")) && !(_type match "sanity.*") && !(_type match "system.*")]': BUNNY_CONTENT_QUERY_RESULT;
   }
 }
 // Lets @sanity/client releases that predate the global registry read it too
