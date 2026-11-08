@@ -1,6 +1,12 @@
 ---
 // Studio Coal: Figma AccordionContent: body-sm, fg-primary, max-w-xl (576px), pr-6, 16px below the
 // trigger text (trigger has py-5, so the content pulls up by -mt-1), 20px bottom padding.
+// Clipping: the panel must clip its content while the height animates, but overflow-hidden
+// also cut off the 4px the content pulls up (the top of its first line). A clip-path inset
+// instead reaches those 4px above the box and still cuts at the bottom edge (it limits clicks to
+// the visible part too). flow-root keeps the panel its own formatting context, as
+// overflow-hidden did, so the content's -mt-1 can't collapse through it: layout and the
+// library's height measurement are unchanged.
 // Motion: a CSS height transition (--motion-*-accordion) instead of upstream's tw-animate
 // accordion-down/up keyframes, so a click mid-animation reverses smoothly. @data-slot/accordion
 // sets --accordion-panel-height and data-starting-style / data-ending-style on this element.
@@ -22,7 +28,7 @@ const { class: className = "", ...rest } = Astro.props as Props;
   {...rest}
   data-slot="accordion-content"
   hidden
-  class="group/accordion-content h-(--accordion-panel-height) overflow-hidden transition-[height] duration-(--motion-duration-accordion) ease-(--motion-ease-accordion) data-starting-style:h-0 motion-reduce:transition-none"
+  class="group/accordion-content flow-root h-(--accordion-panel-height) transition-[height] duration-(--motion-duration-accordion) ease-(--motion-ease-accordion) [clip-path:inset(calc(var(--spacing)*-1)_0_0)] data-starting-style:h-0 motion-reduce:transition-none"
 >
   <div
     class={cn(
