@@ -24,7 +24,8 @@
  * - Autoplay pauses while the strip or a control has keyboard focus.
  * - Previous / next buttons (WCAG: a way to move it without dragging) sit on the strip's
  *   vertical centre, inset by the container padding. They are invisible until the strip is
- *   hovered with a mouse or a button gets keyboard focus; each press moves one item.
+ *   hovered with a mouse or a button gets keyboard focus; each press centres the next (or
+ *   previous) item in the strip.
  *   Same look as the video control (they sit on imagery, so the same in both themes).
  * - Speed and resume delay are tokens (--motion-marquee-*, tokens.css).
  */
@@ -120,10 +121,6 @@ const sizes = "(min-width: 64rem) 1024px, (min-width: 48rem) 576px, 320px";
       animation: marquee var(--marquee-duration) linear infinite;
     }
   }
-  [data-slot="marquee"][data-paused] > li,
-  :has(> [data-slot="marquee"]):has(:focus-visible) [data-slot="marquee"] > li {
-    animation-play-state: paused;
-  }
 </style>
 
 <script>
@@ -149,13 +146,45 @@ const sizes = "(min-width: 64rem) 1024px, (min-width: 48rem) 576px, 320px";
     new ResizeObserver(measure).observe(items[0]!);
     if (speed > 0) track.dataset.ready = "";
 
-    // --- Pause while the user is interacting, and until `resume` ms after they stop.
+    // --- Pause while the user is interacting (and until `resume` ms after they stop), and while
+    // the strip or a control has keyboard focus. Paused through the Web Animations API rather
+    // than animation-play-state: it freezes the offset at once, so a control press can centre
+    // an item exactly.
+    const root = track.parentElement!;
     let holding = false; // finger or mouse button down
+    let waiting = false; // within `resume` ms of the last input
+    let focused = false;
     let timer = 0;
+    const sync = () => {
+      const pause = holding || waiting || focused;
+      for (const item of items) {
+        for (const animation of item.getAnimations()) {
+          if (pause && animation.playState !== "paused") {
+            // pause() only takes effect on the next frame; setting the time completes it now.
+            const time = animation.currentTime;
+            animation.pause();
+            animation.currentTime = time;
+          } else if (!pause) animation.play();
+        }
+      }
+    };
+    const onFocus = () =>
+      queueMicrotask(() => {
+        focused = root.querySelector(":focus-visible") !== null;
+        sync();
+      });
+    root.addEventListener("focusin", onFocus);
+    root.addEventListener("focusout", onFocus);
     const touch = () => {
-      track.dataset.paused = "";
+      waiting = true;
+      sync();
       clearTimeout(timer);
-      if (!holding) timer = window.setTimeout(() => delete track.dataset.paused, resume);
+      if (!holding) {
+        timer = window.setTimeout(() => {
+          waiting = false;
+          sync();
+        }, resume);
+      }
     };
 
     /** Keeps scrollLeft away from both ends (by a quarter copy), one copy at a time. */
@@ -222,19 +251,64 @@ const sizes = "(min-width: 64rem) 1024px, (min-width: 48rem) 576px, 320px";
     // Images are not draggable as files while dragging the strip.
     track.addEventListener("dragstart", (event) => event.preventDefault());
 
-    // Previous / next: one item (plus gap) per press, animated by the browser unless reduced motion.
-    track
-      .parentElement!.querySelectorAll<HTMLButtonElement>("[data-marquee-step]")
-      .forEach((button) => {
-        button.addEventListener("click", () => {
-          cancelAnimationFrame(glide);
-          touch();
-          const step = items[1]!.offsetLeft - items[0]!.offsetLeft;
-          track.scrollBy({
-            left: Number(button.dataset.marqueeStep) * step,
-            behavior: reducedMotion.matches ? "instant" : "smooth",
-          });
+    // Scroll offsets snap to whole (device) pixels, the animated offset doesn't: when a press has
+    // finished scrolling, shift the paused animation by the leftover fraction, so the item is
+    // centred exactly. Only for sub-pixel leftovers, never a visible jump.
+    let stepping = false;
+    track.addEventListener("scrollend", () => {
+      if (!stepping) return;
+      const box = track.getBoundingClientRect();
+      const centre = box.left + box.width / 2;
+      const offset = items
+        .map((item) => {
+          const rect = item.getBoundingClientRect();
+          return rect.left + rect.width / 2 - centre;
+        })
+        .reduce((a, b) => (Math.abs(b) < Math.abs(a) ? b : a));
+      // Still on the way (e.g. the jump into the second copy ended first): wait for the next.
+      if (Math.abs(offset) > 1) return;
+      stepping = false;
+      if (speed <= 0 || Math.abs(offset) < 0.01) return;
+      for (const item of items) {
+        for (const animation of item.getAnimations()) {
+          const duration = Number(animation.effect?.getComputedTiming().duration) || 0;
+          let time = Number(animation.currentTime) + (offset / speed) * 1000;
+          if (time < 0) time += duration;
+          animation.currentTime = time;
+        }
+      }
+    });
+
+    // Previous / next: centre the item after (or before) the one nearest the centre, animated
+    // by the browser unless reduced motion. Autoplay is paused first (touch), so the animated
+    // offset holds still while the strip scrolls to it.
+    root.querySelectorAll<HTMLButtonElement>("[data-marquee-step]").forEach((button) => {
+      button.addEventListener("click", () => {
+        cancelAnimationFrame(glide);
+        touch();
+        // Move into the second copy first, so the scroll below never needs wrapping (which
+        // would cut the smooth scroll short). The copies look the same, so this is invisible.
+        if (track.scrollLeft < loop) track.scrollLeft += loop;
+        else if (track.scrollLeft >= 2 * loop) track.scrollLeft -= loop;
+
+        const box = track.getBoundingClientRect();
+        const centre = box.left + box.width / 2;
+        const step = items[1]!.offsetLeft - items[0]!.offsetLeft;
+        const offsets = items.map((item) => {
+          const rect = item.getBoundingClientRect(); // includes the autoplay translate
+          return rect.left + rect.width / 2 - centre;
+        });
+        const target =
+          button.dataset.marqueeStep === "1"
+            ? offsets.find((offset) => offset > step / 2)
+            : offsets.findLast((offset) => offset < -step / 2);
+        if (target === undefined) return;
+        stepping = true;
+        track.scrollBy({
+          left: target,
+          behavior: reducedMotion.matches ? "instant" : "smooth",
         });
       });
+    });
   });
 </script>
