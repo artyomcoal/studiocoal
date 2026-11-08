@@ -6,8 +6,9 @@
  */
 import { sanityClient } from "sanity:client";
 import PageLayout from "@/layouts/PageLayout.astro";
+import type { MediaData } from "@/sanity/media";
 import { ABOUT_MEDIA_QUERY, CLIENTS_QUERY, FEATURED_WORK_QUERY } from "@/sanity/queries";
-import AboutGallerySection from "@/sections/AboutGallerySection.astro";
+import AboutMarqueeSection from "@/sections/AboutMarqueeSection.astro";
 import AboutPrinciplesSection from "@/sections/AboutPrinciplesSection.astro";
 import AboutWhySection from "@/sections/AboutWhySection.astro";
 import CapabilitiesSection from "@/sections/CapabilitiesSection.astro";
@@ -32,7 +33,11 @@ const [aboutMedia, clients, recentWork] = await Promise.all([
       turning point. Senior, curious and particular about the details.
     </h1>
   </section>
-  <AboutGallerySection photos={aboutMedia?.gallery ?? null} />
+  <AboutMarqueeSection
+    items={(aboutMedia?.gallery ?? []).map(
+      (image) => ({ kind: "image", image, video: null }) as MediaData,
+    )}
+  />
   <AboutWhySection />
   <AboutPrinciplesSection />
   <CapabilitiesSection />
