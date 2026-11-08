@@ -22,7 +22,7 @@ const { posts, nextUrl, class: className } = Astro.props;
 
 <section aria-label="Articles" class={cn("px-container pb-section", className)}>
   {posts.length > 0 ? (
-    <div class="flex flex-col gap-20">
+    <div class="flex flex-col">
       <ul class="grid animate-enter-stagger gap-x-2 gap-y-12 md:grid-cols-2 xl:grid-cols-4">
         {posts.map((post) => (
           <li>
@@ -31,7 +31,7 @@ const { posts, nextUrl, class: className } = Astro.props;
         ))}
       </ul>
       {nextUrl && (
-        <div class="flex justify-center">
+        <div class="flex justify-center pt-section">
           <Button as="a" href={nextUrl} variant="secondary">
             View more
           </Button>
