@@ -9,12 +9,24 @@
  *
  * - Each item is a Media (image or video). Without items it shows 6 placeholder blocks, until
  *   the photos are added in Site settings › About page.
- * - The list is rendered three times (the copies are aria-hidden and inert); the script keeps
- *   the scroll position inside the middle copy, so the loop has no seam.
- * - The first item of the middle copy starts centred, as in Figma. A tiny inline script sets
- *   that position before the first paint; the bundled script below runs the autoplay.
+ * - The list is rendered four times (the extra copies are aria-hidden and inert), so the loop
+ *   has no seam.
+ * - Autoplay is a CSS animation (compositor-driven, so it stays smooth even when the page is
+ *   busy): every item slides left by one copy's width and repeats. The script only measures
+ *   that width (and from the speed token, the duration) and pauses the animation while the
+ *   user scrolls, drags or presses a control, until `--motion-marquee-resume` after they stop.
+ * - Hand scrolling (touchpad, touchscreen, keyboard) is native scrolling on top of the
+ *   animation; the script wraps the scroll position by one copy near the ends, so it never
+ *   runs out. Mouse drag (with a little momentum) is the only part the script moves itself.
+ * - The first item of the second copy starts centred, as in Figma. A tiny inline script sets
+ *   that position before the first paint.
  * - Under prefers-reduced-motion there is no autoplay, but scrolling and dragging still work.
- * - Autoplay stops while the strip is off screen or has keyboard focus.
+ * - Autoplay pauses while the strip or a control has keyboard focus.
+ * - Previous / next buttons (WCAG: a way to move it without dragging) sit on the strip's
+ *   vertical centre, inset by the container padding. They are invisible until the strip is
+ *   hovered with a mouse or a button gets keyboard focus; each press centres the next (or
+ *   previous) item in the strip.
+ *   Same look as the video control (they sit on imagery, so the same in both themes).
  * - Speed and resume delay are tokens (--motion-marquee-*, tokens.css).
  */
 import Media from "@/components/Media.astro";
@@ -32,115 +44,165 @@ interface Props {
 const { items, label = "Studio photos", class: className } = Astro.props;
 
 const PLACEHOLDERS = 6;
-const COPIES = 3;
+const COPIES = 4;
 const slots: (MediaData | null)[] = items.length > 0 ? items : Array(PLACEHOLDERS).fill(null);
 const sizes = "(min-width: 64rem) 1024px, (min-width: 48rem) 576px, 320px";
 ---
 
 <section aria-label={label} class={cn("pb-section", className)}>
-  {/* eslint-disable astro/jsx-a11y/no-noninteractive-tabindex -- scrollable region must be focusable (axe scrollable-region-focusable) */}
-  <ul
-    data-slot="marquee"
-    tabindex="0"
-    aria-label={label}
-    class="flex cursor-grab gap-gutter overflow-x-auto overscroll-x-contain scrollbar-none outline-none select-none focus-visible:ring-2 focus-visible:ring-interactive-focus-ring focus-visible:ring-inset data-dragging:cursor-grabbing *:w-80 *:shrink-0 md:*:w-144 xl:*:w-256"
-  >
-    {Array.from({ length: COPIES }, (_, copy) =>
-      slots.map((media, i) => (
-        <li
-          data-marquee-start={copy === 1 && i === 0 ? "" : undefined}
-          aria-hidden={copy === 1 ? undefined : "true"}
-          inert={copy !== 1}
+  <div class="group/marquee relative">
+    {/* eslint-disable astro/jsx-a11y/no-noninteractive-tabindex -- scrollable region must be focusable (axe scrollable-region-focusable) */}
+    <ul
+      data-slot="marquee"
+      tabindex="0"
+      aria-label={label}
+      style={`--marquee-count: ${slots.length}`}
+      class="flex cursor-grab gap-gutter overflow-x-auto overscroll-x-contain scrollbar-none outline-none select-none focus-visible:ring-2 focus-visible:ring-interactive-focus-ring focus-visible:ring-inset data-dragging:cursor-grabbing *:w-80 *:shrink-0 md:*:w-144 xl:*:w-256"
+    >
+      {Array.from({ length: COPIES }, (_, copy) =>
+        slots.map((media, i) => (
+          <li
+            data-marquee-start={copy === 1 && i === 0 ? "" : undefined}
+            aria-hidden={copy === 1 ? undefined : "true"}
+            inert={copy !== 1}
+          >
+            {media ? (
+              <Media media={media} aspect="gallery" sizes={sizes} />
+            ) : (
+              <div class="aspect-3/2 rounded-sm bg-bg-secondary" />
+            )}
+          </li>
+        )),
+      )}
+    </ul>
+    {/* eslint-enable astro/jsx-a11y/no-noninteractive-tabindex */}
+    <script is:inline>
+      // Start with the middle copy's first item centred (before the first paint).
+      (function (track) {
+        const start = track.querySelector("[data-marquee-start]");
+        track.scrollLeft = start.offsetLeft - (track.clientWidth - start.offsetWidth) / 2;
+      })(document.currentScript.previousElementSibling);
+    </script>
+    {/* Previous / next: hidden until the strip is hovered (mouse) or a control has keyboard focus. */}
+    <div class="pointer-events-none absolute inset-x-0 top-1/2 flex -translate-y-1/2 justify-between px-container">
+      {(["previous", "next"] as const).map((direction) => (
+        <button
+          type="button"
+          data-marquee-step={direction === "next" ? "1" : "-1"}
+          aria-label={direction === "next" ? "Next" : "Previous"}
+          class="pointer-events-auto grid size-6 cursor-pointer place-items-center rounded-xs bg-neutral-900/40 text-neutral-50 opacity-0 backdrop-blur-sm transition-[opacity,background-color] hover:bg-neutral-900/60 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interactive-focus-ring active:bg-neutral-900/60 pointer-fine:group-hover/marquee:opacity-100"
         >
-          {media ? (
-            <Media media={media} aspect="gallery" sizes={sizes} />
-          ) : (
-            <div class="aspect-3/2 rounded-sm bg-bg-secondary" />
-          )}
-        </li>
-      )),
-    )}
-  </ul>
-  {/* eslint-enable astro/jsx-a11y/no-noninteractive-tabindex */}
-  <script is:inline>
-    // Start with the middle copy's first item centred (before the first paint).
-    (function (track) {
-      const start = track.querySelector("[data-marquee-start]");
-      track.scrollLeft = start.offsetLeft - (track.clientWidth - start.offsetWidth) / 2;
-    })(document.currentScript.previousElementSibling);
-  </script>
+          <svg
+            aria-hidden="true"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            class={direction === "previous" ? "-scale-x-100" : undefined}
+          >
+            <path d="M10.5 8.5 14 12l-3.5 3.5" stroke="currentColor" stroke-width="1.5" />
+          </svg>
+        </button>
+      ))}
+    </div>
+  </div>
 </section>
+
+<style>
+  /* Autoplay: each item slides left by one copy of the list (--marquee-loop, set by the script
+   * with --marquee-duration), then repeats; the copies make the jump back invisible. */
+  @keyframes marquee {
+    to {
+      translate: calc(-1 * var(--marquee-loop)) 0;
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    [data-slot="marquee"][data-ready] > li {
+      animation: marquee var(--marquee-duration) linear infinite;
+    }
+  }
+</style>
 
 <script>
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
   document.querySelectorAll<HTMLElement>("[data-slot=marquee]").forEach((track) => {
     const items = [...track.children] as HTMLElement[];
-    const perCopy = items.length / 3;
+    const perCopy = items.length / 4;
     const styles = getComputedStyle(track);
     // Time token in ms. The CSS minifier may rewrite "1500ms" as "1.5s", so read the unit too.
-    const ms = (name: string) => {
-      const value = styles.getPropertyValue(name).trim();
-      const n = parseFloat(value) || 0;
-      return value.endsWith("ms") ? n : value.endsWith("s") ? n * 1000 : n;
-    };
+    const value = styles.getPropertyValue("--motion-marquee-resume").trim();
+    const resume = (parseFloat(value) || 0) * (value.endsWith("ms") ? 1 : 1000);
     const speed = parseFloat(styles.getPropertyValue("--motion-marquee-speed")) || 0; // px/s
-    const resume = ms("--motion-marquee-resume");
 
-    /** Width of one copy of the list, gap included. */
+    /** Width of one copy of the list, gap included. Sets the animation's distance and duration. */
     let loop = 0;
     const measure = () => {
       loop = items[perCopy]!.offsetLeft - items[0]!.offsetLeft;
+      track.style.setProperty("--marquee-loop", `${loop}px`);
+      track.style.setProperty("--marquee-duration", `${speed > 0 ? loop / speed : 0}s`);
     };
     measure();
+    new ResizeObserver(measure).observe(items[0]!);
+    if (speed > 0) track.dataset.ready = "";
 
-    // Scroll position as a float: browsers round scrollLeft, so the fraction is drawn with a
-    // transform, which keeps slow autoplay smooth.
-    let pos = track.scrollLeft;
-    let written = track.scrollLeft;
-    const write = (next: number, subpixel = false) => {
-      pos = next;
-      track.scrollLeft = next;
-      written = track.scrollLeft;
-      const rest = subpixel ? written - pos : 0;
-      for (const item of items) item.style.translate = rest ? `${rest}px 0` : "";
-    };
-
-    /** Keeps the position inside the middle copy (both edges have a full copy to spare). */
-    const wrap = (lo: number, hi: number) => {
-      if (pos < lo) write(pos + loop);
-      else if (pos >= hi) write(pos - loop);
-    };
-
-    // --- Interaction: anything the user does pauses autoplay until `resume` after it ends.
+    // --- Pause while the user is interacting (and until `resume` ms after they stop), and while
+    // the strip or a control has keyboard focus. Paused through the Web Animations API rather
+    // than animation-play-state: it freezes the offset at once, so a control press can centre
+    // an item exactly.
+    const root = track.parentElement!;
     let holding = false; // finger or mouse button down
-    let lastInput = -Infinity;
+    let waiting = false; // within `resume` ms of the last input
+    let focused = false;
+    let timer = 0;
+    const sync = () => {
+      const pause = holding || waiting || focused;
+      for (const item of items) {
+        for (const animation of item.getAnimations()) {
+          if (pause && animation.playState !== "paused") {
+            // pause() only takes effect on the next frame; setting the time completes it now.
+            const time = animation.currentTime;
+            animation.pause();
+            animation.currentTime = time;
+          } else if (!pause) animation.play();
+        }
+      }
+    };
+    const onFocus = () =>
+      queueMicrotask(() => {
+        focused = root.querySelector(":focus-visible") !== null;
+        sync();
+      });
+    root.addEventListener("focusin", onFocus);
+    root.addEventListener("focusout", onFocus);
     const touch = () => {
-      lastInput = performance.now();
+      waiting = true;
+      sync();
+      clearTimeout(timer);
+      if (!holding) {
+        timer = window.setTimeout(() => {
+          waiting = false;
+          sync();
+        }, resume);
+      }
     };
 
-    track.addEventListener("scroll", () => {
-      if (Math.abs(track.scrollLeft - written) < 1) return; // our own write
-      // Native scroll (touchpad, touch momentum, keyboard): follow it, and only wrap near the
-      // ends, because moving scrollLeft cancels momentum on iOS.
-      pos = written = track.scrollLeft;
-      for (const item of items) item.style.translate = "";
-      touch();
-      wrap(loop / 2, 2.5 * loop - track.clientWidth);
-    });
+    /** Keeps scrollLeft away from both ends (by a quarter copy), one copy at a time. */
+    const wrap = () => {
+      const max = track.scrollWidth - track.clientWidth - loop - loop / 4;
+      if (track.scrollLeft < loop / 4) track.scrollLeft += loop;
+      else if (track.scrollLeft > max) track.scrollLeft -= loop;
+    };
+
+    // Native scroll (touchpad, touch, keyboard, drag, the buttons) pauses autoplay and wraps.
+    track.addEventListener("scroll", () => (touch(), wrap()), { passive: true });
     track.addEventListener("touchstart", () => ((holding = true), touch()), { passive: true });
-    track.addEventListener("touchend", () => ((holding = false), touch()));
-    track.addEventListener("touchcancel", () => ((holding = false), touch()));
-    track.addEventListener(
-      "wheel",
-      (event) => Math.abs(event.deltaX) > Math.abs(event.deltaY) && touch(),
-      { passive: true },
-    );
-    track.addEventListener("keydown", touch);
+    const lift = () => ((holding = false), touch());
+    track.addEventListener("touchend", lift);
+    track.addEventListener("touchcancel", lift);
 
     // Mouse drag, with a little momentum on release.
     let dragX = 0;
-    let dragPos = 0;
     let velocity = 0; // px per ms, positive = towards the end
     let lastMove = 0;
     let glide = 0; // rAF id of the release momentum
@@ -151,7 +213,6 @@ const sizes = "(min-width: 64rem) 1024px, (min-width: 48rem) 576px, 320px";
       cancelAnimationFrame(glide);
       holding = true;
       dragX = event.clientX;
-      dragPos = pos;
       velocity = 0;
       lastMove = event.timeStamp;
       track.setPointerCapture(event.pointerId);
@@ -160,14 +221,12 @@ const sizes = "(min-width: 64rem) 1024px, (min-width: 48rem) 576px, 320px";
     });
     track.addEventListener("pointermove", (event) => {
       if (!track.hasPointerCapture(event.pointerId)) return;
-      const next = dragPos - (event.clientX - dragX);
+      const delta = dragX - event.clientX;
       const dt = event.timeStamp - lastMove;
-      if (dt > 0) velocity = (next - pos) / dt;
+      if (dt > 0) velocity = delta / dt;
+      dragX = event.clientX;
       lastMove = event.timeStamp;
-      write(next);
-      wrap(loop / 2, 2.5 * loop - track.clientWidth);
-      dragPos += pos - next; // keep the drag anchored after a wrap
-      touch();
+      track.scrollLeft += delta;
     });
     const release = (event: PointerEvent) => {
       if (!track.hasPointerCapture(event.pointerId)) return;
@@ -182,9 +241,7 @@ const sizes = "(min-width: 64rem) 1024px, (min-width: 48rem) 576px, 320px";
         last = now;
         velocity *= Math.pow(0.95, dt / 16);
         if (Math.abs(velocity) < 0.02) return;
-        write(pos + velocity * dt);
-        wrap(loop / 2, 2.5 * loop - track.clientWidth);
-        touch();
+        track.scrollLeft += velocity * dt;
         glide = requestAnimationFrame(step);
       };
       glide = requestAnimationFrame(step);
@@ -194,41 +251,64 @@ const sizes = "(min-width: 64rem) 1024px, (min-width: 48rem) 576px, 320px";
     // Images are not draggable as files while dragging the strip.
     track.addEventListener("dragstart", (event) => event.preventDefault());
 
-    // --- Autoplay: runs while on screen, without reduced motion, and without keyboard focus.
-    let visible = false;
-    let frame = 0;
-    let previous = 0;
-    const tick = (now: number) => {
-      const dt = previous ? Math.min(now - previous, 100) : 0;
-      previous = now;
-      const idle = now - lastInput;
-      const paused = holding || track.matches(":focus-visible") || idle < resume;
-      if (!paused && speed > 0) {
-        // Ease back up to speed over `resume` ms after the user lets go.
-        const ramp =
-          resume > 0 && lastInput > -Infinity ? Math.min((idle - resume) / resume, 1) : 1;
-        const eased = ramp * ramp * (3 - 2 * ramp);
-        write(pos + (speed * eased * dt) / 1000, true);
-        wrap(loop, 2 * loop);
+    // Scroll offsets snap to whole (device) pixels, the animated offset doesn't: when a press has
+    // finished scrolling, shift the paused animation by the leftover fraction, so the item is
+    // centred exactly. Only for sub-pixel leftovers, never a visible jump.
+    let stepping = false;
+    track.addEventListener("scrollend", () => {
+      if (!stepping) return;
+      const box = track.getBoundingClientRect();
+      const centre = box.left + box.width / 2;
+      const offset = items
+        .map((item) => {
+          const rect = item.getBoundingClientRect();
+          return rect.left + rect.width / 2 - centre;
+        })
+        .reduce((a, b) => (Math.abs(b) < Math.abs(a) ? b : a));
+      // Still on the way (e.g. the jump into the second copy ended first): wait for the next.
+      if (Math.abs(offset) > 1) return;
+      stepping = false;
+      if (speed <= 0 || Math.abs(offset) < 0.01) return;
+      for (const item of items) {
+        for (const animation of item.getAnimations()) {
+          const duration = Number(animation.effect?.getComputedTiming().duration) || 0;
+          let time = Number(animation.currentTime) + (offset / speed) * 1000;
+          if (time < 0) time += duration;
+          animation.currentTime = time;
+        }
       }
-      frame = requestAnimationFrame(tick);
-    };
-    const update = () => {
-      cancelAnimationFrame(frame);
-      previous = 0;
-      if (visible && !reducedMotion.matches) frame = requestAnimationFrame(tick);
-    };
-    new IntersectionObserver(([entry]) => {
-      visible = entry!.isIntersecting;
-      update();
-    }).observe(track);
-    reducedMotion.addEventListener("change", update);
+    });
 
-    // Item widths change at the breakpoints: keep the same spot in the loop.
-    new ResizeObserver(() => {
-      const ratio = loop ? pos / loop : 0;
-      measure();
-      write(ratio * loop);
-    }).observe(items[0]!);
+    // Previous / next: centre the item after (or before) the one nearest the centre, animated
+    // by the browser unless reduced motion. Autoplay is paused first (touch), so the animated
+    // offset holds still while the strip scrolls to it.
+    root.querySelectorAll<HTMLButtonElement>("[data-marquee-step]").forEach((button) => {
+      button.addEventListener("click", () => {
+        cancelAnimationFrame(glide);
+        touch();
+        // Move into the second copy first, so the scroll below never needs wrapping (which
+        // would cut the smooth scroll short). The copies look the same, so this is invisible.
+        if (track.scrollLeft < loop) track.scrollLeft += loop;
+        else if (track.scrollLeft >= 2 * loop) track.scrollLeft -= loop;
+
+        const box = track.getBoundingClientRect();
+        const centre = box.left + box.width / 2;
+        const step = items[1]!.offsetLeft - items[0]!.offsetLeft;
+        const offsets = items.map((item) => {
+          const rect = item.getBoundingClientRect(); // includes the autoplay translate
+          return rect.left + rect.width / 2 - centre;
+        });
+        const target =
+          button.dataset.marqueeStep === "1"
+            ? offsets.find((offset) => offset > step / 2)
+            : offsets.findLast((offset) => offset < -step / 2);
+        if (target === undefined) return;
+        stepping = true;
+        track.scrollBy({
+          left: target,
+          behavior: reducedMotion.matches ? "instant" : "smooth",
+        });
+      });
+    });
   });
 </script>
