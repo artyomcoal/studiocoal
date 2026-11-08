@@ -235,7 +235,7 @@
   /* Soft ease-out: the new page starts showing at once, so there's no blank gap after the
    * old page fades out, then settles slowly. */
   --motion-ease-enter: cubic-bezier(0.25, 0.1, 0.25, 1);
-  --motion-word-hold: 1300ms; /* how long each rotating headline word stays (home hero) */
+  --motion-word-hold: 2000ms; /* how long each rotating headline word stays (home hero) */
   --motion-duration-word: 600ms; /* rotating headline word: roll in / out (home hero) */
   --motion-shift-word: 50%; /* how far a rotating word travels, share of its own height */
 
