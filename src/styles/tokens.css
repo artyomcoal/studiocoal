@@ -175,7 +175,7 @@
   --grid-gutter: --spacing(2); /* 8 */
   --container-max-width: 90rem; /* 1440 — applied only via max-w-container */
   --container-padding-x: --spacing(3); /* 12 */
-  --section-padding-y: --spacing(12); /* 48 */
+  --section-padding-y: --spacing(16); /* 64 */
   --hero-padding-top: --spacing(48); /* 192 */
 }
 
