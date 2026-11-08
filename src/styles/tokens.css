@@ -237,7 +237,7 @@
   --motion-ease-enter: cubic-bezier(0.25, 0.1, 0.25, 1);
   --motion-word-hold: 2600ms; /* how long each rotating headline word stays (home hero) */
   --motion-duration-word: 600ms; /* rotating headline word: roll in / out (home hero) */
-  --motion-shift-word: 50%; /* how far a rotating word travels, share of its own height */
+  --motion-shift-word: 25%; /* how far a rotating word travels, share of its own height */
 
   /* Dialogs (Get in touch): scale + fade in from the anchor corner, reversed on close.
    * Values given by the owner, from permanent.is; slowed ~1.5× (250 → 400ms) and softened
