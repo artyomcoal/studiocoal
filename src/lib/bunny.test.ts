@@ -1,5 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
-import { bunnyThumbnailCandidates, bunnyVideoBase, resolveBunnyThumbnail } from "./bunny";
+import {
+  bunnyPosterPath,
+  bunnyPosterSrcSet,
+  bunnyThumbnailCandidates,
+  bunnyVideoBase,
+  bunnyVideoId,
+  collectBunnyPlaylists,
+  resolveBunnyThumbnail,
+} from "./bunny";
 
 const playlist = "https://vz-abc-123.b-cdn.net/9df43d9e-0d5d/playlist.m3u8";
 
@@ -55,5 +63,40 @@ describe("resolveBunnyThumbnail", () => {
     await resolveBunnyThumbnail(other, "https://x/", fetcher as typeof fetch);
     expect(fetcher).toHaveBeenCalledTimes(2); // two candidates, once
     await expect(resolveBunnyThumbnail("nope", "https://x/")).resolves.toBeNull();
+  });
+});
+
+describe("poster helpers", () => {
+  const playlist = "https://vz-abc-123.b-cdn.net/9df43d9e-0d5d/playlist.m3u8";
+
+  it("takes the video id from a playlist URL", () => {
+    expect(bunnyVideoId(playlist)).toBe("9df43d9e-0d5d");
+    expect(bunnyVideoId("https://example.com/video.mp4")).toBeNull();
+    expect(bunnyVideoId(null)).toBeNull();
+  });
+
+  it("builds the poster paths and srcset", () => {
+    expect(bunnyPosterPath("abc", 960)).toBe("/posters/abc-960.webp");
+    expect(bunnyPosterSrcSet("abc")).toBe(
+      "/posters/abc-480.webp 480w, /posters/abc-720.webp 720w, /posters/abc-960.webp 960w, /posters/abc-1440.webp 1440w",
+    );
+  });
+
+  it("collects bunnyVideo playlists at any depth, once each", () => {
+    const other = "https://vz-abc-123.b-cdn.net/other/playlist.m3u8";
+    const content = [
+      {
+        _type: "work",
+        heroMedia: { kind: "video", video: { _type: "bunnyVideo", playlistUrl: playlist } },
+      },
+      {
+        _type: "journal",
+        body: [{ _type: "media", video: { _type: "bunnyVideo", playlistUrl: other } }],
+      },
+      { _type: "work", gallery: [{ video: { _type: "bunnyVideo", playlistUrl: playlist } }] },
+      { _type: "bunnyVideo", playlistUrl: "https://example.com/not-a-playlist.mp4" },
+      { _type: "bunnyVideo" },
+    ];
+    expect(collectBunnyPlaylists(content)).toEqual([playlist, other]);
   });
 });
