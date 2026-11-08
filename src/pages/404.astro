@@ -8,7 +8,10 @@ import { Button } from "@/ui/button";
 ---
 
 <PageLayout title="Page not found" noindex>
-  <section class="flex flex-col items-start gap-12 px-container pt-hero pb-12">
+  {/* At least 75% of the dynamic viewport, so the footer sits low on this short page. Arbitrary
+      value: Tailwind has h-dvh (100%) but no 75% viewport step. A minimum, not a fixed height:
+      the headline can still grow past it on small screens. */}
+  <section class="flex min-h-[75dvh] flex-col items-start gap-12 px-container pt-hero pb-12">
     <h1 class="text-headline-xxl text-fg-primary">
       <span class="text-fg-tertiary">Page not found.</span> This page doesn't exist: it may have
       moved, or the link is wrong.
