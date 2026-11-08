@@ -9,6 +9,21 @@ import { SERVICES } from "@/lib/services";
 import { SERVICE_DESCRIPTIONS_QUERY, WORK_BY_SERVICE_QUERY } from "@/sanity/queries";
 import ServiceOfferingSection from "@/sections/ServiceOfferingSection.astro";
 
+// Section bar in the Navbar (Figma 53673:5159): one link per offering. Labels as in Figma
+// ("Web", shorter than the service title "Website"); anchors from SERVICES.
+const SECTION_LABELS: Record<(typeof SERVICES)[number]["value"], string> = {
+  brand: "Brand",
+  web: "Web",
+  "digital-products": "Product",
+};
+const sections = {
+  label: "Services",
+  items: SERVICES.map((service) => ({
+    label: SECTION_LABELS[service.value],
+    href: `#${service.anchor}` as const,
+  })),
+};
+
 const [related, descriptions] = await Promise.all([
   Promise.all(
     SERVICES.map((service) =>
@@ -22,6 +37,7 @@ const [related, descriptions] = await Promise.all([
 <PageLayout
   title="Services"
   description="Brand, web and product, shaped by one design-led studio to tell one unmistakable story."
+  sections={sections}
 >
   <section class="px-container pt-hero pb-12">
     <h1 class="text-headline-xxl text-fg-primary">

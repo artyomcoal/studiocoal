@@ -41,9 +41,19 @@ interface Props {
     /** Collection path for the arrows: "/journal" (default) or "/work". */
     base?: "/journal" | "/work";
   };
+  /**
+   * A page's own section nav (Services): the nav items give way to this bar while the reader
+   * scrolls down, as with `article`. A label (fg-primary) and in-page links to the page's sections;
+   * the one for the section on screen gets a pill that follows the scroll. Figma "Navbar"
+   * services (node 53673:5159).
+   */
+  sections?: {
+    label: string;
+    items: { label: string; href: `#${string}` }[];
+  };
 }
 
-const { class: className, article } = Astro.props;
+const { class: className, article, sections } = Astro.props;
 const base = article?.base ?? "/journal";
 const newerLabel = base === "/work" ? "Previous project" : "Newer article";
 const olderLabel = base === "/work" ? "Next project" : "Older article";
@@ -110,9 +120,10 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
     </a>
     <!-- When the links don't fit (narrow phones, wider font rendering on Android/Linux) they
          scroll sideways inside the pill instead of overflowing it. Scrollbar hidden: no utility. -->
-    <!-- The nav items and (on journal articles and work items) the article bar share one grid cell; this box
-         masks them, so neither shows outside it while they slide (items up and out, the bar up
-         from below). data-mode="article" on the nav switches them (script below). -->
+    <!-- The nav items and a page's bar (the article bar on journal articles and work items, the
+         section bar on Services) share one grid cell; this box masks them, so neither shows
+         outside it while they slide (items up and out, the bar up from below).
+         data-mode="article" on the nav switches them (script below). -->
     <div class="grid min-w-0 overflow-hidden">
       <ul
         data-nav-list
@@ -140,6 +151,7 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
       </ul>
       {article && (
         <div
+          data-nav-bar
           data-nav-article
           inert
           class="col-start-1 row-start-1 flex h-8 w-0 min-w-full translate-y-full items-center justify-between gap-2 px-1 transition-transform duration-(--motion-duration-nav-pill) ease-(--motion-ease-nav-pill) group-data-[mode=article]/nav:translate-y-0 motion-reduce:transition-none"
@@ -198,24 +210,53 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
           )}
         </div>
       )}
+      {sections && (
+        <div
+          data-nav-bar
+          data-nav-sections
+          inert
+          class="relative isolate col-start-1 row-start-1 flex h-8 w-0 min-w-full translate-y-full items-center gap-2 px-1 transition-transform duration-(--motion-duration-nav-pill) ease-(--motion-ease-nav-pill) group-data-[mode=article]/nav:translate-y-0 motion-reduce:transition-none"
+        >
+          {/* The section on screen gets this pill (z-0, under the links' z-10), sliding as the
+              reader scrolls from one section to the next. Same look and motion as the nav pill;
+              left + width for the same iOS reason. Positioned by the script below. */}
+          <span
+            aria-hidden="true"
+            data-section-pill
+            class="pointer-events-none absolute top-0 left-(--pill-x) z-0 h-8 w-(--pill-w) rounded-xs bg-interactive-secondary-active transition-[left,width] duration-(--motion-duration-nav-pill) ease-(--motion-ease-nav-pill) data-instant:transition-none motion-reduce:transition-none"
+          ></span>
+          <span class="shrink-0 text-label text-fg-primary">{sections.label}</span>
+          {sections.items.map((item) => (
+            <NavItem href={item.href} class="data-current:text-fg-primary">
+              {item.label}
+            </NavItem>
+          ))}
+        </div>
+      )}
     </div>
   </nav>
   {/* Inline and right after the list, so the pill is under the current item before the first
       paint (no flash, nothing to measure later on a View Transition's first frame). */}
-  {article && <script is:inline>
-    // Journal article or work item, every breakpoint (as on bakkenbaeck.com):
-    // - scrolling down shows the article bar (past the first 80px);
+  {(article || sections) && <script is:inline>
+    // A page's bar (journal article or work item: the article bar; Services: the section bar),
+    // every breakpoint (as on bakkenbaeck.com):
+    // - scrolling down shows the bar (past the first 80px);
     // - scrolling up brings the nav items back, but only once the page has been scrolled at least
     //   100px, so a nudge or the iOS bounce at the top doesn't switch it;
     // - arriving from an article arrow keeps the article bar from the first frame (set before
     //   paint, no slide), until the reader scrolls up;
-    // - the logomark slides the nav items back (as on scroll up) before going home.
+    // - the logomark slides the nav items back (as on scroll up) before going home;
+    // - section bar: its pill follows the section on screen, and a link scrolls smoothly to its
+    //   section (the swap and the pill hold still until that scroll ends).
     // Small movements are ignored (momentum tails, the iOS address bar). The hidden layer is inert.
     (() => {
       const nav = document.querySelector('nav[aria-label="Main"]');
       const list = nav?.querySelector("[data-nav-list]");
-      const bar = nav?.querySelector("[data-nav-article]");
+      const bar = nav?.querySelector("[data-nav-bar]");
       if (!nav || !list || !bar) return;
+      const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
+      // A scroll started by a section link: the swap and the section pill ignore it until it ends.
+      let programmatic = false;
       let article = false;
       const set = (on) => {
         if (on === article) return;
@@ -229,14 +270,16 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
       // and its title swaps in (the previous one slides up and out, this one rises from below).
       const current = bar.querySelector("[data-nav-title-current]");
       const previous = bar.querySelector("[data-nav-title-prev]");
+      const isArticle = bar.hasAttribute("data-nav-article");
       let from = null;
-      try {
-        const saved = JSON.parse(sessionStorage.getItem("navArticleFrom") ?? "null");
-        sessionStorage.removeItem("navArticleFrom");
-        if (saved?.to === location.pathname) from = saved;
-      } catch {
-        /* Storage blocked: open with the nav items. */
-      }
+      if (isArticle)
+        try {
+          const saved = JSON.parse(sessionStorage.getItem("navArticleFrom") ?? "null");
+          sessionStorage.removeItem("navArticleFrom");
+          if (saved?.to === location.pathname) from = saved;
+        } catch {
+          /* Storage blocked: open with the nav items. */
+        }
       if (from) {
         set(true);
         if (current && previous && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -262,18 +305,19 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
           );
         }
       }
-      bar.addEventListener("click", (event) => {
-        const link = event.target.closest("a[href]");
-        if (!link) return;
-        try {
-          sessionStorage.setItem(
-            "navArticleFrom",
-            JSON.stringify({ to: link.pathname, title: current?.textContent?.trim() ?? "" }),
-          );
-        } catch {
-          /* Storage blocked: the next page opens with the nav items. */
-        }
-      });
+      if (isArticle)
+        bar.addEventListener("click", (event) => {
+          const link = event.target.closest("a[href]");
+          if (!link) return;
+          try {
+            sessionStorage.setItem(
+              "navArticleFrom",
+              JSON.stringify({ to: link.pathname, title: current?.textContent?.trim() ?? "" }),
+            );
+          } catch {
+            /* Storage blocked: the next page opens with the nav items. */
+          }
+        });
 
       let lastY = scrollY;
       let furthest = scrollY;
@@ -282,6 +326,7 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
         () => {
           const y = scrollY;
           furthest = Math.max(furthest, y);
+          if (programmatic) return void (lastY = y);
           if (Math.abs(y - lastY) < 8) return;
           if (y > lastY) {
             if (y >= 80) set(true);
@@ -313,9 +358,136 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
         leaving = setTimeout(() => location.assign(home.href), duration * 0.75);
       });
 
+      // Section bar (Services): the pill sits on the link of the section on screen, the last one
+      // whose top has crossed 40% of the viewport (the first above them all, the last below).
+      // Set up once the page is parsed: this script runs in the header, before the sections exist.
+      const sectionBar = bar.hasAttribute("data-nav-sections") ? bar : null;
+      const setUpSections = () => {
+        const sectionPill = sectionBar?.querySelector("[data-section-pill]");
+        const links = sectionBar ? [...sectionBar.querySelectorAll('a[href^="#"]')] : [];
+        const targets = links.map((link) =>
+          document.getElementById(decodeURIComponent(link.hash.slice(1))),
+        );
+        if (sectionBar && sectionPill && targets.every(Boolean)) {
+          let index = -1;
+          const place = (instant) => {
+            const link = links[index];
+            if (!link) return;
+            const box = link.getBoundingClientRect();
+            const origin = sectionBar.getBoundingClientRect();
+            if (instant) sectionPill.dataset.instant = "";
+            sectionPill.style.setProperty("--pill-x", `${box.left - origin.left}px`);
+            sectionPill.style.setProperty("--pill-w", `${box.width}px`);
+            if (instant) {
+              void sectionPill.offsetWidth;
+              delete sectionPill.dataset.instant;
+            }
+          };
+          const select = (next, instant = false) => {
+            if (next === index && !instant) return;
+            index = next;
+            links.forEach((link, i) => {
+              link.toggleAttribute("data-current", i === index);
+              if (i === index) link.setAttribute("aria-current", "true");
+              else link.removeAttribute("aria-current");
+            });
+            place(instant);
+          };
+          const onScreen = () => {
+            const line = innerHeight * 0.4;
+            let found = 0;
+            targets.forEach((target, i) => {
+              if (target.getBoundingClientRect().top <= line) found = i;
+            });
+            return found;
+          };
+          select(onScreen(), true);
+          // Measured in the final font (and again after a resize), so the pill fits its link.
+          document.fonts?.ready.then(() => place(true));
+          addEventListener("resize", () => place(true));
+          let frame = 0;
+          addEventListener(
+            "scroll",
+            () => {
+              if (programmatic || frame) return;
+              frame = requestAnimationFrame(() => {
+                frame = 0;
+                select(onScreen());
+              });
+            },
+            { passive: true },
+          );
+          // A link: the pill moves to it at once and the page scrolls smoothly to the section
+          // (instantly under reduced motion). The address bar gets the hash, and focus moves to the
+          // section (as an anchor jump would), without a second scroll.
+          // The hold ends once the page has arrived (a scrollend at the destination: a scrollend
+          // left over from an earlier scroll can fire before the smooth scroll even starts), when
+          // the reader takes over (wheel, touch, keys), or after 3s at most (no scrollend in older
+          // Safari, a scroll that never arrives).
+          let release = 0;
+          let destination = 0;
+          const takeover = ["wheel", "touchstart", "keydown"];
+          const done = () => {
+            clearTimeout(release);
+            removeEventListener("scrollend", arrived);
+            takeover.forEach((type) => removeEventListener(type, done));
+            programmatic = false;
+            select(onScreen());
+          };
+          const arrived = () => {
+            if (Math.abs(scrollY - destination) <= 2) done();
+          };
+          sectionBar.addEventListener("click", (event) => {
+            const link = event.target.closest('a[href^="#"]');
+            const i = links.indexOf(link);
+            if (i < 0 || event.defaultPrevented) return;
+            if (
+              event.button !== 0 ||
+              event.metaKey ||
+              event.ctrlKey ||
+              event.shiftKey ||
+              event.altKey
+            )
+              return;
+            event.preventDefault();
+            const target = targets[i];
+            select(i);
+            const max = document.documentElement.scrollHeight - innerHeight;
+            const margin = parseFloat(getComputedStyle(target).scrollMarginTop) || 0;
+            destination = Math.max(
+              0,
+              Math.min(max, scrollY + target.getBoundingClientRect().top - margin),
+            );
+            done(); // ends any hold from an earlier click (and re-selects the same link)
+            select(i);
+            if (Math.abs(scrollY - destination) > 2) {
+              programmatic = true;
+              addEventListener("scrollend", arrived);
+              takeover.forEach((type) =>
+                addEventListener(type, done, { once: true, passive: true }),
+              );
+              release = setTimeout(done, 3000);
+            }
+            target.scrollIntoView({
+              behavior: reduceMotion.matches ? "auto" : "smooth",
+              block: "start",
+            });
+            history.replaceState(history.state, "", link.hash);
+            if (!target.hasAttribute("tabindex")) target.setAttribute("tabindex", "-1");
+            target.focus({ preventScroll: true });
+          });
+        }
+      };
+      if (sectionBar) {
+        if (document.readyState === "loading")
+          document.addEventListener("DOMContentLoaded", setUpSections, { once: true });
+        else setUpSections();
+      }
+
       addEventListener("pageshow", (event) => {
         if (!event.persisted) return;
         clearTimeout(leaving);
+        programmatic = false;
         set(false);
       });
     })();
@@ -574,14 +746,15 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
   // scroll up, near the top, on keyboard focus and on a back / forward cache restore. Movements
   // under 8px are ignored (momentum, iOS address bar).
   // - Base: only Get in touch hides (slides down off-screen); the nav stays.
-  // - md+: the whole header slides up (nav and Get in touch). Not on journal articles and work
-  //   items: there, scrolling down swaps the nav for the article bar, which must stay visible.
+  // - md+: the whole header slides up (nav and Get in touch). Not on pages with a bar (journal
+  //   articles, work items, Services): there, scrolling down swaps the nav for that bar, which
+  //   must stay visible.
   (() => {
     const header = document.querySelector("[data-slot=navbar]");
     const cta = header?.querySelector("[data-cta]");
     if (!header || !cta) return;
     const wide = matchMedia("(min-width: 48rem)");
-    const article = header.querySelector("[data-nav-article]") !== null;
+    const article = header.querySelector("[data-nav-bar]") !== null;
     let hidden = false;
     const set = (hide) => {
       hidden = hide;
