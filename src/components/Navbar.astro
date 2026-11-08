@@ -43,7 +43,7 @@ interface Props {
   };
   /**
    * A page's own section nav (Services): the nav items give way to this bar while the reader
-   * scrolls down, as with `article`. A label, a divider and in-page links to the page's sections;
+   * scrolls down, as with `article`. A label (fg-primary) and in-page links to the page's sections;
    * the one for the section on screen gets a pill that follows the scroll. Figma "Navbar"
    * services (node 53673:5159).
    */
@@ -225,12 +225,7 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
             data-section-pill
             class="pointer-events-none absolute top-0 left-(--pill-x) z-0 h-8 w-(--pill-w) rounded-xs bg-interactive-secondary-active transition-[left,width] duration-(--motion-duration-nav-pill) ease-(--motion-ease-nav-pill) data-instant:transition-none motion-reduce:transition-none"
           ></span>
-          <span class="shrink-0 text-label text-fg-secondary">{sections.label}</span>
-          <div
-            role="separator"
-            aria-orientation="vertical"
-            class="w-px self-stretch bg-border-subtle"
-          ></div>
+          <span class="shrink-0 text-label text-fg-primary">{sections.label}</span>
           {sections.items.map((item) => (
             <NavItem href={item.href} class="data-current:text-fg-primary">
               {item.label}
