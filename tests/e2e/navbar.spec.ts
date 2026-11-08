@@ -336,4 +336,84 @@ test.describe("navbar", () => {
       await expect(page.locator("[data-nav-article]")).toHaveCount(0);
     });
   });
+
+  // Services: a section bar (Figma 53673:5159) swaps in like the article bar. Its links anchor to
+  // the offerings, and its pill follows the section on screen.
+  test.describe("services section bar", () => {
+    const scrollTo = async (page: import("@playwright/test").Page, y: number) => {
+      await page.evaluate((y) => window.scrollTo(0, y), y);
+      await page.waitForTimeout(120);
+    };
+    // A scroll position that puts a section's top just above 40% of the viewport.
+    const sectionY = (page: import("@playwright/test").Page, id: string) =>
+      page.evaluate(
+        (id) =>
+          document.getElementById(id)!.getBoundingClientRect().top + scrollY - innerHeight * 0.3,
+        id,
+      );
+
+    test("swaps in on scroll down, with a link per offering", async ({ page }) => {
+      await page.goto("/services");
+      const nav = page.getByRole("navigation", { name: "Main" });
+      const bar = nav.locator("[data-nav-sections]");
+      await expect(bar).toContainText("Services");
+      const links = bar.getByRole("link");
+      await expect(links).toHaveText(["Brand", "Web", "Product"]);
+      for (const [i, href] of ["#brand", "#website", "#product"].entries())
+        await expect(links.nth(i)).toHaveAttribute("href", href);
+      expect(await bar.evaluate((el) => (el as HTMLElement).inert)).toBe(true);
+
+      await scrollTo(page, 300);
+      await scrollTo(page, 500);
+      await expect(nav).toHaveAttribute("data-mode", "article");
+      expect(await bar.evaluate((el) => (el as HTMLElement).inert)).toBe(false);
+      // From md the header doesn't hide on this page: the bar is the scroll-down state.
+      await expect(page.locator("[data-slot=navbar]")).not.toHaveAttribute("data-hidden", "");
+    });
+
+    test("the pill follows the section on screen, down and back up", async ({ page }) => {
+      await page.goto("/services");
+      const bar = page.locator("[data-nav-sections]");
+      const current = bar.locator("[data-current]");
+      const pillOnCurrent = () =>
+        bar.evaluate((el) => {
+          const pill = el.querySelector("[data-section-pill]")!.getBoundingClientRect();
+          const link = el.querySelector("[data-current]")!.getBoundingClientRect();
+          return Math.abs(pill.left - link.left) < 1 && Math.abs(pill.width - link.width) < 1;
+        });
+      await expect(current).toHaveText("Brand");
+      for (const [id, label] of [
+        ["website", "Web"],
+        ["product", "Product"],
+        ["website", "Web"],
+        ["brand", "Brand"],
+      ]) {
+        await scrollTo(page, await sectionY(page, id));
+        await expect(current).toHaveText(label);
+        await expect(current).toHaveAttribute("aria-current", "true");
+        await expect.poll(pillOnCurrent).toBe(true);
+      }
+    });
+
+    test("a link scrolls to its section and keeps the bar, even scrolling up", async ({ page }) => {
+      await page.goto("/services");
+      const nav = page.getByRole("navigation", { name: "Main" });
+      const bar = nav.locator("[data-nav-sections]");
+      await scrollTo(page, await sectionY(page, "product"));
+      await scrollTo(page, (await sectionY(page, "product")) + 200);
+      await expect(nav).toHaveAttribute("data-mode", "article");
+
+      await bar.getByRole("link", { name: "Brand" }).click();
+      await expect(bar.locator("[data-current]")).toHaveText("Brand");
+      await expect(page).toHaveURL(/#brand$/);
+      await expect(page.locator("#brand")).toBeFocused();
+      await expect
+        .poll(() =>
+          page.evaluate(() => document.getElementById("brand")!.getBoundingClientRect().top),
+        )
+        .toBeLessThan(150);
+      // The programmatic scroll went up, but the bar stays.
+      await expect(nav).toHaveAttribute("data-mode", "article");
+    });
+  });
 });
