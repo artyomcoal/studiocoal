@@ -14,7 +14,11 @@
  * - The first item of the middle copy starts centred, as in Figma. A tiny inline script sets
  *   that position before the first paint; the bundled script below runs the autoplay.
  * - Under prefers-reduced-motion there is no autoplay, but scrolling and dragging still work.
- * - Autoplay stops while the strip is off screen or has keyboard focus.
+ * - Autoplay stops while the strip is off screen, or while it or a control has keyboard focus.
+ * - Previous / next buttons (WCAG: a way to move it without dragging) sit on the strip's
+ *   vertical centre, inset by the container padding. They are invisible until the strip is
+ *   hovered with a mouse or a button gets keyboard focus; each press moves one item.
+ *   Same look as the video control (they sit on imagery, so the same in both themes).
  * - Speed and resume delay are tokens (--motion-marquee-*, tokens.css).
  */
 import Media from "@/components/Media.astro";
@@ -38,37 +42,61 @@ const sizes = "(min-width: 64rem) 1024px, (min-width: 48rem) 576px, 320px";
 ---
 
 <section aria-label={label} class={cn("pb-section", className)}>
-  {/* eslint-disable astro/jsx-a11y/no-noninteractive-tabindex -- scrollable region must be focusable (axe scrollable-region-focusable) */}
-  <ul
-    data-slot="marquee"
-    tabindex="0"
-    aria-label={label}
-    class="flex cursor-grab gap-gutter overflow-x-auto overscroll-x-contain scrollbar-none outline-none select-none focus-visible:ring-2 focus-visible:ring-interactive-focus-ring focus-visible:ring-inset data-dragging:cursor-grabbing *:w-80 *:shrink-0 md:*:w-144 xl:*:w-256"
-  >
-    {Array.from({ length: COPIES }, (_, copy) =>
-      slots.map((media, i) => (
-        <li
-          data-marquee-start={copy === 1 && i === 0 ? "" : undefined}
-          aria-hidden={copy === 1 ? undefined : "true"}
-          inert={copy !== 1}
+  <div class="group/marquee relative">
+    {/* eslint-disable astro/jsx-a11y/no-noninteractive-tabindex -- scrollable region must be focusable (axe scrollable-region-focusable) */}
+    <ul
+      data-slot="marquee"
+      tabindex="0"
+      aria-label={label}
+      class="flex cursor-grab gap-gutter overflow-x-auto overscroll-x-contain scrollbar-none outline-none select-none focus-visible:ring-2 focus-visible:ring-interactive-focus-ring focus-visible:ring-inset data-dragging:cursor-grabbing *:w-80 *:shrink-0 md:*:w-144 xl:*:w-256"
+    >
+      {Array.from({ length: COPIES }, (_, copy) =>
+        slots.map((media, i) => (
+          <li
+            data-marquee-start={copy === 1 && i === 0 ? "" : undefined}
+            aria-hidden={copy === 1 ? undefined : "true"}
+            inert={copy !== 1}
+          >
+            {media ? (
+              <Media media={media} aspect="gallery" sizes={sizes} />
+            ) : (
+              <div class="aspect-3/2 rounded-sm bg-bg-secondary" />
+            )}
+          </li>
+        )),
+      )}
+    </ul>
+    {/* eslint-enable astro/jsx-a11y/no-noninteractive-tabindex */}
+    <script is:inline>
+      // Start with the middle copy's first item centred (before the first paint).
+      (function (track) {
+        const start = track.querySelector("[data-marquee-start]");
+        track.scrollLeft = start.offsetLeft - (track.clientWidth - start.offsetWidth) / 2;
+      })(document.currentScript.previousElementSibling);
+    </script>
+    {/* Previous / next: hidden until the strip is hovered (mouse) or a control has keyboard focus. */}
+    <div class="pointer-events-none absolute inset-x-0 top-1/2 flex -translate-y-1/2 justify-between px-container">
+      {(["previous", "next"] as const).map((direction) => (
+        <button
+          type="button"
+          data-marquee-step={direction === "next" ? "1" : "-1"}
+          aria-label={direction === "next" ? "Next" : "Previous"}
+          class="pointer-events-auto grid size-6 cursor-pointer place-items-center rounded-xs bg-neutral-900/40 text-neutral-50 opacity-0 backdrop-blur-sm transition-[opacity,background-color] hover:bg-neutral-900/60 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-interactive-focus-ring active:bg-neutral-900/60 pointer-fine:group-hover/marquee:opacity-100"
         >
-          {media ? (
-            <Media media={media} aspect="gallery" sizes={sizes} />
-          ) : (
-            <div class="aspect-3/2 rounded-sm bg-bg-secondary" />
-          )}
-        </li>
-      )),
-    )}
-  </ul>
-  {/* eslint-enable astro/jsx-a11y/no-noninteractive-tabindex */}
-  <script is:inline>
-    // Start with the middle copy's first item centred (before the first paint).
-    (function (track) {
-      const start = track.querySelector("[data-marquee-start]");
-      track.scrollLeft = start.offsetLeft - (track.clientWidth - start.offsetWidth) / 2;
-    })(document.currentScript.previousElementSibling);
-  </script>
+          <svg
+            aria-hidden="true"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            class={direction === "previous" ? "-scale-x-100" : undefined}
+          >
+            <path d="M10.5 8.5 14 12l-3.5 3.5" stroke="currentColor" stroke-width="1.5" />
+          </svg>
+        </button>
+      ))}
+    </div>
+  </div>
 </section>
 
 <script>
@@ -194,6 +222,20 @@ const sizes = "(min-width: 64rem) 1024px, (min-width: 48rem) 576px, 320px";
     // Images are not draggable as files while dragging the strip.
     track.addEventListener("dragstart", (event) => event.preventDefault());
 
+    // Previous / next: one item (plus gap) per press, animated by the browser unless reduced motion.
+    const root = track.parentElement!;
+    root.querySelectorAll<HTMLButtonElement>("[data-marquee-step]").forEach((button) => {
+      button.addEventListener("click", () => {
+        cancelAnimationFrame(glide);
+        touch();
+        const step = items[1]!.offsetLeft - items[0]!.offsetLeft;
+        track.scrollBy({
+          left: Number(button.dataset.marqueeStep) * step,
+          behavior: reducedMotion.matches ? "instant" : "smooth",
+        });
+      });
+    });
+
     // --- Autoplay: runs while on screen, without reduced motion, and without keyboard focus.
     let visible = false;
     let frame = 0;
@@ -202,7 +244,7 @@ const sizes = "(min-width: 64rem) 1024px, (min-width: 48rem) 576px, 320px";
       const dt = previous ? Math.min(now - previous, 100) : 0;
       previous = now;
       const idle = now - lastInput;
-      const paused = holding || track.matches(":focus-visible") || idle < resume;
+      const paused = holding || root.querySelector(":focus-visible") !== null || idle < resume;
       if (!paused && speed > 0) {
         // Ease back up to speed over `resume` ms after the user lets go.
         const ramp =
