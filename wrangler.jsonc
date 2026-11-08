@@ -6,6 +6,9 @@
   // Must match the Worker's name in the Cloudflare dashboard.
   "name": "studiocoal",
   "compatibility_date": "2026-10-01",
+  // Branch / pull request preview deploys (`npx wrangler preview`, the dashboard's preview
+  // command) require this block; empty is enough, assets stay at the top level.
+  "previews": {},
   "assets": {
     "directory": "./dist",
     // Astro writes /work/index.html etc. Served at /work (as the site links and canonical URLs
