@@ -1,7 +1,8 @@
 /*
  * Typography — Figma text styles and the Custom › "text styles/*" variables.
- * Variables switch per breakpoint (base / md / xl) like the Figma modes; the utilities below
- * (text-headline-xxl, text-body-md, …) read them. Use the utilities in components.
+ * Variables switch per breakpoint like the Figma modes: base, md (768px), xl (1280px, not the
+ * layout xl at 1024px). The utilities below (text-headline-xxl, text-body-md, …) read them.
+ * Use the utilities in components.
  *
  * Letter-spacing is a style property in Figma (not a variable): headlines -4%, body / label /
  * caption -3%, eyebrow +2% → converted to em.
@@ -120,7 +121,8 @@
   }
 }
 
-@media (width >= 64rem) {
+/* Text styles switch to xl at 1280px, later than the layout xl (1024px): owner, 2026-11-08. */
+@media (width >= 80rem) {
   :root {
     --fontsize-headline-xxl: 2.75rem; /* 44 */
     --lineheight-headline-xxl: 2.75rem;

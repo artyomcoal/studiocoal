@@ -92,6 +92,7 @@ Token values live **only** in `src/styles/tokens.css` (neutral palette, semantic
   - base: below 768px (designed at 375)
   - `md`: 768px and up (designed at 768)
   - `xl`: 1024px and up (designed at 1440)
+- **Text styles are the exception:** their xl values start at **1280px** (`typography.css`), not 1024px. Base is up to 767px and md is 768–1279px. Layout tokens and `xl:` classes still switch at 1024px.
 - Mobile-first: unprefixed classes = base, then `md:` and `xl:` overrides. Never use `sm:`, `lg:` or `2xl:`.
 - Semantic layout tokens (`--grid-gutter`, `--container-padding-x`, `--section-padding-y`, `--hero-padding-top`, `--grid-column-count`) switch values at these breakpoints inside `tokens.css`, so components rarely need breakpoint prefixes for spacing.
 - **No global max width.** Containers are full-width by default. A container is limited to 1440px only where `max-w-container` is applied explicitly, as in Figma.
