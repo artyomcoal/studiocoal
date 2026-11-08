@@ -236,20 +236,25 @@
    * old page fades out, then settles slowly. */
   --motion-ease-enter: cubic-bezier(0.25, 0.1, 0.25, 1);
   --motion-word-hold: 2600ms; /* how long each rotating headline word stays (home hero) */
-  --motion-duration-word: 400ms; /* rotating headline word: roll in / out (home hero) */
+  --motion-duration-word: 600ms; /* rotating headline word: roll in / out (home hero) */
   --motion-shift-word: 50%; /* how far a rotating word travels, share of its own height */
 
   /* Dialogs (Get in touch): scale + fade in from the anchor corner, reversed on close.
-   * Values given by the owner, from permanent.is. */
-  --motion-duration-dialog: 250ms;
-  --motion-ease-dialog: cubic-bezier(0.23, 1, 0.32, 1);
+   * Values given by the owner, from permanent.is; slowed ~1.5× (250 → 400ms) and softened
+   * (owner, 2026-11-08). The rotating hero word uses this easing too. */
+  --motion-duration-dialog: 400ms;
+  /* Smooth ease-out (iOS sheet curve): moves on the first frame, builds up instead of jumping,
+   * then settles with a long soft tail. The earlier (0.23, 1, 0.32, 1) leapt on frame one. */
+  --motion-ease-dialog: cubic-bezier(0.32, 0.72, 0, 1);
   --motion-scale-dialog: 0.95;
 
-  /* Accordion: panel height + content fade, and the + → − icon morph. Value chosen by the owner. */
-  --motion-duration-accordion: 400ms;
-  /* Ease-out (owner, 2026-11-06): moves on the first frame and settles softly. The earlier
-   * ease-in-out barely moved for ~100ms, then snapped through the middle. */
-  --motion-ease-accordion: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Accordion: panel height + content fade, and the + → − icon morph. Value chosen by the owner;
+   * slowed ~1.5× (400 → 600ms, owner, 2026-11-08). */
+  --motion-duration-accordion: 600ms;
+  /* Smooth ease-out, as the dialog (owner, 2026-11-08): moves on the first frame and settles
+   * softly. Ease-in-out (before 2026-11-06) barely moved for ~100ms, then snapped through the
+   * middle; (0.22, 1, 0.36, 1) after it leapt on frame one. */
+  --motion-ease-accordion: cubic-bezier(0.32, 0.72, 0, 1);
 
   /* Navbar: the one shared pill sliding between nav items (owner, 2026-11-06). Ease-out: it
    * moves on the first frame and settles softly. */

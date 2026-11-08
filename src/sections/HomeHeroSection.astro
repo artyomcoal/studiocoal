@@ -9,8 +9,9 @@
  * - Each rotating slot is an inline-grid with its words stacked in one cell. Its width is set
  *   from the character count (monospace: N characters = N × (1ch + letter-spacing)) and eases
  *   from word to word, so the text after it slides instead of jumping.
- * - Motion: the incoming word rises from below and fades in, the outgoing word keeps rising
- *   and fades out at the top (--motion-duration-word, --motion-shift-word, dialog easing).
+ * - Motion: the incoming word rises from below, fading in and unblurring; the outgoing word
+ *   keeps rising, fading out and blurring at the top (--motion-duration-word,
+ *   --motion-shift-word, --motion-blur-swap as the client logo swap, dialog easing).
  * - Before rotating, the script sizes every slot to its longest word, lets the browser wrap
  *   the headline, then locks those line breaks (<br> + nowrap). Every word fits its locked
  *   line, so a rotation never re-wraps the text. Re-measured on resize and after fonts load.
@@ -84,18 +85,24 @@ const tokens: Part[] = parts.flatMap((part): Part[] =>
     transition: width var(--motion-duration-word) var(--motion-ease-dialog);
   }
 
+  /* Blurred while hidden, as the client logo swap (--motion-blur-swap): the incoming word
+   * unblurs as it rises in, the leaving one blurs as it goes. The active word rests at blur(0),
+   * not `none`: dropping the filter at the end would re-rasterise the text, a visible jump. */
   [data-rotating] .rotator-word {
     display: block;
     opacity: 0;
     transform: translateY(var(--motion-shift-word));
+    filter: blur(var(--motion-blur-swap));
     transition:
       transform var(--motion-duration-word) var(--motion-ease-dialog),
-      opacity var(--motion-duration-word) var(--motion-ease-dialog);
+      opacity var(--motion-duration-word) var(--motion-ease-dialog),
+      filter var(--motion-duration-word) var(--motion-ease-dialog);
   }
 
   [data-rotating] .rotator-word[data-active] {
     opacity: 1;
     transform: none;
+    filter: blur(0);
   }
 
   [data-rotating] .rotator-word[data-leaving] {
