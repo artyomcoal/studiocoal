@@ -271,11 +271,4 @@
   --motion-blur-swap: 6px; /* blur at the start of enter / end of exit */
   --motion-swap-interval-min: 1200ms;
   --motion-swap-interval-max: 2800ms;
-
-  /* About marquee (studio photos under the About hero): a continuous loop, modelled on
-   * permanent.is. Speed in px per second (unitless, read by the section script). After the
-   * user scrolls or drags, autoplay waits this long, then eases back up to speed over the
-   * same time. */
-  --motion-marquee-speed: 40;
-  --motion-marquee-resume: 1500ms;
 }

@@ -14,7 +14,6 @@ import VideoControl from "@/components/VideoControl.astro";
 import BlogListCard from "@/components/BlogListCard.astro";
 import WorkArchiveCard from "@/components/WorkArchiveCard.astro";
 import WorkListCard from "@/components/WorkListCard.astro";
-import AboutMarqueeSection from "@/sections/AboutMarqueeSection.astro";
 import AboutPrinciplesSection from "@/sections/AboutPrinciplesSection.astro";
 import AboutWhySection from "@/sections/AboutWhySection.astro";
 import CapabilitiesSection from "@/sections/CapabilitiesSection.astro";
@@ -919,16 +918,6 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
     <HowWeWorkSection />
     <h2 class="px-container pb-6 text-headline-lg">ServicesCtaSection</h2>
     <ServicesCtaSection />
-    <h2 class="px-container pb-6 text-headline-lg">
-      AboutMarqueeSection (no Sanity photos: 6 placeholders; autoplay loop, drag or scroll by hand;
-      no autoplay under reduced motion)
-    </h2>
-    <AboutMarqueeSection items={[]} />
-    <h2 class="px-container pb-6 text-headline-lg">AboutMarqueeSection (video items)</h2>
-    <AboutMarqueeSection
-      items={[demoVideo("ambient"), emptyMedia, emptyMedia, emptyMedia]}
-      label="Demo visuals"
-    />
     <h2 class="px-container pb-6 text-headline-lg">
       AboutWhySection, AboutPrinciplesSection, CapabilitiesSection
     </h2>
