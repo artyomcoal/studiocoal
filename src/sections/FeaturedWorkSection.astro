@@ -54,14 +54,14 @@ const headingId = `featured-work-${columns}`;
     >
       {heading}
     </h2>
-    <div class="flex flex-col gap-20">
+    <div class="flex flex-col">
       <div class={grid({ columns })}>
         {works.map((work) => (
           <WorkListCard work={work} sizes={sizes} />
         ))}
       </div>
       {showAllLink && (
-        <div class="flex justify-center">
+        <div class="flex justify-center pt-section">
           <Button as="a" href="/work" variant="secondary">
             View all work
           </Button>
