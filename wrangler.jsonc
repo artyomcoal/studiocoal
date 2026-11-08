@@ -6,10 +6,14 @@
   // Must match the Worker's name in the Cloudflare dashboard.
   "name": "studiocoal",
   "compatibility_date": "2026-10-01",
+  // Branch / pull request preview deploys (`npx wrangler preview`, the dashboard's preview
+  // command) require this block; empty is enough, assets stay at the top level.
+  "previews": {},
   "assets": {
     "directory": "./dist",
-    // Astro writes /work/index.html etc.: /work and /work/ both serve it.
-    "html_handling": "auto-trailing-slash",
+    // Astro writes /work/index.html etc. Served at /work (as the site links and canonical URLs
+    // have it); /work/ redirects there. auto-trailing-slash redirected every /work to /work/.
+    "html_handling": "drop-trailing-slash",
     // Unknown paths get the site's 404 page with a 404 status.
     "not_found_handling": "404-page",
   },
