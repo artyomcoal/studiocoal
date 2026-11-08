@@ -1,0 +1,16 @@
+// Cloudflare Workers deploy: serves the static build (`pnpm build` → dist/) as assets, no
+// Worker script and no adapter. With this file present, `wrangler deploy` uses it as is
+// instead of setting the project up itself (which ran `astro add cloudflare` and failed on
+// pnpm's blocked install scripts, ERR_PNPM_IGNORED_BUILDS).
+{
+  // Must match the Worker's name in the Cloudflare dashboard.
+  "name": "studiocoal",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist",
+    // Astro writes /work/index.html etc.: /work and /work/ both serve it.
+    "html_handling": "auto-trailing-slash",
+    // Unknown paths get the site's 404 page with a 404 status.
+    "not_found_handling": "404-page",
+  },
+}
