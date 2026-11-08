@@ -420,12 +420,22 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
           // A link: the pill moves to it at once and the page scrolls smoothly to the section
           // (instantly under reduced motion). The address bar gets the hash, and focus moves to the
           // section (as an anchor jump would), without a second scroll.
+          // The hold ends once the page has arrived (a scrollend at the destination: a scrollend
+          // left over from an earlier scroll can fire before the smooth scroll even starts), when
+          // the reader takes over (wheel, touch, keys), or after 3s at most (no scrollend in older
+          // Safari, a scroll that never arrives).
           let release = 0;
+          let destination = 0;
+          const takeover = ["wheel", "touchstart", "keydown"];
           const done = () => {
             clearTimeout(release);
-            removeEventListener("scrollend", done);
+            removeEventListener("scrollend", arrived);
+            takeover.forEach((type) => removeEventListener(type, done));
             programmatic = false;
             select(onScreen());
+          };
+          const arrived = () => {
+            if (Math.abs(scrollY - destination) <= 2) done();
           };
           sectionBar.addEventListener("click", (event) => {
             const link = event.target.closest('a[href^="#"]');
@@ -442,11 +452,22 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
             event.preventDefault();
             const target = targets[i];
             select(i);
-            programmatic = true;
-            clearTimeout(release);
-            removeEventListener("scrollend", done);
-            addEventListener("scrollend", done, { once: true });
-            release = setTimeout(done, 1500); // no scrollend (older Safari) or nothing to scroll
+            const max = document.documentElement.scrollHeight - innerHeight;
+            const margin = parseFloat(getComputedStyle(target).scrollMarginTop) || 0;
+            destination = Math.max(
+              0,
+              Math.min(max, scrollY + target.getBoundingClientRect().top - margin),
+            );
+            done(); // ends any hold from an earlier click (and re-selects the same link)
+            select(i);
+            if (Math.abs(scrollY - destination) > 2) {
+              programmatic = true;
+              addEventListener("scrollend", arrived);
+              takeover.forEach((type) =>
+                addEventListener(type, done, { once: true, passive: true }),
+              );
+              release = setTimeout(done, 3000);
+            }
             target.scrollIntoView({
               behavior: reduceMotion.matches ? "auto" : "smooth",
               block: "start",

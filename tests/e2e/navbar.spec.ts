@@ -404,6 +404,9 @@ test.describe("navbar", () => {
       await expect(nav).toHaveAttribute("data-mode", "article");
 
       await bar.getByRole("link", { name: "Brand" }).click();
+      // A scrollend left over from an earlier scroll can fire before the smooth scroll gets
+      // anywhere: it mustn't end the hold (the rest of the way up would bring the nav back).
+      await page.evaluate(() => window.dispatchEvent(new Event("scrollend")));
       await expect(bar.locator("[data-current]")).toHaveText("Brand");
       await expect(page).toHaveURL(/#brand$/);
       await expect(page.locator("#brand")).toBeFocused();
@@ -412,8 +415,12 @@ test.describe("navbar", () => {
           page.evaluate(() => document.getElementById("brand")!.getBoundingClientRect().top),
         )
         .toBeLessThan(150);
-      // The programmatic scroll went up, but the bar stays.
+      // The programmatic scroll went up, but the bar stays (also once the scroll has settled).
+      await page.waitForTimeout(500);
       await expect(nav).toHaveAttribute("data-mode", "article");
+      // A hand scroll up afterwards brings the nav items back as usual.
+      await page.mouse.wheel(0, -300);
+      await expect(nav).not.toHaveAttribute("data-mode", "article");
     });
   });
 });
