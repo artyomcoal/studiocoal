@@ -20,7 +20,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 
 interface Props {
   service: (typeof SERVICES)[number];
-  /** Related projects (WORK_BY_SERVICE_QUERY, max 2). */
+  /** Related projects, max 2: picked ones first, then the newest (relatedWork). */
   works: WORK_BY_SERVICE_QUERY_RESULT;
   /** Service documents' descriptions (SERVICE_DESCRIPTIONS_QUERY), matched by title. */
   descriptions: SERVICE_DESCRIPTIONS_QUERY_RESULT;

@@ -1,4 +1,5 @@
 import { defineQuery } from "groq";
+import { SERVICE_WORK_LIMIT } from "../lib/services";
 import { HOME_FEATURED_LIMIT, HOME_JOURNAL_LIMIT } from "./filters";
 
 /**
@@ -90,9 +91,28 @@ export const WORK_ARCHIVE_QUERY = defineQuery(
   `*[_type == "work" && defined(slug.current)] | order(year desc, _createdAt desc) ${workArchiveCard}`,
 );
 
-/** ServiceOfferingSection: related work for one service, max 2 items (CLAUDE.md). */
+/**
+ * ServiceOfferingSection: the newest projects tagged with a service. They fill the places
+ * left after the hand-picked projects (SERVICES_WORK_PICKS_QUERY; merged by relatedWork in
+ * src/lib/services.ts). CLAUDE.md: max 2.
+ */
 export const WORK_BY_SERVICE_QUERY = defineQuery(
-  `*[_type == "work" && $service in services && defined(slug.current)] | order(year desc) [0...2] ${workCard}`,
+  `*[_type == "work" && $service in services && defined(slug.current)] | order(year desc, _createdAt desc) [0...${SERVICE_WORK_LIMIT}] ${workCard}`,
+);
+
+/**
+ * ServiceOfferingSection: projects picked per service in Site settings › Services page, in
+ * their order. One key per SERVICES workField (spelled out so typegen can type them). A pick
+ * that is unpublished or no longer tagged with the service is left out.
+ */
+export const SERVICES_WORK_PICKS_QUERY = defineQuery(
+  `*[_type == "siteSettings" && _id == "siteSettings"][0].servicesWork{
+    "brand": (brand[]->)[_type == "work" && "brand" in services && defined(slug.current)] ${workCard},
+    "web": (web[]->)[_type == "work" && "web" in services && defined(slug.current)] ${workCard},
+    "digitalProducts": (digitalProducts[]->)[
+      _type == "work" && "digital-products" in services && defined(slug.current)
+    ] ${workCard}
+  }`,
 );
 
 /**

@@ -5,8 +5,12 @@
  */
 import { sanityClient } from "sanity:client";
 import PageLayout from "@/layouts/PageLayout.astro";
-import { SERVICES } from "@/lib/services";
-import { SERVICE_DESCRIPTIONS_QUERY, WORK_BY_SERVICE_QUERY } from "@/sanity/queries";
+import { SERVICES, relatedWork } from "@/lib/services";
+import {
+  SERVICE_DESCRIPTIONS_QUERY,
+  SERVICES_WORK_PICKS_QUERY,
+  WORK_BY_SERVICE_QUERY,
+} from "@/sanity/queries";
 import ServiceOfferingSection from "@/sections/ServiceOfferingSection.astro";
 
 // Section bar in the Navbar (Figma 53673:5159): one link per offering. Labels as in Figma
@@ -24,7 +28,10 @@ const sections = {
   })),
 };
 
-const [related, descriptions] = await Promise.all([
+// Per service: the projects picked in Site settings › Services page, then the newest tagged
+// projects for any place left.
+const [picks, latest, descriptions] = await Promise.all([
+  sanityClient.fetch(SERVICES_WORK_PICKS_QUERY),
   Promise.all(
     SERVICES.map((service) =>
       sanityClient.fetch(WORK_BY_SERVICE_QUERY, { service: service.value }),
@@ -32,6 +39,9 @@ const [related, descriptions] = await Promise.all([
   ),
   sanityClient.fetch(SERVICE_DESCRIPTIONS_QUERY),
 ]);
+const related = SERVICES.map((service, index) =>
+  relatedWork(picks?.[service.workField] ?? null, latest[index] ?? []),
+);
 ---
 
 <PageLayout
