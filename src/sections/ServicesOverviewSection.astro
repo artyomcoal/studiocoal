@@ -27,6 +27,13 @@ interface Props {
 }
 
 const { showreels = SHOWREELS, class: className } = Astro.props;
+
+// Row labels: "Web" is shorter than the service title "Website" (as on the Services page bar).
+const LABELS: Record<ServiceValue, string> = {
+  brand: "Brand",
+  web: "Web",
+  "digital-products": "Product",
+};
 ---
 
 <section aria-labelledby="services-overview" class={cn("px-container pb-section", className)}>
@@ -62,7 +69,7 @@ const { showreels = SHOWREELS, class: className } = Astro.props;
             href={`/services#${service.anchor}`}
             class="col-span-4 text-headline-lg outline-none after:absolute after:inset-0 md:col-span-2"
           >
-            {service.title}
+            {LABELS[service.value]}
           </a>
           <span class="col-span-8 text-body-md md:col-span-5 xl:col-span-6 xl:col-start-6">
             {service.description}
