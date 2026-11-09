@@ -30,7 +30,6 @@
  * - Speed and resume delay are tokens (--motion-marquee-*, tokens.css).
  */
 import Media from "@/components/Media.astro";
-import { cn } from "@/lib/utils";
 import type { MediaData } from "@/sanity/media";
 
 interface Props {
@@ -49,7 +48,7 @@ const slots: (MediaData | null)[] = items.length > 0 ? items : Array(PLACEHOLDER
 const sizes = "(min-width: 64rem) 1024px, (min-width: 48rem) 576px, 320px";
 ---
 
-<section aria-label={label} class={cn("pb-section", className)}>
+<section aria-label={label} class={className}>
   <div class="group/marquee relative">
     {/* eslint-disable astro/jsx-a11y/no-noninteractive-tabindex -- scrollable region must be focusable (axe scrollable-region-focusable) */}
     <ul
