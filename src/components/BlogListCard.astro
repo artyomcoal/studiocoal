@@ -1,7 +1,7 @@
 ---
 /**
  * Blog List Card
- * Journal article card: 1:1 cover, title, excerpt, category and date tags.
+ * Journal article card: 4:5 cover, title, excerpt, category and date tags.
  * Used by the Featured Articles section and the Journal archive.
  * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=5005-8529
  *
@@ -42,7 +42,7 @@ const cover: MediaData | null = post.coverImage
     className,
   )}
 >
-  <Media media={cover} aspect="square" sizes={sizes} />
+  <Media media={cover} aspect="portrait" sizes={sizes} />
   <div class="flex flex-col gap-1">
     <Heading class="text-headline-xs">
       <a href={`/journal/${post.slug}`} class="outline-none after:absolute after:inset-0">
