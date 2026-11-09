@@ -145,7 +145,7 @@ Token values live **only** in `src/styles/tokens.css` (neutral palette, semantic
 - **Portable Text** is rendered by one component (`src/components/RichText.astro`) mapped to the Figma Rich Text styles.
 - **Rendering:** static build. A Sanity webhook triggers a Cloudflare rebuild (Workers Builds deploy hook) on publish. Draft preview runs on server-rendered routes (`prerender = false`) with the Presentation tool.
 - After changing a schema or query, run `pnpm typegen` and commit `src/sanity/types.ts`. CI fails if it is out of date.
-- Env vars (never commit them; keep `.env.example` up to date): `PUBLIC_SANITY_PROJECT_ID`, `PUBLIC_SANITY_DATASET`, `SANITY_API_READ_TOKEN`, `PUBLIC_NEWSLETTER_ENDPOINT` (Footer newsletter form).
+- Env vars (never commit them; keep `.env.example` up to date): `PUBLIC_SANITY_PROJECT_ID`, `PUBLIC_SANITY_DATASET`, `SANITY_API_READ_TOKEN`, `PUBLIC_NEWSLETTER_ENDPOINT` (Footer newsletter form), `ALLOW_INDEXING` (`1` on the Cloudflare production build at launch; until then `robots.txt` blocks all crawlers).
 - Never change or delete Sanity content or datasets from scripts without asking.
 
 ## Figma → code workflow

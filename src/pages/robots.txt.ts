@@ -1,10 +1,10 @@
 import type { APIRoute } from "astro";
 
-// Only the production deployment may be indexed. Cloudflare Workers Builds sets
-// WORKERS_CI_BRANCH at build time, and production builds from main; branch previews and
-// local builds get "Disallow: /".
+// The site is hidden from search engines until launch: every build gets "Disallow: /" unless
+// ALLOW_INDEXING=1 is set. Set it at launch, on the Cloudflare production build only (Worker ›
+// Settings › Builds › Variables), so previews and local builds stay hidden.
 export const GET: APIRoute = ({ site }) => {
-  const isProduction = process.env.WORKERS_CI_BRANCH === "main";
+  const isProduction = process.env.ALLOW_INDEXING === "1";
   const body = isProduction
     ? ["User-agent: *", "Disallow: /studio", "", `Sitemap: ${new URL("sitemap-index.xml", site)}`]
     : ["User-agent: *", "Disallow: /"];
