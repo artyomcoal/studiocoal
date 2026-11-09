@@ -10,7 +10,9 @@
  * clickable through a stretched title link, so the video's pause button isn't nested in it.
  *
  * Indicator: Figma "Indicator" (rounded-xs box, interactive-secondary, hover
- * interactive-secondary-hover) with its chevron drawn inline in currentColor.
+ * interactive-secondary-hover) with its chevron drawn inline in currentColor. The box transitions
+ * only its background: the chevron inherits the row's already-transitioning color, and a second
+ * color transition on the box would make it lag behind the text.
  * On devices with a cursor, hovering one row dims the other rows to fg-tertiary
  * (hover: variants only match @media (hover: hover), so touch screens never dim).
  * On touch screens (hover: none) the row under the middle of the viewport is the active one:
@@ -83,7 +85,7 @@ const LABELS: Record<ServiceValue, string> = {
               {service.description}
             </span>
             <span class="flex md:col-start-12 md:justify-self-end">
-              <span class="flex size-6 items-center justify-center rounded-xs bg-interactive-secondary transition-colors duration-300 ease-in-out group-hover:bg-interactive-secondary-hover group-has-[a:focus-visible]:bg-interactive-secondary-hover group-data-active:bg-interactive-secondary-hover">
+              <span class="flex size-6 items-center justify-center rounded-xs bg-interactive-secondary transition-[background-color] duration-300 ease-in-out group-hover:bg-interactive-secondary-hover group-has-[a:focus-visible]:bg-interactive-secondary-hover group-data-active:bg-interactive-secondary-hover">
                 <svg
                   viewBox="0 0 24 24"
                   fill="none"
