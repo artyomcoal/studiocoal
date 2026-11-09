@@ -124,3 +124,47 @@ export function contentSeo({ title, excerpt, seo }: ContentSeoInput): ContentSeo
  * A literal so Sanity typegen can evaluate GROQ that uses it; seo.test.ts checks the maths.
  */
 export const SEO_PAGE_TITLE_MAX = 46;
+
+/*
+ * robots.txt (src/pages/robots.txt.ts).
+ */
+
+/**
+ * Crawlers of AI assistants, AI search and model training. Listed by name because they don't
+ * share a group: Site settings › Let AI assistants read the site turns them all off at once.
+ */
+export const AI_CRAWLERS = [
+  "GPTBot",
+  "OAI-SearchBot",
+  "ChatGPT-User",
+  "ClaudeBot",
+  "Claude-SearchBot",
+  "Claude-User",
+  "PerplexityBot",
+  "Perplexity-User",
+  "Google-Extended",
+  "Applebot-Extended",
+  "Amazonbot",
+  "meta-externalagent",
+  "Bytespider",
+  "CCBot",
+] as const;
+
+export interface RobotsInput {
+  /** Whether crawlers may index this build (ALLOW_INDEXING=1); every other build is closed. */
+  production: boolean;
+  /** Absolute URL of the sitemap index. */
+  sitemap: string;
+  /** Site settings › Let AI assistants read the site. On unless switched off. */
+  allowAi?: boolean | null;
+}
+
+export function robotsTxt({ production, sitemap, allowAi }: RobotsInput): string {
+  if (!production) return "User-agent: *\nDisallow: /\n";
+  const lines = ["User-agent: *", "Disallow: /studio"];
+  if (allowAi === false) {
+    lines.push("", ...AI_CRAWLERS.map((bot) => `User-agent: ${bot}`), "Disallow: /");
+  }
+  lines.push("", `Sitemap: ${sitemap}`);
+  return `${lines.join("\n")}\n`;
+}

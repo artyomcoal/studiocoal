@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+  AI_CRAWLERS,
   buildSeo,
   canonicalUrl,
   contentPath,
   contentSeo,
   DEFAULT_DESCRIPTION,
   pageTitle,
+  robotsTxt,
   SEO_PAGE_TITLE_MAX,
   SEO_TITLE_LIMIT,
   SLUG_MAX_LENGTH,
@@ -105,5 +107,26 @@ describe("contentPath", () => {
 describe("SEO_PAGE_TITLE_MAX", () => {
   it("leaves room for the site name within the title limit", () => {
     expect(SEO_PAGE_TITLE_MAX).toBe(SEO_TITLE_LIMIT - (pageTitle("x").length - 1));
+  });
+});
+
+describe("robotsTxt", () => {
+  const sitemap = "https://studiocoal.com/sitemap-index.xml";
+
+  it("closes everything outside production", () => {
+    expect(robotsTxt({ production: false, sitemap })).toBe("User-agent: *\nDisallow: /\n");
+  });
+
+  it("opens the site, except the Studio, and names the sitemap", () => {
+    expect(robotsTxt({ production: true, sitemap, allowAi: null })).toBe(
+      `User-agent: *\nDisallow: /studio\n\nSitemap: ${sitemap}\n`,
+    );
+  });
+
+  it("turns every AI crawler away when switched off", () => {
+    const body = robotsTxt({ production: true, sitemap, allowAi: false });
+    for (const bot of AI_CRAWLERS) expect(body).toContain(`User-agent: ${bot}\n`);
+    expect(body).toContain("User-agent: CCBot\nDisallow: /\n\nSitemap:");
+    expect(body.startsWith("User-agent: *\nDisallow: /studio\n")).toBe(true);
   });
 });

@@ -30,8 +30,8 @@ const { page } = Astro.props;
 ---
 
 <PageLayout
-  title={page.currentPage > 1 ? `Journal, page ${page.currentPage}` : "Journal"}
-  description="Notes from Studio Coal: work in progress, things we've learned, and what's on our minds."
+  page="journal"
+  title={page.currentPage > 1 ? `Journal, page ${page.currentPage}` : undefined}
 >
   <section class="px-container pt-hero pb-12">
     <h1 class="text-headline-xxl text-fg-primary">

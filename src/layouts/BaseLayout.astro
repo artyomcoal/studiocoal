@@ -1,19 +1,36 @@
 ---
 /**
  * Base layout: document shell, fonts and SEO / social meta.
- * Defaults come from the Sanity siteSettings singleton, then from src/lib/seo.ts.
+ * A fixed page passes `page`: its texts come from its Studio document (Pages › …), then from
+ * its built-in texts (src/lib/pages.ts). Site-wide defaults come from the Sanity siteSettings
+ * singleton, then from src/lib/seo.ts.
  */
 import { sanityClient } from "sanity:client";
-import { buildSeo, SITE_NAME } from "@/lib/seo";
-import { graph, organization, serializeJsonLd, website } from "@/lib/structured-data";
+import { iconPath, ICONS } from "@/lib/icons";
+import { pageDocumentId, pageInfo, type PageKey } from "@/lib/pages";
+import { buildSeo, canonicalUrl, contentSeo, SITE_NAME } from "@/lib/seo";
+import {
+  breadcrumbs,
+  graph,
+  organization,
+  serializeJsonLd,
+  webPage,
+  website,
+} from "@/lib/structured-data";
 import { urlFor } from "@/sanity/image";
-import { SITE_SETTINGS_QUERY } from "@/sanity/queries";
+import { PAGE_QUERY, SITE_SETTINGS_QUERY } from "@/sanity/queries";
 import "@/styles/globals.css";
 // Dev only: the dev server doesn't embed Graphik in the CSS (Vite inlines assets at build
 // time), so preload the file there, or the navbar shows the fallback font on every navigation.
 import graphikDevUrl from "@/assets/fonts/Graphik_Medium.woff2?url";
 
 interface Props {
+  /**
+   * One of the fixed pages (src/lib/pages.ts): title, description, share image and "hide from
+   * search engines" then come from its Studio document, and the page gets its own structured
+   * data. The props below override it where set.
+   */
+  page?: PageKey;
   /** Page title without the site name. Omit on the home page. */
   title?: string;
   description?: string | null;
@@ -30,23 +47,59 @@ interface Props {
   jsonLd?: Record<string, unknown>[];
 }
 
-const { title, description, image, noindex, ogType = "website", jsonLd = [] } = Astro.props;
+const { page, title, description, image, noindex, ogType = "website", jsonLd = [] } = Astro.props;
 
-const settings = await sanityClient.fetch(SITE_SETTINGS_QUERY);
-const defaultImage = settings?.seo?.image?.asset
-  ? urlFor(settings.seo.image).width(1200).height(630).fit("crop").url()
+const info = page ? pageInfo(page) : null;
+const [settings, pageSettings] = await Promise.all([
+  sanityClient.fetch(SITE_SETTINGS_QUERY),
+  page ? sanityClient.fetch(PAGE_QUERY, { id: pageDocumentId(page) }) : null,
+]);
+const shareImage = (source?: NonNullable<typeof settings>["seo"] | null) =>
+  source?.image?.asset ? urlFor(source.image).width(1200).height(630).fit("crop").url() : null;
+// The page's Studio fields first, then its built-in texts.
+const pageSeo = info
+  ? contentSeo({ title: info.title, excerpt: info.description, seo: pageSettings?.seo })
   : null;
 
 const seo = buildSeo({
-  title,
-  description: description ?? settings?.seo?.description ?? settings?.description,
-  image: image ?? defaultImage,
+  title: title ?? pageSeo?.title,
+  description:
+    description ?? pageSeo?.description ?? settings?.seo?.description ?? settings?.description,
+  image: image ?? shareImage(pageSettings?.seo) ?? shareImage(settings?.seo),
   pathname: Astro.url.pathname,
   site: Astro.site ?? Astro.url.origin,
-  noindex,
+  noindex: noindex ?? pageSeo?.noindex,
 });
 
 const site = String(Astro.site ?? Astro.url.origin);
+// Site settings › Icon: PNGs built by src/pages/icons/[file].ts. Without it, /favicon.svg.
+const hasIcon = !!settings?.favicon?.asset;
+// Fixed pages describe themselves; project and post pages pass their own nodes (jsonLd).
+const pageNodes = info
+  ? [
+      webPage({
+        site,
+        url: seo.canonical,
+        type:
+          info.key === "about"
+            ? "AboutPage"
+            : info.key === "work" || info.key === "journal"
+              ? "CollectionPage"
+              : "WebPage",
+        name: seo.title,
+        description: seo.description,
+        summary: pageSettings?.aiSummary,
+      }),
+      ...(info.path === "/"
+        ? []
+        : [
+            breadcrumbs([
+              ["Home", new URL("/", site).href],
+              [info.name, canonicalUrl(info.path, site)],
+            ]),
+          ]),
+    ]
+  : [];
 const structuredData = serializeJsonLd(
   graph(
     organization({
@@ -54,8 +107,11 @@ const structuredData = serializeJsonLd(
       description: settings?.description,
       email: settings?.email,
       sameAs: settings?.social?.map((link) => link.href),
+      logo: hasIcon ? new URL(iconPath("icon-512.png"), site).href : null,
+      address: settings?.address,
     }),
     website(site),
+    ...pageNodes,
     ...(jsonLd as Parameters<typeof graph>),
   ),
 );
@@ -89,7 +145,19 @@ const structuredData = serializeJsonLd(
          body arrived: the navbar wasn't in the snapshot, so it vanished and popped back in.
          Chromium only; others ignore it. Pages without a navbar unblock at the end of parsing. -->
     <link rel="expect" href="#site-header" blocking="render" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    {hasIcon ? (
+      ICONS.filter((icon) => icon.rel).map((icon) => (
+        <link
+          rel={icon.rel}
+          type="image/png"
+          sizes={`${icon.size}x${icon.size}`}
+          href={iconPath(icon.file)}
+        />
+      ))
+    ) : (
+      <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    )}
+    <link rel="manifest" href="/site.webmanifest" />
     <meta name="generator" content={Astro.generator} />
     <!-- Graphik is embedded in the stylesheet in builds (src/styles/typography.css), so it needs no
          preload there; the dev server serves it as a file, so preload it in dev. Geist Mono is
@@ -162,13 +230,26 @@ const structuredData = serializeJsonLd(
     <link rel="canonical" href={seo.canonical} />
     {seo.noindex && <meta name="robots" content="noindex" />}
     <link rel="sitemap" href="/sitemap-index.xml" />
+    {settings?.googleSiteVerification && (
+      <meta name="google-site-verification" content={settings.googleSiteVerification.trim()} />
+    )}
+    {settings?.bingSiteVerification && (
+      <meta name="msvalidate.01" content={settings.bingSiteVerification.trim()} />
+    )}
 
     <meta property="og:type" content={ogType} />
     <meta property="og:site_name" content={SITE_NAME} />
     <meta property="og:title" content={seo.title} />
     <meta property="og:description" content={seo.description} />
     <meta property="og:url" content={seo.canonical} />
-    {seo.image && <meta property="og:image" content={seo.image} />}
+    {seo.image && (
+      <>
+        <meta property="og:image" content={seo.image} />
+        <!-- Every share image is cropped or rendered to 1200 × 630. -->
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+      </>
+    )}
     <meta name="twitter:card" content={seo.image ? "summary_large_image" : "summary"} />
     <meta name="twitter:title" content={seo.title} />
     <meta name="twitter:description" content={seo.description} />

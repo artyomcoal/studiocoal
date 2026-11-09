@@ -3,6 +3,7 @@ import { imageWithAlt } from "./imageWithAlt";
 import { journal } from "./journal";
 import { link } from "./link";
 import { bunnyVideo, media } from "./media";
+import { page } from "./page";
 import { richText } from "./richText";
 import { seo } from "./seo";
 import { siteSettings } from "./siteSettings";
@@ -14,6 +15,7 @@ export const schemaTypes = [
   journal,
   deliverable,
   siteSettings,
+  page,
   richText,
   imageWithAlt,
   media,
@@ -24,5 +26,8 @@ export const schemaTypes = [
   link,
 ];
 
-/** Document types with exactly one document, edited from a fixed Structure item. */
-export const singletonTypes = new Set(["siteSettings"]);
+/**
+ * Document types whose documents have fixed ids and are edited from a fixed Structure item:
+ * the Site settings, and one "page" per fixed page (src/lib/pages.ts).
+ */
+export const singletonTypes = new Set(["siteSettings", "page"]);
