@@ -1,39 +1,126 @@
 import { defineArrayMember, defineField, defineType } from "sanity";
 import { normalizePath } from "../../lib/redirects";
 import { SERVICES, SERVICE_WORK_LIMIT } from "../../lib/services";
+import { HeaderFooterIcon, OverviewIcon, PagesIcon, RedirectIcon } from "../components/icons";
 
+/**
+ * Site settings (singleton). Tabs follow where things appear: site-wide basics, the header and
+ * footer, individual pages, redirects. Each field says where it shows and what the site uses
+ * when it is left empty. Fields the site doesn't read are hidden (kept, so no content is lost).
+ */
 export const siteSettings = defineType({
   name: "siteSettings",
   title: "Site settings",
   type: "document",
   groups: [
-    { name: "services", title: "Services page" },
-    { name: "about", title: "About page" },
-    { name: "redirects", title: "Redirects" },
+    { name: "general", title: "General", icon: OverviewIcon, default: true },
+    { name: "layout", title: "Header and footer", icon: HeaderFooterIcon },
+    { name: "pages", title: "Pages", icon: PagesIcon },
+    { name: "redirects", title: "Redirects", icon: RedirectIcon },
+  ],
+  fieldsets: [
+    // General
+    {
+      name: "studio",
+      title: "About the studio",
+      description: "What Google and other services read about Studio Coal.",
+    },
+    {
+      name: "sharing",
+      title: "Search and sharing",
+      description:
+        "Used by pages that don't set their own: the text under the link in search results, and the image when a link is shared.",
+    },
+    // Header and footer
+    { name: "header", title: "Header" },
+    {
+      name: "footer",
+      title: "Footer",
+      description: "The footer's email addresses and Services links are fixed in the site's code.",
+    },
+    // Pages
+    { name: "clientsSection", title: "Clients (Home and About pages)" },
+    { name: "servicesPage", title: "Services page" },
+    { name: "aboutPage", title: "About page" },
   ],
   fields: [
+    // General
     defineField({
-      name: "title",
-      title: "Site title",
-      type: "string",
-      validation: (rule) => rule.required(),
+      name: "description",
+      title: "Studio description",
+      description:
+        "One or two sentences about the studio. Also the search description of any page without its own (see below).",
+      type: "text",
+      rows: 3,
+      group: "general",
+      fieldset: "studio",
     }),
-    defineField({ name: "description", title: "Default description", type: "text", rows: 3 }),
-    defineField({ name: "navigation", title: "Navigation", type: "array", of: [{ type: "link" }] }),
     defineField({
       name: "email",
-      title: "Contact email",
+      title: "Public email",
+      description:
+        "Listed as the studio's contact in the information search engines read. Doesn't change the footer.",
       type: "string",
-      validation: (rule) => rule.email(),
+      group: "general",
+      fieldset: "studio",
+      placeholder: "hello@studiocoal.com",
+      validation: (rule) =>
+        rule.email().error("Enter an email address, e.g. hello@studiocoal.com."),
     }),
-    defineField({ name: "phone", title: "Phone", type: "string" }),
-    defineField({ name: "address", title: "Address", type: "text", rows: 3 }),
-    defineField({ name: "social", title: "Social links", type: "array", of: [{ type: "link" }] }),
+    defineField({
+      name: "seo",
+      title: "Default search and sharing",
+      type: "seo",
+      group: "general",
+      fieldset: "sharing",
+    }),
+    // Header and footer
+    defineField({
+      name: "navigation",
+      title: "Menu links",
+      description:
+        "The links in the header, left to right. Left empty, the header shows Work, Services, Process, Journal and About.",
+      type: "array",
+      group: "layout",
+      fieldset: "header",
+      of: [{ type: "link" }],
+    }),
+    defineField({
+      name: "address",
+      title: "Address",
+      description:
+        "One line per row, as in the footer. Left empty, the footer shows the Amsterdam studio address.",
+      type: "text",
+      rows: 3,
+      group: "layout",
+      fieldset: "footer",
+    }),
+    defineField({
+      name: "social",
+      title: "Social links",
+      description:
+        "Footer links, in this order, e.g. LinkedIn → https://www.linkedin.com/company/studiocoal. Left empty, the footer shows LinkedIn, Instagram and X.",
+      type: "array",
+      group: "layout",
+      fieldset: "footer",
+      of: [{ type: "link" }],
+      validation: (rule) =>
+        rule.custom((links?: { href?: string }[]) =>
+          links?.some(({ href }) => href && !/^https:\/\//.test(href))
+            ? "Use full addresses starting with https://."
+            : true,
+        ),
+    }),
+    // Pages
     defineField({
       name: "clients",
-      title: "Clients",
-      description: "Logos in the Clients section (home page). Single-colour SVGs work best.",
+      title: "Client logos",
+      description:
+        "The Clients section on the Home and About pages, in this order. Single-colour SVGs with a tight artboard work best.",
       type: "array",
+      group: "pages",
+      fieldset: "clientsSection",
+      options: { layout: "grid" },
       of: [
         defineArrayMember({
           type: "object",
@@ -41,7 +128,8 @@ export const siteSettings = defineType({
           fields: [
             defineField({
               name: "name",
-              title: "Name",
+              title: "Client name",
+              description: "Read out by screen readers in place of the logo.",
               type: "string",
               validation: (rule) => rule.required(),
             }),
@@ -50,7 +138,7 @@ export const siteSettings = defineType({
               title: "Logo",
               type: "image",
               options: { accept: "image/svg+xml,image/png" },
-              description: "Shown in one colour, tinted to the theme. Keep the artboard tight.",
+              description: "Shown in one colour, tinted to the theme. SVG or PNG.",
               validation: (rule) => rule.required(),
             }),
           ],
@@ -60,10 +148,11 @@ export const siteSettings = defineType({
     }),
     defineField({
       name: "servicesWork",
-      title: "Services: projects per service",
-      description: `The ${SERVICE_WORK_LIMIT} projects shown next to each service on the Services page, in this order. Only projects tagged with that service (Project type) can be picked. Places left empty show the newest tagged projects.`,
+      title: "Projects next to each service",
+      description: `Up to ${SERVICE_WORK_LIMIT} per service, in this order. Only projects tagged with that service (Project type) can be picked. Places left empty show the newest tagged projects.`,
       type: "object",
-      group: "services",
+      group: "pages",
+      fieldset: "servicesPage",
       fields: SERVICES.map((service) =>
         defineField({
           name: service.workField,
@@ -90,27 +179,32 @@ export const siteSettings = defineType({
     }),
     defineField({
       name: "aboutGallery",
-      title: "About: studio photos",
+      title: "Studio photos",
       description:
-        "The horizontal photo strip under the About hero, left to right. Cropped to 3:2.",
+        "The horizontal photo strip under the About page's heading, left to right. Cropped to 3:2.",
       type: "array",
-      group: "about",
+      group: "pages",
+      fieldset: "aboutPage",
+      options: { layout: "grid" },
       of: [defineArrayMember({ type: "imageWithAlt" })],
     }),
-    defineField({
-      name: "aboutPrinciplesImage",
-      title: "About: principles image",
-      description: "Next to the principles on the About page. Cropped square.",
-      type: "imageWithAlt",
-      group: "about",
-    }),
+    // Not read by the site: hidden, but kept so existing content isn't lost.
+    defineField({ name: "title", title: "Site title", type: "string", hidden: true }),
+    defineField({ name: "phone", title: "Phone", type: "string", hidden: true }),
     defineField({
       name: "footerLinks",
       title: "Footer links",
       type: "array",
       of: [{ type: "link" }],
+      hidden: true,
     }),
-    defineField({ name: "seo", title: "Default SEO", type: "seo" }),
+    defineField({
+      name: "aboutPrinciplesImage",
+      title: "About: principles image",
+      type: "imageWithAlt",
+      hidden: true,
+    }),
+    // Redirects
     defineField({
       name: "redirects",
       title: "Redirects",

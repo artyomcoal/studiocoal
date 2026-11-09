@@ -124,15 +124,14 @@ export type SiteSettings = {
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
-  title: string;
   description?: string;
+  email?: string;
+  seo?: Seo;
   navigation?: Array<
     {
       _key: string;
     } & Link
   >;
-  email?: string;
-  phone?: string;
   address?: string;
   social?: Array<
     {
@@ -173,13 +172,14 @@ export type SiteSettings = {
       _key: string;
     } & ImageWithAlt
   >;
-  aboutPrinciplesImage?: ImageWithAlt;
+  title?: string;
+  phone?: string;
   footerLinks?: Array<
     {
       _key: string;
     } & Link
   >;
-  seo?: Seo;
+  aboutPrinciplesImage?: ImageWithAlt;
   redirects?: Array<{
     from: string;
     to: string;
@@ -617,15 +617,14 @@ export type SITE_SETTINGS_QUERY_RESULT = {
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
-  title: string;
   description?: string;
+  email?: string;
+  seo?: Seo;
   navigation?: Array<
     {
       _key: string;
     } & Link
   >;
-  email?: string;
-  phone?: string;
   address?: string;
   social?: Array<
     {
@@ -666,13 +665,14 @@ export type SITE_SETTINGS_QUERY_RESULT = {
       _key: string;
     } & ImageWithAlt
   >;
-  aboutPrinciplesImage?: ImageWithAlt;
+  title?: string;
+  phone?: string;
   footerLinks?: Array<
     {
       _key: string;
     } & Link
   >;
-  seo?: Seo;
+  aboutPrinciplesImage?: ImageWithAlt;
   redirects?: Array<{
     from: string;
     to: string;
@@ -2137,15 +2137,14 @@ export type BUNNY_CONTENT_QUERY_RESULT = Array<
       _createdAt: string;
       _updatedAt: string;
       _rev: string;
-      title: string;
       description?: string;
+      email?: string;
+      seo?: Seo;
       navigation?: Array<
         {
           _key: string;
         } & Link
       >;
-      email?: string;
-      phone?: string;
       address?: string;
       social?: Array<
         {
@@ -2186,13 +2185,14 @@ export type BUNNY_CONTENT_QUERY_RESULT = Array<
           _key: string;
         } & ImageWithAlt
       >;
-      aboutPrinciplesImage?: ImageWithAlt;
+      title?: string;
+      phone?: string;
       footerLinks?: Array<
         {
           _key: string;
         } & Link
       >;
-      seo?: Seo;
+      aboutPrinciplesImage?: ImageWithAlt;
       redirects?: Array<{
         from: string;
         to: string;

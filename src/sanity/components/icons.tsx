@@ -23,7 +23,7 @@ function Icon({ children }: { children: ReactNode }) {
   );
 }
 
-/** Overview: a document with lines. */
+/** Overview / General: a document with lines. */
 export const OverviewIcon = () => (
   <Icon>
     <path d="M7.5 4.5h7l3 3v13h-10z" />
@@ -53,5 +53,29 @@ export const SeoIcon = () => (
   <Icon>
     <circle cx="11" cy="11" r="5" />
     <path d="m14.75 14.75 4.75 4.75" />
+  </Icon>
+);
+
+/** Header and footer: a page with a top and a bottom bar. */
+export const HeaderFooterIcon = () => (
+  <Icon>
+    <rect x="5.5" y="5.5" width="14" height="14" rx="1" />
+    <path d="M5.5 8.5h14M5.5 16.5h14" />
+  </Icon>
+);
+
+/** Pages: two stacked pages. */
+export const PagesIcon = () => (
+  <Icon>
+    <rect x="7.5" y="7.5" width="11" height="13" rx="1" />
+    <path d="M9.5 4.5h9a1 1 0 0 1 1 1v12" />
+  </Icon>
+);
+
+/** Redirects: an arrow turning to the right. */
+export const RedirectIcon = () => (
+  <Icon>
+    <path d="M6.5 18.5v-5a4 4 0 0 1 4-4h8" />
+    <path d="m15.5 6.5 3 3-3 3" />
   </Icon>
 );
