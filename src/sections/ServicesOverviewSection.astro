@@ -2,7 +2,7 @@
 /**
  * Services Overview Section
  * Home page "Our services": eyebrow, header with an "Explore more" button, and one row per
- * service (showreel, name, description, chevron) linking to its /services anchor.
+ * service (showreel, name, description, chevron; on base the chevron sits beside the description) linking to its /services anchor.
  * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=5039-7476
  *
  * Each row's visual is a 4:3 showreel video defined in code (src/lib/showreels.ts), not
@@ -13,6 +13,10 @@
  * interactive-secondary-hover) with its chevron drawn inline in currentColor.
  * On devices with a cursor, hovering one row dims the other rows to fg-tertiary
  * (hover: variants only match @media (hover: hover), so touch screens never dim).
+ * On touch screens (hover: none) the row under the middle of the viewport is the active one:
+ * a script marks it data-active (indicator in its hover colour) and the other rows data-dimmed
+ * (fg-tertiary) as the page scrolls. Rows above
+ * the first or below the last keep the first or last row active.
  */
 import Media from "@/components/Media.astro";
 import { SERVICES } from "@/lib/services";
@@ -54,9 +58,12 @@ const LABELS: Record<ServiceValue, string> = {
         </Button>
       </div>
     </div>
-    <ul class="group/list animate-enter-stagger divide-y divide-border-subtle">
+    <ul
+      data-slot="services-overview"
+      class="group/list animate-enter-stagger divide-y divide-border-subtle"
+    >
       {SERVICES.map((service) => (
-        <li class="group relative grid-cols-layout items-center gap-y-2 rounded-sm py-4 text-fg-primary transition-colors duration-300 ease-in-out group-hover/list:[&:not(:hover)]:text-fg-tertiary has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-interactive-focus-ring has-[a:focus-visible]:ring-offset-2 has-[a:focus-visible]:ring-offset-bg-primary">
+        <li class="group relative grid-cols-layout data-dimmed:text-fg-tertiary items-center gap-y-2 rounded-sm py-4 text-fg-primary transition-colors duration-300 ease-in-out group-hover/list:[&:not(:hover)]:text-fg-tertiary has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-interactive-focus-ring has-[a:focus-visible]:ring-offset-2 has-[a:focus-visible]:ring-offset-bg-primary">
           <div class="hidden self-start pr-6 md:col-span-3 md:block xl:col-span-2">
             <Media
               video={showreels[service.value]}
@@ -71,25 +78,65 @@ const LABELS: Record<ServiceValue, string> = {
           >
             {LABELS[service.value]}
           </a>
-          <span class="col-span-8 text-body-md md:col-span-5 xl:col-span-6 xl:col-start-6">
-            {service.description}
-          </span>
-          <span class="col-start-12 hidden justify-self-end md:flex">
-            <span class="flex size-6 items-center justify-center rounded-xs bg-interactive-secondary transition-colors duration-300 ease-in-out group-hover:bg-interactive-secondary-hover group-has-[a:focus-visible]:bg-interactive-secondary-hover">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.25"
-                class="size-6"
-                aria-hidden="true"
-              >
-                <path d="M10 8l4 4-4 4" />
-              </svg>
+          <div class="col-span-8 flex items-center gap-4 md:contents">
+            <span class="flex-1 text-body-sm md:col-span-5 md:text-body-md xl:col-span-6 xl:col-start-6">
+              {service.description}
             </span>
-          </span>
+            <span class="flex md:col-start-12 md:justify-self-end">
+              <span class="flex size-6 items-center justify-center rounded-xs bg-interactive-secondary transition-colors duration-300 ease-in-out group-hover:bg-interactive-secondary-hover group-has-[a:focus-visible]:bg-interactive-secondary-hover group-data-active:bg-interactive-secondary-hover">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.25"
+                  class="size-6"
+                  aria-hidden="true"
+                >
+                  <path d="M10 8l4 4-4 4" />
+                </svg>
+              </span>
+            </span>
+          </div>
         </li>
       ))}
     </ul>
   </div>
 </section>
+
+<script>
+  // Touch screens: highlight the row under the middle of the viewport, dim the rest.
+  if (matchMedia("(hover: none)").matches) {
+    for (const list of document.querySelectorAll<HTMLElement>('[data-slot="services-overview"]')) {
+      const rows = [...list.children] as HTMLElement[];
+      let frame = 0;
+
+      const update = () => {
+        frame = 0;
+        const middle = innerHeight / 2;
+        let active = 0;
+        rows.forEach((row, index) => {
+          if (row.getBoundingClientRect().top <= middle) active = index;
+        });
+        rows.forEach((row, index) => {
+          row.toggleAttribute("data-active", index === active);
+          row.toggleAttribute("data-dimmed", index !== active);
+        });
+      };
+      const schedule = () => {
+        frame ||= requestAnimationFrame(update);
+      };
+
+      // Track scrolling only while the list is on screen.
+      new IntersectionObserver(([entry]) => {
+        if (entry?.isIntersecting) {
+          addEventListener("scroll", schedule, { passive: true });
+          addEventListener("resize", schedule);
+          schedule();
+        } else {
+          removeEventListener("scroll", schedule);
+          removeEventListener("resize", schedule);
+        }
+      }).observe(list);
+    }
+  }
+</script>
