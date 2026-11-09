@@ -1,4 +1,5 @@
 import type { StructureBuilder, StructureResolver } from "sanity/structure";
+import { PAGES, pageDocumentId } from "../lib/pages";
 import { JournalTable } from "./components/JournalTable";
 import { WorkTable } from "./components/WorkTable";
 
@@ -39,6 +40,27 @@ export const structure: StructureResolver = (S) =>
             .title("Services")
             .apiVersion("2026-11-01")
             .defaultOrdering([{ field: "title", direction: "asc" }]),
+        ),
+      // Search, sharing and AI settings of each fixed page (schemas/page.ts).
+      S.listItem()
+        .title("Pages")
+        .id("pages")
+        .child(
+          S.list()
+            .title("Pages")
+            .items(
+              PAGES.map((page) =>
+                S.listItem()
+                  .title(page.name)
+                  .id(pageDocumentId(page.key))
+                  .child(
+                    S.document()
+                      .schemaType("page")
+                      .documentId(pageDocumentId(page.key))
+                      .title(page.name),
+                  ),
+              ),
+            ),
         ),
       S.listItem()
         .title("Site settings")

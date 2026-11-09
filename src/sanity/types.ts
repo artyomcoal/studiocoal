@@ -111,6 +111,16 @@ export type RichText = Array<
     } & ImageWithAlt)
 >;
 
+export type Page = {
+  _id: string;
+  _type: "page";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  seo?: Seo;
+  aiSummary?: string;
+};
+
 export type WorkReference = {
   _ref: string;
   _type: "reference";
@@ -126,7 +136,24 @@ export type SiteSettings = {
   _rev: string;
   description?: string;
   email?: string;
+  favicon?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
   seo?: Seo;
+  googleSiteVerification?: string;
+  bingSiteVerification?: string;
+  aiCrawlers?: boolean;
+  aiSummary?: string;
+  faq?: Array<{
+    question: string;
+    answer: string;
+    _type: "faqItem";
+    _key: string;
+  }>;
   navigation?: Array<
     {
       _key: string;
@@ -540,6 +567,7 @@ export type AllSanitySchemaTypes =
   | Media
   | ImageWithAlt
   | RichText
+  | Page
   | WorkReference
   | SiteSettings
   | SanityImageCrop
@@ -619,7 +647,24 @@ export type SITE_SETTINGS_QUERY_RESULT = {
   _rev: string;
   description?: string;
   email?: string;
+  favicon?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
   seo?: Seo;
+  googleSiteVerification?: string;
+  bingSiteVerification?: string;
+  aiCrawlers?: boolean;
+  aiSummary?: string;
+  faq?: Array<{
+    question: string;
+    answer: string;
+    _type: "faqItem";
+    _key: string;
+  }>;
   navigation?: Array<
     {
       _key: string;
@@ -681,6 +726,40 @@ export type SITE_SETTINGS_QUERY_RESULT = {
     _key: string;
   }>;
 } | null;
+
+// Source: src/sanity/queries.ts
+// Variable: PAGE_QUERY
+// Query: *[_type == "page" && _id == $id][0]{ seo, aiSummary }
+export type PAGE_QUERY_RESULT = {
+  seo: Seo | null;
+  aiSummary: string | null;
+} | null;
+
+// Source: src/sanity/queries.ts
+// Variable: PAGES_QUERY
+// Query: *[_type == "page"]{    _id,    "noIndex": seo.noIndex == true,    "description": seo.description,    aiSummary  }
+export type PAGES_QUERY_RESULT = Array<{
+  _id: string;
+  noIndex: boolean | false;
+  description: string | null;
+  aiSummary: string | null;
+}>;
+
+// Source: src/sanity/queries.ts
+// Variable: LLMS_QUERY
+// Query: {    "work": *[_type == "work" && defined(slug.current) && seo.noIndex != true] | order(year desc, _createdAt desc){      title,      "slug": slug.current,      "description": coalesce(seo.description, summary, excerpt)    },    "journal": *[_type == "journal" && defined(slug.current) && seo.noIndex != true] | order(publishedAt desc){      title,      "slug": slug.current,      "description": coalesce(seo.description, excerpt)    }  }
+export type LLMS_QUERY_RESULT = {
+  work: Array<{
+    title: string;
+    slug: string;
+    description: string | null;
+  }>;
+  journal: Array<{
+    title: string;
+    slug: string;
+    description: string | null;
+  }>;
+};
 
 // Source: src/sanity/queries.ts
 // Variable: FEATURED_WORK_QUERY
@@ -2133,13 +2212,39 @@ export type BUNNY_CONTENT_QUERY_RESULT = Array<
     }
   | {
       _id: string;
+      _type: "page";
+      _createdAt: string;
+      _updatedAt: string;
+      _rev: string;
+      seo?: Seo;
+      aiSummary?: string;
+    }
+  | {
+      _id: string;
       _type: "siteSettings";
       _createdAt: string;
       _updatedAt: string;
       _rev: string;
       description?: string;
       email?: string;
+      favicon?: {
+        asset?: SanityImageAssetReference;
+        media?: unknown;
+        hotspot?: SanityImageHotspot;
+        crop?: SanityImageCrop;
+        _type: "image";
+      };
       seo?: Seo;
+      googleSiteVerification?: string;
+      bingSiteVerification?: string;
+      aiCrawlers?: boolean;
+      aiSummary?: string;
+      faq?: Array<{
+        question: string;
+        answer: string;
+        _type: "faqItem";
+        _key: string;
+      }>;
       navigation?: Array<
         {
           _key: string;
@@ -2257,6 +2362,9 @@ declare global {
     '*[_type == "siteSettings" && _id == "siteSettings"][0].clients[defined(logo.asset)]{ _key, name, logo }': CLIENTS_QUERY_RESULT;
     '*[_type == "siteSettings" && _id == "siteSettings"][0]{\n    "gallery": aboutGallery[defined(asset)]{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n}\n  }': ABOUT_MEDIA_QUERY_RESULT;
     '*[_type == "siteSettings" && _id == "siteSettings"][0]': SITE_SETTINGS_QUERY_RESULT;
+    '*[_type == "page" && _id == $id][0]{ seo, aiSummary }': PAGE_QUERY_RESULT;
+    '*[_type == "page"]{\n    _id,\n    "noIndex": seo.noIndex == true,\n    "description": seo.description,\n    aiSummary\n  }': PAGES_QUERY_RESULT;
+    '{\n    "work": *[_type == "work" && defined(slug.current) && seo.noIndex != true] | order(year desc, _createdAt desc){\n      title,\n      "slug": slug.current,\n      "description": coalesce(seo.description, summary, excerpt)\n    },\n    "journal": *[_type == "journal" && defined(slug.current) && seo.noIndex != true] | order(publishedAt desc){\n      title,\n      "slug": slug.current,\n      "description": coalesce(seo.description, excerpt)\n    }\n  }': LLMS_QUERY_RESULT;
     '*[_type == "work" && defined(slug.current)] | order(coalesce(featured, false) desc, year desc, _createdAt desc) [0...$limit] {\n  _id,\n  title,\n  "slug": slug.current,\n  client,\n  year,\n  services,\n  // Short description for the card; the long one is the fallback (cut to two lines).\n  summary,\n  excerpt,\n  listingMedia{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n}\n}': FEATURED_WORK_QUERY_RESULT;
     '*[_type == "work" && defined(slug.current) && slug.current != $slug] | order(year desc, _createdAt desc) [0...$limit] {\n  _id,\n  title,\n  "slug": slug.current,\n  client,\n  year,\n  services,\n  // Short description for the card; the long one is the fallback (cut to two lines).\n  summary,\n  excerpt,\n  listingMedia{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n}\n}': RECENT_WORK_QUERY_RESULT;
     '*[_type == "work" && defined(slug.current)] | order(year desc, _createdAt desc) {\n  _id,\n  title,\n  "slug": slug.current,\n  services,\n  excerpt,\n  archiveMedia[]{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n}\n}': WORK_ARCHIVE_QUERY_RESULT;

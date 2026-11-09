@@ -21,9 +21,18 @@ export interface OrganizationInput {
   /** Absolute URLs of the studio's profiles (Instagram, LinkedIn, …). */
   sameAs?: (string | null | undefined)[];
   logo?: string | null;
+  /** Postal address as written in the footer, one line per row. */
+  address?: string | null;
 }
 
-export function organization({ site, description, email, sameAs, logo }: OrganizationInput): Thing {
+export function organization({
+  site,
+  description,
+  email,
+  sameAs,
+  logo,
+  address,
+}: OrganizationInput): Thing {
   const profiles = (sameAs ?? []).filter((url): url is string => !!url && /^https?:\/\//.test(url));
   return compact({
     "@type": "Organization",
@@ -33,6 +42,11 @@ export function organization({ site, description, email, sameAs, logo }: Organiz
     description,
     email,
     logo,
+    address: address
+      ?.split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .join(", "),
     sameAs: profiles.length ? profiles : undefined,
   });
 }
@@ -58,6 +72,31 @@ export function breadcrumbs(items: [name: string, url: string][]): Thing {
       item,
     })),
   };
+}
+
+export interface WebPageInput {
+  site: string;
+  url: string;
+  /** "AboutPage" for About, "CollectionPage" for the Work and Journal lists. */
+  type?: "WebPage" | "AboutPage" | "CollectionPage";
+  name: string;
+  description?: string | null;
+  /** Pages › Summary for AI assistants: a plain account of what the page says. */
+  summary?: string | null;
+}
+
+/** One of the fixed pages (Home, Services, …). */
+export function webPage(input: WebPageInput): Thing {
+  return compact({
+    "@type": input.type ?? "WebPage",
+    "@id": `${input.url}#webpage`,
+    url: input.url,
+    name: input.name,
+    description: input.description,
+    abstract: input.summary?.trim(),
+    isPartOf: { "@id": websiteId(input.site) },
+    about: { "@id": organizationId(input.site) },
+  });
 }
 
 export interface ProjectInput {

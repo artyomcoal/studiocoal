@@ -7,8 +7,9 @@ import tailwindcss from "@tailwindcss/vite";
 import { createClient } from "@sanity/client";
 import { defineConfig } from "astro/config";
 import { fileURLToPath } from "node:url";
+import { pageByDocumentId } from "./src/lib/pages.ts";
 import { buildRedirects } from "./src/lib/redirects.ts";
-import { REDIRECTS_QUERY, SITEMAP_QUERY } from "./src/sanity/queries.ts";
+import { PAGES_QUERY, REDIRECTS_QUERY, SITEMAP_QUERY } from "./src/sanity/queries.ts";
 
 // Load .env when present (local dev); in CI and on Vercel the variables come from the environment.
 try {
@@ -48,8 +49,9 @@ const buildFetch = fixtureModule
       fixtureModule.fetchFixture
     )
   : sanityBuildClient.fetch.bind(sanityBuildClient);
-const [sitemapPages, redirectSources] = await Promise.all([
+const [sitemapPages, fixedPages, redirectSources] = await Promise.all([
   buildFetch(SITEMAP_QUERY),
+  buildFetch(PAGES_QUERY),
   buildFetch(REDIRECTS_QUERY),
 ]);
 /** @param {string} url */
@@ -57,6 +59,18 @@ const pathOf = (url) => new URL(url).pathname.replace(/\/+$/, "") || "/";
 const pageByPath = new Map(
   sitemapPages.map((page) => [`/${page._type === "work" ? "work" : "journal"}/${page.slug}`, page]),
 );
+
+// Fixed pages hidden in the Studio (Pages › Hide from search engines). A hidden Journal list
+// hides its further pages (/journal/2, …) too.
+const hiddenPaths = new Set(
+  fixedPages.flatMap((page) => {
+    const path = page.noIndex ? pageByDocumentId(page._id)?.path : undefined;
+    return path ? [/** @type {string} */ (path)] : [];
+  }),
+);
+/** @param {string} path */
+const isHidden = (path) =>
+  hiddenPaths.has(path.replace(/^\/journal\/\d+$/, "/journal")) || !!pageByPath.get(path)?.noIndex;
 
 // Old project / post URLs and Site settings › Redirects (src/lib/redirects.ts).
 const redirects = buildRedirects(redirectSources.content, redirectSources.manual ?? []);
@@ -75,7 +89,7 @@ export default defineConfig({
     sitemap({
       filter: (page) => {
         const path = pathOf(page);
-        return !path.startsWith("/studio") && !pageByPath.get(path)?.noIndex;
+        return !path.startsWith("/studio") && !isHidden(path);
       },
       serialize: (item) => {
         const page = pageByPath.get(pathOf(item.url));

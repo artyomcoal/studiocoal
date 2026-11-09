@@ -9,8 +9,9 @@ import {
 import { SeoInput } from "../components/SeoInput";
 
 /**
- * Per-document SEO overrides. Every field is optional: left empty, the page uses the
- * document's own title, excerpt and visual (src/lib/seo.ts › contentSeo). The input shows a
+ * Per-document SEO overrides (projects, posts, fixed pages) and the site defaults (Site
+ * settings). Every field is optional: left empty, the page uses the document's own title,
+ * excerpt and visual, or a fixed page's built-in texts (src/lib/seo.ts › contentSeo). The input shows a
  * search result preview with the values that will actually ship.
  */
 export const seo = defineType({
@@ -32,6 +33,8 @@ export const seo = defineType({
               : true,
           )
           .warning(),
+      // Site settings hold defaults for other pages; a page's title is always its own.
+      hidden: ({ document }) => document?._type === "siteSettings",
     }),
     defineField({
       name: "description",
@@ -50,7 +53,7 @@ export const seo = defineType({
       type: "image",
       options: { hotspot: true },
       description:
-        "Shown when the page is shared (cropped to 1200 × 630). Leave empty to use the page's main visual.",
+        "Shown when the page is shared (cropped to 1200 × 630). Left empty, a project or post uses its main visual; other pages use the default image in Site settings.",
     }),
     defineField({
       name: "noIndex",

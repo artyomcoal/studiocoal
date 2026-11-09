@@ -7,6 +7,7 @@ import {
   organizationId,
   project,
   serializeJsonLd,
+  webPage,
   website,
 } from "./structured-data";
 
@@ -90,5 +91,36 @@ describe("serializeJsonLd", () => {
     const json = serializeJsonLd(graph(website(site), { "@type": "Thing", name: "</script>" }));
     expect(json).not.toContain("</script>");
     expect(JSON.parse(json)["@graph"][1].name).toBe("</script>");
+  });
+});
+
+describe("webPage", () => {
+  it("describes a fixed page and links it to the site and the studio", () => {
+    expect(
+      webPage({
+        site,
+        url: "https://studiocoal.com/about",
+        type: "AboutPage",
+        name: "About — Studio Coal",
+        description: "",
+        summary: " A studio of four. ",
+      }),
+    ).toEqual({
+      "@type": "AboutPage",
+      "@id": "https://studiocoal.com/about#webpage",
+      url: "https://studiocoal.com/about",
+      name: "About — Studio Coal",
+      abstract: "A studio of four.",
+      isPartOf: { "@id": "https://studiocoal.com/#website" },
+      about: { "@id": "https://studiocoal.com/#organization" },
+    });
+  });
+});
+
+describe("organization address", () => {
+  it("joins the footer's address lines", () => {
+    expect(organization({ site, address: "Keizersgracht 1\n\n1015 AA Amsterdam " }).address).toBe(
+      "Keizersgracht 1, 1015 AA Amsterdam",
+    );
   });
 });

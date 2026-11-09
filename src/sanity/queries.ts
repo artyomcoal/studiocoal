@@ -76,6 +76,38 @@ export const SITE_SETTINGS_QUERY = defineQuery(
   `*[_type == "siteSettings" && _id == "siteSettings"][0]`,
 );
 
+/** BaseLayout: the search, sharing and AI settings of one fixed page (schemas/page.ts). */
+export const PAGE_QUERY = defineQuery(`*[_type == "page" && _id == $id][0]{ seo, aiSummary }`);
+
+/**
+ * Every fixed page's settings: the sitemap leaves out hidden pages (astro.config.mjs), and
+ * /llms.txt describes each page (src/pages/llms.txt.ts).
+ */
+export const PAGES_QUERY = defineQuery(
+  `*[_type == "page"]{
+    _id,
+    "noIndex": seo.noIndex == true,
+    "description": seo.description,
+    aiSummary
+  }`,
+);
+
+/** /llms.txt: every project and post that search engines may list, newest first. */
+export const LLMS_QUERY = defineQuery(
+  `{
+    "work": *[_type == "work" && defined(slug.current) && seo.noIndex != true] | order(year desc, _createdAt desc){
+      title,
+      "slug": slug.current,
+      "description": coalesce(seo.description, summary, excerpt)
+    },
+    "journal": *[_type == "journal" && defined(slug.current) && seo.noIndex != true] | order(publishedAt desc){
+      title,
+      "slug": slug.current,
+      "description": coalesce(seo.description, excerpt)
+    }
+  }`,
+);
+
 /** FeaturedWorkSection on the home page: featured projects first, then the newest. */
 export const FEATURED_WORK_QUERY = defineQuery(
   `*[_type == "work" && defined(slug.current)] | order(coalesce(featured, false) desc, year desc, _createdAt desc) [0...$limit] ${workCard}`,

@@ -15,10 +15,7 @@ import WorkFormatsSection from "@/sections/WorkFormatsSection.astro";
 const recentWork = await sanityClient.fetch(FEATURED_WORK_QUERY, { limit: 3 });
 ---
 
-<PageLayout
-  title="Process"
-  description="Few people, close to the work, from the first conversation to launch and after."
->
+<PageLayout page="process">
   <section class="px-container pt-hero pb-12">
     <h1 class="text-headline-xxl text-fg-primary">
       <span class="text-fg-tertiary">Process.</span> Few people, close to the work, from the first

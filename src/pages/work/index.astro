@@ -11,10 +11,7 @@ import WorkArchiveSection from "@/sections/WorkArchiveSection.astro";
 const works = await sanityClient.fetch(WORK_ARCHIVE_QUERY);
 ---
 
-<PageLayout
-  title="Work"
-  description="A selection of brands, websites and products Studio Coal has made with founders and their teams."
->
+<PageLayout page="work">
   <section class="px-container pt-hero pb-12">
     <h1 class="text-headline-xxl text-fg-primary">
       <span class="text-fg-tertiary">Our work.</span> A selection of brands, websites and products

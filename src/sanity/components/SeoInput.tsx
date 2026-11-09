@@ -4,13 +4,15 @@
  *
  * Shows what the page will actually ship with, using the same fallbacks as the site
  * (src/lib/seo.ts › contentSeo): an empty field falls back to the document's own title,
- * description and main visual, and each value says where it comes from.
+ * description and main visual, and each value says where it comes from. A fixed page
+ * (Pages › …) falls back to its built-in texts (src/lib/pages.ts) and the site's share image.
  * On other document types (Site settings) it renders the plain fields.
  */
 import { createImageUrlBuilder, type SanityImageSource } from "@sanity/image-url";
 import type { CSSProperties, ReactNode } from "react";
 import { useClient, useFormValue, type ObjectInputProps } from "sanity";
 import { BunnyThumbnail } from "./BunnyThumbnail";
+import { pageByDocumentId } from "../../lib/pages";
 import {
   CONTENT_PATHS,
   contentPath,
@@ -37,6 +39,7 @@ interface SeoValue {
   noIndex?: boolean;
 }
 interface DocumentValue {
+  _id?: string;
   _type?: string;
   title?: string;
   excerpt?: string;
@@ -54,6 +57,14 @@ const SOURCE_LABEL = {
   none: "no page title yet, so only the site name",
   excerpt: "from the description",
   default: "the site default (Site settings)",
+} as const;
+
+/** Fixed pages have no title or description fields of their own: the fallback is in code. */
+const PAGE_SOURCE_LABEL = {
+  ...SOURCE_LABEL,
+  title: "the page's built-in title",
+  none: "only the site name, as built in",
+  excerpt: "the page's built-in description",
 } as const;
 
 function mediaImage(media?: MediaValue): ImageValue | undefined {
@@ -78,6 +89,7 @@ function bunnyPlaylist(doc: DocumentValue): string | undefined {
 
 function socialImage(doc: DocumentValue, seo?: SeoValue): [ImageValue | undefined, string] {
   if (seo?.image?.asset?._ref) return [seo.image, "from the field below"];
+  if (doc._type === "page") return [undefined, "the site default (Site settings)"];
   if (doc._type === "work") {
     const listing = mediaImage(doc.listingMedia);
     if (listing) return [listing, "generated: the title over the listing visual"];
@@ -97,21 +109,33 @@ const isContentType = (type?: string): type is ContentType => !!type && type in 
 export function SeoInput(props: ObjectInputProps) {
   const doc = (useFormValue([]) ?? {}) as DocumentValue;
   const client = useClient({ apiVersion: "2026-11-01" });
-  if (!isContentType(doc._type)) return props.renderDefault(props);
+  // A fixed page: its built-in texts stand in for a document's own title and description.
+  const fixedPage = doc._type === "page" ? pageByDocumentId(doc._id) : undefined;
+  if (!isContentType(doc._type) && !fixedPage) return props.renderDefault(props);
 
   const value = props.value as SeoValue | undefined;
   // Work prefers the short description, as the site does (pages/work/[slug].astro).
-  const ownDescription = doc.summary?.trim() || doc.excerpt;
-  const resolved = contentSeo({ title: doc.title, excerpt: ownDescription, seo: value });
-  const descriptionSource =
-    resolved.source.description === "excerpt" && doc.summary?.trim()
+  const ownDescription = fixedPage ? fixedPage.description : doc.summary?.trim() || doc.excerpt;
+  const resolved = contentSeo({
+    title: fixedPage ? fixedPage.title : doc.title,
+    excerpt: ownDescription,
+    seo: value,
+  });
+  const descriptionSource = fixedPage
+    ? PAGE_SOURCE_LABEL[resolved.source.description]
+    : resolved.source.description === "excerpt" && doc.summary?.trim()
       ? "from the short description"
       : resolved.source.description === "excerpt" && doc._type === "work"
         ? "from the long description"
         : SOURCE_LABEL[resolved.source.description];
+  const titleSource = fixedPage
+    ? PAGE_SOURCE_LABEL[resolved.source.title]
+    : SOURCE_LABEL[resolved.source.title];
   const title = pageTitle(resolved.title);
   const description = resolved.description;
-  const path = contentPath(doc._type, doc.slug?.current || "…");
+  const path = fixedPage
+    ? fixedPage.path.replace(/^\/$/, "")
+    : contentPath(doc._type as ContentType, doc.slug?.current || "…");
   const [image, imageSource] = socialImage(doc, value);
   const imageUrl = image
     ? createImageUrlBuilder(client)
@@ -138,12 +162,7 @@ export function SeoInput(props: ObjectInputProps) {
           </span>
         </div>
         <ul style={meta}>
-          <Meta
-            label="Title"
-            source={SOURCE_LABEL[resolved.source.title]}
-            count={title.length}
-            max={SEO_TITLE_LIMIT}
-          />
+          <Meta label="Title" source={titleSource} count={title.length} max={SEO_TITLE_LIMIT} />
           <Meta
             label="Description"
             source={descriptionSource}

@@ -1,12 +1,25 @@
 import { defineArrayMember, defineField, defineType } from "sanity";
 import { normalizePath } from "../../lib/redirects";
 import { SERVICES, SERVICE_WORK_LIMIT } from "../../lib/services";
-import { HeaderFooterIcon, OverviewIcon, PagesIcon, RedirectIcon } from "../components/icons";
+import {
+  HeaderFooterIcon,
+  OverviewIcon,
+  PagesIcon,
+  RedirectIcon,
+  SeoIcon,
+} from "../components/icons";
+
+/** A verification code is one token: pasting the whole <meta> tag is the usual mistake. */
+const verificationCode = (value?: string) =>
+  value && !/^[\w-]+$/.test(value.trim())
+    ? 'Paste only the code: the part between the quotes of content="…".'
+    : true;
 
 /**
- * Site settings (singleton). Tabs follow where things appear: site-wide basics, the header and
- * footer, individual pages, redirects. Each field says where it shows and what the site uses
- * when it is left empty. Fields the site doesn't read are hidden (kept, so no content is lost).
+ * Site settings (singleton). Tabs follow where things appear: site-wide basics, search engines
+ * and AI assistants, the header and footer, individual pages, redirects. Each field says where
+ * it shows and what the site uses when it is left empty. Fields the site doesn't read are
+ * hidden (kept, so no content is lost).
  */
 export const siteSettings = defineType({
   name: "siteSettings",
@@ -14,6 +27,7 @@ export const siteSettings = defineType({
   type: "document",
   groups: [
     { name: "general", title: "General", icon: OverviewIcon, default: true },
+    { name: "search", title: "Search and AI", icon: SeoIcon },
     { name: "layout", title: "Header and footer", icon: HeaderFooterIcon },
     { name: "pages", title: "Pages", icon: PagesIcon },
     { name: "redirects", title: "Redirects", icon: RedirectIcon },
@@ -26,10 +40,29 @@ export const siteSettings = defineType({
       description: "What Google and other services read about Studio Coal.",
     },
     {
+      name: "icon",
+      title: "Browser icon",
+      description: "The small icon in browser tabs, bookmarks and next to the site in Google.",
+    },
+    // Search and AI
+    {
       name: "sharing",
       title: "Search and sharing",
       description:
-        "Used by pages that don't set their own: the text under the link in search results, and the image when a link is shared.",
+        "Used by pages that don't set their own: the text under the link in search results, and the image when a link is shared. Each page's own settings are under Pages, or on the project or post.",
+    },
+    {
+      name: "verification",
+      title: "Search engine verification",
+      description:
+        "Proves to Google and Bing that the site is yours, so Search Console and Webmaster Tools show its search data. Paste only the code, not the whole tag.",
+      options: { columns: 2 },
+    },
+    {
+      name: "ai",
+      title: "AI assistants",
+      description:
+        "For ChatGPT, Claude, Perplexity and other assistants that answer questions about the studio.",
     },
     // Header and footer
     { name: "header", title: "Header" },
@@ -49,7 +82,7 @@ export const siteSettings = defineType({
       name: "description",
       title: "Studio description",
       description:
-        "One or two sentences about the studio. Also the search description of any page without its own (see below).",
+        "One or two sentences about the studio. Also the search description of any page without its own (see Search and AI).",
       type: "text",
       rows: 3,
       group: "general",
@@ -68,11 +101,91 @@ export const siteSettings = defineType({
         rule.email().error("Enter an email address, e.g. hello@studiocoal.com."),
     }),
     defineField({
+      name: "favicon",
+      title: "Icon",
+      description:
+        "A square PNG, at least 512 × 512, that still reads at tab size. Also used on phone home screens and as the studio's logo in search results. Left empty, the site uses its built-in icon.",
+      type: "image",
+      options: { accept: "image/png" },
+      group: "general",
+      fieldset: "icon",
+    }),
+    // Search and AI
+    defineField({
       name: "seo",
       title: "Default search and sharing",
       type: "seo",
-      group: "general",
+      group: "search",
       fieldset: "sharing",
+    }),
+    defineField({
+      name: "googleSiteVerification",
+      title: "Google Search Console",
+      description: 'The content="…" value of the HTML tag method.',
+      type: "string",
+      group: "search",
+      fieldset: "verification",
+      validation: (rule) => rule.custom(verificationCode),
+    }),
+    defineField({
+      name: "bingSiteVerification",
+      title: "Bing Webmaster Tools",
+      description: 'The content="…" value of the meta tag method.',
+      type: "string",
+      group: "search",
+      fieldset: "verification",
+      validation: (rule) => rule.custom(verificationCode),
+    }),
+    defineField({
+      name: "aiCrawlers",
+      title: "Let AI assistants read the site",
+      description:
+        "On: AI search and assistants may read and quote the site, and AI companies may train on it. Off: robots.txt asks them all to stay away (ordinary search engines are not affected). Applies after the next deploy.",
+      type: "boolean",
+      initialValue: true,
+      group: "search",
+      fieldset: "ai",
+    }),
+    defineField({
+      name: "aiSummary",
+      title: "About the studio, for AI assistants",
+      description:
+        "A short factual profile: what the studio does, for whom, where it is and how to start a project. Opens /llms.txt, the file assistants read first. Left empty, the studio description is used.",
+      type: "text",
+      rows: 5,
+      group: "search",
+      fieldset: "ai",
+    }),
+    defineField({
+      name: "faq",
+      title: "Questions and answers",
+      description:
+        "Questions people ask about the studio, each with a direct answer in one or two sentences. Listed in /llms.txt so assistants can answer them correctly. Not shown on the site.",
+      type: "array",
+      group: "search",
+      fieldset: "ai",
+      of: [
+        defineArrayMember({
+          type: "object",
+          name: "faqItem",
+          fields: [
+            defineField({
+              name: "question",
+              title: "Question",
+              type: "string",
+              validation: (rule) => rule.required(),
+            }),
+            defineField({
+              name: "answer",
+              title: "Answer",
+              type: "text",
+              rows: 3,
+              validation: (rule) => rule.required(),
+            }),
+          ],
+          preview: { select: { title: "question", subtitle: "answer" } },
+        }),
+      ],
     }),
     // Header and footer
     defineField({
