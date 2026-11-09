@@ -13,13 +13,15 @@
  * interactive-secondary-hover) with its chevron drawn inline in currentColor. The box transitions
  * only its background: the chevron inherits the row's already-transitioning color, and a second
  * color transition on the box would make it lag behind the text.
- * Scroll highlight (all devices): the row under the middle of the viewport is the active one.
+ * Scroll highlight (devices without a cursor, i.e. not @media (hover: hover)): the row under
+ * the middle of the viewport is the active one.
  * A script marks it data-active (indicator in its hover colour) and the other rows data-dimmed
  * (fg-tertiary) as the page scrolls. Rows above the first or below the last keep the first or
- * last row active. Without JS every row stays fg-primary.
- * Hover (devices with a cursor) wins while the pointer is over the list: the hovered row is
- * fg-primary with its indicator in the hover colour, the other rows dim, and the scroll state is
- * ignored (not-group-hover/list). hover: variants only match @media (hover: hover).
+ * last row active. Without JS, and on devices with a cursor, every row stays fg-primary.
+ * Hover (devices with a cursor): the hovered row is fg-primary with its indicator in the hover
+ * colour and the other rows dim. hover: variants only match @media (hover: hover), the same
+ * query that turns the scroll highlight off, so the two never run together (a tablet that gains
+ * or loses a trackpad switches between them).
  */
 import Media from "@/components/Media.astro";
 import { SERVICES } from "@/lib/services";
@@ -107,7 +109,10 @@ const LABELS: Record<ServiceValue, string> = {
 </section>
 
 <script>
-  // Highlight the row under the middle of the viewport, dim the rest.
+  // Touch devices: highlight the row under the middle of the viewport, dim the rest. Devices
+  // with a cursor use hover instead (same query as Tailwind's hover: variants).
+  const hasCursor = matchMedia("(hover: hover)");
+
   for (const list of document.querySelectorAll<HTMLElement>('[data-slot="services-overview"]')) {
     const rows = [...list.children] as HTMLElement[];
     let frame = 0;
@@ -127,17 +132,37 @@ const LABELS: Record<ServiceValue, string> = {
     const schedule = () => {
       frame ||= requestAnimationFrame(update);
     };
+    const stopTracking = () => {
+      removeEventListener("scroll", schedule);
+      removeEventListener("resize", schedule);
+    };
 
     // Track scrolling only while the list is on screen.
-    new IntersectionObserver(([entry]) => {
+    const observer = new IntersectionObserver(([entry]) => {
       if (entry?.isIntersecting) {
         addEventListener("scroll", schedule, { passive: true });
         addEventListener("resize", schedule);
         schedule();
       } else {
-        removeEventListener("scroll", schedule);
-        removeEventListener("resize", schedule);
+        stopTracking();
       }
-    }).observe(list);
+    });
+
+    const apply = () => {
+      if (hasCursor.matches) {
+        observer.disconnect();
+        stopTracking();
+        cancelAnimationFrame(frame);
+        frame = 0;
+        for (const row of rows) {
+          row.removeAttribute("data-active");
+          row.removeAttribute("data-dimmed");
+        }
+      } else {
+        observer.observe(list);
+      }
+    };
+    apply();
+    hasCursor.addEventListener("change", apply);
   }
 </script>
