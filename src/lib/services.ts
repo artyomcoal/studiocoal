@@ -1,24 +1,29 @@
 /**
  * Studio Coal services. Values are stored on Work documents; titles, copy and the /services
- * anchors are shown on the site (Home "Our services", Footer, project tags).
+ * anchors are shown on the site (Home "Our services", Footer, project tags). `workField` names
+ * the Site settings field (inside `servicesWork`) with the projects picked for the service
+ * on /services; it is spelled out in SERVICES_WORK_PICKS_QUERY too.
  */
 export const SERVICES = [
   {
     title: "Brand",
     value: "brand",
     anchor: "brand",
+    workField: "brand",
     description: "Positioning, voice and identity that make a complex idea easy to grasp.",
   },
   {
     title: "Website",
     value: "web",
     anchor: "website",
+    workField: "web",
     description: "Sites that make your case clearly, built so your team can run them.",
   },
   {
     title: "Product",
     value: "digital-products",
     anchor: "product",
+    workField: "digitalProducts",
     description: "Interfaces and design systems that make powerful things feel simple.",
   },
 ] as const;
@@ -26,6 +31,26 @@ export const SERVICES = [
 /** Display title for a stored service value. Unknown values are shown as stored. */
 export function serviceTitle(value: string): string {
   return SERVICES.find((service) => service.value === value)?.title ?? value;
+}
+
+/** How many projects each Service Offering section on /services shows. */
+export const SERVICE_WORK_LIMIT = 2;
+
+/**
+ * Projects for one Service Offering section: the hand-picked ones in their order, then the
+ * newest tagged projects to fill the remaining places. Never repeats a project.
+ */
+export function relatedWork<T extends { _id: string }>(
+  picked: readonly (T | null)[] | null,
+  latest: readonly T[],
+  limit = SERVICE_WORK_LIMIT,
+): T[] {
+  const result: T[] = [];
+  for (const work of [...(picked ?? []), ...latest]) {
+    if (result.length === limit) break;
+    if (work && !result.some(({ _id }) => _id === work._id)) result.push(work);
+  }
+  return result;
 }
 
 /**

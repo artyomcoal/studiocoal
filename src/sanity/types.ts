@@ -111,6 +111,13 @@ export type RichText = Array<
     } & ImageWithAlt)
 >;
 
+export type WorkReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "work";
+};
+
 export type SiteSettings = {
   _id: string;
   _type: "siteSettings";
@@ -144,6 +151,23 @@ export type SiteSettings = {
     _type: "client";
     _key: string;
   }>;
+  servicesWork?: {
+    brand?: Array<
+      {
+        _key: string;
+      } & WorkReference
+    >;
+    web?: Array<
+      {
+        _key: string;
+      } & WorkReference
+    >;
+    digitalProducts?: Array<
+      {
+        _key: string;
+      } & WorkReference
+    >;
+  };
   aboutGallery?: Array<
     {
       _key: string;
@@ -516,6 +540,7 @@ export type AllSanitySchemaTypes =
   | Media
   | ImageWithAlt
   | RichText
+  | WorkReference
   | SiteSettings
   | SanityImageCrop
   | SanityImageHotspot
@@ -619,6 +644,23 @@ export type SITE_SETTINGS_QUERY_RESULT = {
     _type: "client";
     _key: string;
   }>;
+  servicesWork?: {
+    brand?: Array<
+      {
+        _key: string;
+      } & WorkReference
+    >;
+    web?: Array<
+      {
+        _key: string;
+      } & WorkReference
+    >;
+    digitalProducts?: Array<
+      {
+        _key: string;
+      } & WorkReference
+    >;
+  };
   aboutGallery?: Array<
     {
       _key: string;
@@ -925,7 +967,7 @@ export type WORK_ARCHIVE_QUERY_RESULT = Array<{
 
 // Source: src/sanity/queries.ts
 // Variable: WORK_BY_SERVICE_QUERY
-// Query: *[_type == "work" && $service in services && defined(slug.current)] | order(year desc) [0...2] {  _id,  title,  "slug": slug.current,  client,  year,  services,  // Short description for the card; the long one is the fallback (cut to two lines).  summary,  excerpt,  listingMedia{  kind,  kind == "image" => { "image": image{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} },  kind == "video" => {    "video": video{ playlistUrl, alt, caption, playback, poster{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} }  }}}
+// Query: *[_type == "work" && $service in services && defined(slug.current)] | order(year desc, _createdAt desc) [0...2] {  _id,  title,  "slug": slug.current,  client,  year,  services,  // Short description for the card; the long one is the fallback (cut to two lines).  summary,  excerpt,  listingMedia{  kind,  kind == "image" => { "image": image{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} },  kind == "video" => {    "video": video{ playlistUrl, alt, caption, playback, poster{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} }  }}}
 export type WORK_BY_SERVICE_QUERY_RESULT = Array<{
   _id: string;
   title: string;
@@ -1017,6 +1059,285 @@ export type WORK_BY_SERVICE_QUERY_RESULT = Array<{
         kind: "image" | "video";
       };
 }>;
+
+// Source: src/sanity/queries.ts
+// Variable: SERVICES_WORK_PICKS_QUERY
+// Query: *[_type == "siteSettings" && _id == "siteSettings"][0].servicesWork{    "brand": (brand[]->)[_type == "work" && "brand" in services && defined(slug.current)] {  _id,  title,  "slug": slug.current,  client,  year,  services,  // Short description for the card; the long one is the fallback (cut to two lines).  summary,  excerpt,  listingMedia{  kind,  kind == "image" => { "image": image{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} },  kind == "video" => {    "video": video{ playlistUrl, alt, caption, playback, poster{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} }  }}},    "web": (web[]->)[_type == "work" && "web" in services && defined(slug.current)] {  _id,  title,  "slug": slug.current,  client,  year,  services,  // Short description for the card; the long one is the fallback (cut to two lines).  summary,  excerpt,  listingMedia{  kind,  kind == "image" => { "image": image{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} },  kind == "video" => {    "video": video{ playlistUrl, alt, caption, playback, poster{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} }  }}},    "digitalProducts": (digitalProducts[]->)[      _type == "work" && "digital-products" in services && defined(slug.current)    ] {  _id,  title,  "slug": slug.current,  client,  year,  services,  // Short description for the card; the long one is the fallback (cut to two lines).  summary,  excerpt,  listingMedia{  kind,  kind == "image" => { "image": image{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} },  kind == "video" => {    "video": video{ playlistUrl, alt, caption, playback, poster{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} }  }}}  }
+export type SERVICES_WORK_PICKS_QUERY_RESULT = {
+  brand: Array<{
+    _id: string;
+    title: string;
+    slug: string;
+    client: string | null;
+    year: number | null;
+    services: Array<string> | null;
+    summary: string | null;
+    excerpt: string | null;
+    listingMedia:
+      | {
+          kind: "image" | "video";
+          image: {
+            _type: "imageWithAlt";
+            asset?: SanityImageAssetReference;
+            media?: unknown;
+            hotspot?: SanityImageHotspot;
+            crop?: SanityImageCrop;
+            alt?: string;
+            caption?: string;
+            lqip: string | null;
+            dimensions: {
+              width: number;
+              height: number;
+              aspectRatio: number;
+            } | null;
+          } | null;
+          video: {
+            playlistUrl: string | null;
+            alt: string | null;
+            caption: string | null;
+            playback: "ambient" | "player" | null;
+            poster: {
+              asset?: SanityImageAssetReference;
+              media?: unknown;
+              hotspot?: SanityImageHotspot;
+              crop?: SanityImageCrop;
+              _type: "image";
+              lqip: string | null;
+              dimensions: {
+                width: number;
+                height: number;
+                aspectRatio: number;
+              } | null;
+            } | null;
+          } | null;
+        }
+      | {
+          kind: "image" | "video";
+          image: {
+            _type: "imageWithAlt";
+            asset?: SanityImageAssetReference;
+            media?: unknown;
+            hotspot?: SanityImageHotspot;
+            crop?: SanityImageCrop;
+            alt?: string;
+            caption?: string;
+            lqip: string | null;
+            dimensions: {
+              width: number;
+              height: number;
+              aspectRatio: number;
+            } | null;
+          } | null;
+        }
+      | {
+          kind: "image" | "video";
+          video: {
+            playlistUrl: string | null;
+            alt: string | null;
+            caption: string | null;
+            playback: "ambient" | "player" | null;
+            poster: {
+              asset?: SanityImageAssetReference;
+              media?: unknown;
+              hotspot?: SanityImageHotspot;
+              crop?: SanityImageCrop;
+              _type: "image";
+              lqip: string | null;
+              dimensions: {
+                width: number;
+                height: number;
+                aspectRatio: number;
+              } | null;
+            } | null;
+          } | null;
+        }
+      | {
+          kind: "image" | "video";
+        };
+  }> | null;
+  web: Array<{
+    _id: string;
+    title: string;
+    slug: string;
+    client: string | null;
+    year: number | null;
+    services: Array<string> | null;
+    summary: string | null;
+    excerpt: string | null;
+    listingMedia:
+      | {
+          kind: "image" | "video";
+          image: {
+            _type: "imageWithAlt";
+            asset?: SanityImageAssetReference;
+            media?: unknown;
+            hotspot?: SanityImageHotspot;
+            crop?: SanityImageCrop;
+            alt?: string;
+            caption?: string;
+            lqip: string | null;
+            dimensions: {
+              width: number;
+              height: number;
+              aspectRatio: number;
+            } | null;
+          } | null;
+          video: {
+            playlistUrl: string | null;
+            alt: string | null;
+            caption: string | null;
+            playback: "ambient" | "player" | null;
+            poster: {
+              asset?: SanityImageAssetReference;
+              media?: unknown;
+              hotspot?: SanityImageHotspot;
+              crop?: SanityImageCrop;
+              _type: "image";
+              lqip: string | null;
+              dimensions: {
+                width: number;
+                height: number;
+                aspectRatio: number;
+              } | null;
+            } | null;
+          } | null;
+        }
+      | {
+          kind: "image" | "video";
+          image: {
+            _type: "imageWithAlt";
+            asset?: SanityImageAssetReference;
+            media?: unknown;
+            hotspot?: SanityImageHotspot;
+            crop?: SanityImageCrop;
+            alt?: string;
+            caption?: string;
+            lqip: string | null;
+            dimensions: {
+              width: number;
+              height: number;
+              aspectRatio: number;
+            } | null;
+          } | null;
+        }
+      | {
+          kind: "image" | "video";
+          video: {
+            playlistUrl: string | null;
+            alt: string | null;
+            caption: string | null;
+            playback: "ambient" | "player" | null;
+            poster: {
+              asset?: SanityImageAssetReference;
+              media?: unknown;
+              hotspot?: SanityImageHotspot;
+              crop?: SanityImageCrop;
+              _type: "image";
+              lqip: string | null;
+              dimensions: {
+                width: number;
+                height: number;
+                aspectRatio: number;
+              } | null;
+            } | null;
+          } | null;
+        }
+      | {
+          kind: "image" | "video";
+        };
+  }> | null;
+  digitalProducts: Array<{
+    _id: string;
+    title: string;
+    slug: string;
+    client: string | null;
+    year: number | null;
+    services: Array<string> | null;
+    summary: string | null;
+    excerpt: string | null;
+    listingMedia:
+      | {
+          kind: "image" | "video";
+          image: {
+            _type: "imageWithAlt";
+            asset?: SanityImageAssetReference;
+            media?: unknown;
+            hotspot?: SanityImageHotspot;
+            crop?: SanityImageCrop;
+            alt?: string;
+            caption?: string;
+            lqip: string | null;
+            dimensions: {
+              width: number;
+              height: number;
+              aspectRatio: number;
+            } | null;
+          } | null;
+          video: {
+            playlistUrl: string | null;
+            alt: string | null;
+            caption: string | null;
+            playback: "ambient" | "player" | null;
+            poster: {
+              asset?: SanityImageAssetReference;
+              media?: unknown;
+              hotspot?: SanityImageHotspot;
+              crop?: SanityImageCrop;
+              _type: "image";
+              lqip: string | null;
+              dimensions: {
+                width: number;
+                height: number;
+                aspectRatio: number;
+              } | null;
+            } | null;
+          } | null;
+        }
+      | {
+          kind: "image" | "video";
+          image: {
+            _type: "imageWithAlt";
+            asset?: SanityImageAssetReference;
+            media?: unknown;
+            hotspot?: SanityImageHotspot;
+            crop?: SanityImageCrop;
+            alt?: string;
+            caption?: string;
+            lqip: string | null;
+            dimensions: {
+              width: number;
+              height: number;
+              aspectRatio: number;
+            } | null;
+          } | null;
+        }
+      | {
+          kind: "image" | "video";
+          video: {
+            playlistUrl: string | null;
+            alt: string | null;
+            caption: string | null;
+            playback: "ambient" | "player" | null;
+            poster: {
+              asset?: SanityImageAssetReference;
+              media?: unknown;
+              hotspot?: SanityImageHotspot;
+              crop?: SanityImageCrop;
+              _type: "image";
+              lqip: string | null;
+              dimensions: {
+                width: number;
+                height: number;
+                aspectRatio: number;
+              } | null;
+            } | null;
+          } | null;
+        }
+      | {
+          kind: "image" | "video";
+        };
+  }> | null;
+} | null;
 
 // Source: src/sanity/queries.ts
 // Variable: SERVICE_DESCRIPTIONS_QUERY
@@ -1843,6 +2164,23 @@ export type BUNNY_CONTENT_QUERY_RESULT = Array<
         _type: "client";
         _key: string;
       }>;
+      servicesWork?: {
+        brand?: Array<
+          {
+            _key: string;
+          } & WorkReference
+        >;
+        web?: Array<
+          {
+            _key: string;
+          } & WorkReference
+        >;
+        digitalProducts?: Array<
+          {
+            _key: string;
+          } & WorkReference
+        >;
+      };
       aboutGallery?: Array<
         {
           _key: string;
@@ -1922,7 +2260,8 @@ declare global {
     '*[_type == "work" && defined(slug.current)] | order(coalesce(featured, false) desc, year desc, _createdAt desc) [0...$limit] {\n  _id,\n  title,\n  "slug": slug.current,\n  client,\n  year,\n  services,\n  // Short description for the card; the long one is the fallback (cut to two lines).\n  summary,\n  excerpt,\n  listingMedia{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n}\n}': FEATURED_WORK_QUERY_RESULT;
     '*[_type == "work" && defined(slug.current) && slug.current != $slug] | order(year desc, _createdAt desc) [0...$limit] {\n  _id,\n  title,\n  "slug": slug.current,\n  client,\n  year,\n  services,\n  // Short description for the card; the long one is the fallback (cut to two lines).\n  summary,\n  excerpt,\n  listingMedia{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n}\n}': RECENT_WORK_QUERY_RESULT;
     '*[_type == "work" && defined(slug.current)] | order(year desc, _createdAt desc) {\n  _id,\n  title,\n  "slug": slug.current,\n  services,\n  excerpt,\n  archiveMedia[]{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n}\n}': WORK_ARCHIVE_QUERY_RESULT;
-    '*[_type == "work" && $service in services && defined(slug.current)] | order(year desc) [0...2] {\n  _id,\n  title,\n  "slug": slug.current,\n  client,\n  year,\n  services,\n  // Short description for the card; the long one is the fallback (cut to two lines).\n  summary,\n  excerpt,\n  listingMedia{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n}\n}': WORK_BY_SERVICE_QUERY_RESULT;
+    '*[_type == "work" && $service in services && defined(slug.current)] | order(year desc, _createdAt desc) [0...2] {\n  _id,\n  title,\n  "slug": slug.current,\n  client,\n  year,\n  services,\n  // Short description for the card; the long one is the fallback (cut to two lines).\n  summary,\n  excerpt,\n  listingMedia{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n}\n}': WORK_BY_SERVICE_QUERY_RESULT;
+    '*[_type == "siteSettings" && _id == "siteSettings"][0].servicesWork{\n    "brand": (brand[]->)[_type == "work" && "brand" in services && defined(slug.current)] {\n  _id,\n  title,\n  "slug": slug.current,\n  client,\n  year,\n  services,\n  // Short description for the card; the long one is the fallback (cut to two lines).\n  summary,\n  excerpt,\n  listingMedia{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n}\n},\n    "web": (web[]->)[_type == "work" && "web" in services && defined(slug.current)] {\n  _id,\n  title,\n  "slug": slug.current,\n  client,\n  year,\n  services,\n  // Short description for the card; the long one is the fallback (cut to two lines).\n  summary,\n  excerpt,\n  listingMedia{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n}\n},\n    "digitalProducts": (digitalProducts[]->)[\n      _type == "work" && "digital-products" in services && defined(slug.current)\n    ] {\n  _id,\n  title,\n  "slug": slug.current,\n  client,\n  year,\n  services,\n  // Short description for the card; the long one is the fallback (cut to two lines).\n  summary,\n  excerpt,\n  listingMedia{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n}\n}\n  }': SERVICES_WORK_PICKS_QUERY_RESULT;
     '*[_type == "deliverable" && defined(title) && defined(description)]{ title, description }': SERVICE_DESCRIPTIONS_QUERY_RESULT;
     '*[_type == "work" && defined(slug.current)].slug.current': WORK_SLUGS_QUERY_RESULT;
     '*[_type == "work" && slug.current == $slug][0]{\n    _id,\n    _updatedAt,\n    title,\n    "slug": slug.current,\n    client,\n    year,\n    services,\n    summary,\n    excerpt,\n    seo,\n    industry,\n    // Services delivered: titles from the shared Services list.\n    "deliverables": deliverables[defined(@->title)]->title,\n    challenge,\n    solution,\n    outcome,\n    results[]{ _key, value, label },\n    websiteUrl,\n    listingMedia{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n},\n    heroMedia{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n},\n    content[]{\n      _key,\n      _type,\n      _type == "mediaFullWidth" => { "media": media{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n} },\n      _type == "mediaPair" => { "left": left{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n}, "right": right{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n} }\n    },\n    // Navbar arrows: the projects either side in the archive order (year desc, _createdAt desc).\n    // "previous" comes before (newer), "next" after (older); ties fall back to _id.\n    "previous": *[_type == "work" && defined(slug.current) && (\n      coalesce(year, 0) > coalesce(^.year, 0) ||\n      (coalesce(year, 0) == coalesce(^.year, 0) && (_createdAt > ^._createdAt ||\n        (_createdAt == ^._createdAt && _id > ^._id)))\n    )] | order(coalesce(year, 0) asc, _createdAt asc, _id asc)[0]{ title, "slug": slug.current },\n    "next": *[_type == "work" && defined(slug.current) && (\n      coalesce(year, 0) < coalesce(^.year, 0) ||\n      (coalesce(year, 0) == coalesce(^.year, 0) && (_createdAt < ^._createdAt ||\n        (_createdAt == ^._createdAt && _id < ^._id)))\n    )] | order(coalesce(year, 0) desc, _createdAt desc, _id desc)[0]{ title, "slug": slug.current }\n  }': WORK_QUERY_RESULT;

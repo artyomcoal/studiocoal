@@ -1,11 +1,13 @@
 import { defineArrayMember, defineField, defineType } from "sanity";
 import { normalizePath } from "../../lib/redirects";
+import { SERVICES, SERVICE_WORK_LIMIT } from "../../lib/services";
 
 export const siteSettings = defineType({
   name: "siteSettings",
   title: "Site settings",
   type: "document",
   groups: [
+    { name: "services", title: "Services page" },
     { name: "about", title: "About page" },
     { name: "redirects", title: "Redirects" },
   ],
@@ -55,6 +57,36 @@ export const siteSettings = defineType({
           preview: { select: { title: "name", media: "logo" } },
         }),
       ],
+    }),
+    defineField({
+      name: "servicesWork",
+      title: "Services: projects per service",
+      description: `The ${SERVICE_WORK_LIMIT} projects shown next to each service on the Services page, in this order. Only projects tagged with that service (Project type) can be picked. Places left empty show the newest tagged projects.`,
+      type: "object",
+      group: "services",
+      fields: SERVICES.map((service) =>
+        defineField({
+          name: service.workField,
+          title: service.title,
+          type: "array",
+          of: [
+            defineArrayMember({
+              type: "reference",
+              to: [{ type: "work" }],
+              options: {
+                disableNew: true,
+                filter: "$service in services && defined(slug.current)",
+                filterParams: { service: service.value },
+              },
+            }),
+          ],
+          validation: (rule) =>
+            rule
+              .unique()
+              .max(SERVICE_WORK_LIMIT)
+              .error(`Pick up to ${SERVICE_WORK_LIMIT} projects.`),
+        }),
+      ),
     }),
     defineField({
       name: "aboutGallery",
