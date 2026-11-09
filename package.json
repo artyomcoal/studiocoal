@@ -24,7 +24,6 @@
   "dependencies": {
     "@astrojs/react": "^7.1.2",
     "@astrojs/sitemap": "^3.7.4",
-    "@astrojs/vercel": "11.0.16",
     "@data-slot/accordion": "^1.1.2",
     "@data-slot/dialog": "^1.1.2",
     "@lucide/astro": "^1.47.0",
