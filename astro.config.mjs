@@ -1,7 +1,6 @@
 // @ts-check
 import react from "@astrojs/react";
 import sitemap from "@astrojs/sitemap";
-import vercel from "@astrojs/vercel";
 import sanity from "@sanity/astro";
 import tailwindcss from "@tailwindcss/vite";
 import { createClient } from "@sanity/client";
@@ -11,7 +10,7 @@ import { pageByDocumentId } from "./src/lib/pages.ts";
 import { buildRedirects } from "./src/lib/redirects.ts";
 import { PAGES_QUERY, REDIRECTS_QUERY, SITEMAP_QUERY } from "./src/sanity/queries.ts";
 
-// Load .env when present (local dev); in CI and on Vercel the variables come from the environment.
+// Load .env when present (local dev); in CI and on Cloudflare the variables come from the environment.
 try {
   process.loadEnvFile();
 } catch {
@@ -80,10 +79,8 @@ export default defineConfig({
   // Canonical production origin. Used for canonical URLs, Open Graph URLs and the sitemap.
   site,
   redirects,
-  // On Vercel the adapter turns `redirects` into real HTTP redirects (301 / 302); the site
-  // stays static. Elsewhere (local, CI) Astro writes HTML redirect pages instead, since
-  // \`astro preview\` (the e2e tests) can't serve the adapter's output.
-  adapter: process.env.VERCEL ? vercel() : undefined,
+  // No adapter: the site is static (Cloudflare serves dist/ as assets, see wrangler.jsonc),
+  // so Astro writes each redirect as an HTML redirect page.
   integrations: [
     // Match on the path: the full URL (https://studiocoal.com/…) itself contains "/studio".
     sitemap({

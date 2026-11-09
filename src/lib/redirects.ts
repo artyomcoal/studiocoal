@@ -6,8 +6,7 @@
  *   current one.
  * - Manual: Site settings › Redirects, for anything else (old site URLs, campaigns).
  *
- * On Vercel the adapter turns these into real 301s; local and CI builds emit HTML redirect
- * pages instead.
+ * The build is static with no adapter, so Astro emits each one as an HTML redirect page.
  */
 import { CONTENT_PATHS, type ContentType } from "./seo";
 

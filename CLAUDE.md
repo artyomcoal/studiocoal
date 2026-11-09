@@ -6,7 +6,7 @@ If a rule here conflicts with a request, ask before breaking it.
 ## Project
 
 - Marketing site for **Studio Coal** (studiocoal.com), a design studio: brand, web, digital products.
-- **Stack:** Astro (static) · Tailwind CSS v4 · TypeScript (strict) · bejamas/ui (copy-and-own Astro components) · Sanity (embedded Studio) · Vercel.
+- **Stack:** Astro (static) · Tailwind CSS v4 · TypeScript (strict) · bejamas/ui (copy-and-own Astro components) · Sanity (embedded Studio) · Cloudflare Workers (static assets, `wrangler.jsonc`).
 - **Design source:** Figma file `xqG6nM7oVW4iev0PrbuqWt` ("Studio Coal Website"). Page frames are named `Page / breakpoint=xl|md|base` (1440 / 768 / 375).
 - **Language:** English only. Keep schemas i18n-ready (no hardcoded locale assumptions), but build no i18n routing.
 - Background docs (claude.ai project "StudioCoal Website"): `studiocoal-dev-plan.md`, `studiocoal-decisions.md`.
@@ -143,9 +143,9 @@ Token values live **only** in `src/styles/tokens.css` (neutral palette, semantic
 - **All GROQ lives in `src/sanity/queries.ts`** using `defineQuery`. Never write inline queries in pages or components. Types come from `pnpm typegen`. Never hand-write query result types.
 - **Images** always go through the Sanity image URL builder, with responsive `srcset`/`sizes`, hotspot/crop and LQIP blur placeholders. Never use raw asset URLs.
 - **Portable Text** is rendered by one component (`src/components/RichText.astro`) mapped to the Figma Rich Text styles.
-- **Rendering:** static build. A Sanity webhook triggers a Vercel rebuild on publish. Draft preview runs on server-rendered routes (`prerender = false`) with the Presentation tool.
+- **Rendering:** static build. A Sanity webhook triggers a Cloudflare rebuild (Workers Builds deploy hook) on publish. Draft preview runs on server-rendered routes (`prerender = false`) with the Presentation tool.
 - After changing a schema or query, run `pnpm typegen` and commit `src/sanity/types.ts`. CI fails if it is out of date.
-- Env vars (never commit them; keep `.env.example` up to date): `PUBLIC_SANITY_PROJECT_ID`, `PUBLIC_SANITY_DATASET`, `SANITY_API_READ_TOKEN`, `PUBLIC_NEWSLETTER_ENDPOINT` (Footer newsletter form).
+- Env vars (never commit them; keep `.env.example` up to date): `PUBLIC_SANITY_PROJECT_ID`, `PUBLIC_SANITY_DATASET`, `SANITY_API_READ_TOKEN`, `PUBLIC_NEWSLETTER_ENDPOINT` (Footer newsletter form), `ALLOW_INDEXING` (`1` on the Cloudflare production build at launch; until then `robots.txt` blocks all crawlers).
 - Never change or delete Sanity content or datasets from scripts without asking.
 
 ## Figma → code workflow
@@ -178,7 +178,7 @@ Token values live **only** in `src/styles/tokens.css` (neutral palette, semantic
   - screenshots at 375 / 768 / 1440 next to the Figma frame (light and dark)
   - the design judgement calls made
   - any new dependencies and why
-- Vercel creates a preview deployment for every PR.
+- Cloudflare (Workers Builds) creates a preview deployment for every PR.
 - **Claude may merge its own PRs** once CI is green and the definition of done is met.
 
 ## Autonomy: what to ask first

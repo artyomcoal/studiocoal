@@ -3,13 +3,14 @@ import { sanityClient } from "sanity:client";
 import { robotsTxt } from "@/lib/seo";
 import { SITE_SETTINGS_QUERY } from "@/sanity/queries";
 
-// Only the production deployment may be indexed. Vercel sets VERCEL_ENV at build time;
-// previews and local builds get "Disallow: /". AI crawlers follow Site settings › Let AI
-// assistants read the site (src/lib/seo.ts › robotsTxt).
+// The site is hidden from search engines until launch: every build gets "Disallow: /" unless
+// ALLOW_INDEXING=1 is set. Set it at launch, on the Cloudflare production build only (Worker ›
+// Settings › Builds › Variables), so previews and local builds stay hidden. Once open, AI
+// crawlers follow Site settings › Let AI assistants read the site (src/lib/seo.ts › robotsTxt).
 export const GET: APIRoute = async ({ site }) => {
   const settings = await sanityClient.fetch(SITE_SETTINGS_QUERY);
   const body = robotsTxt({
-    production: process.env.VERCEL_ENV === "production",
+    production: process.env.ALLOW_INDEXING === "1",
     sitemap: new URL("sitemap-index.xml", site).href,
     allowAi: settings?.aiCrawlers,
   });

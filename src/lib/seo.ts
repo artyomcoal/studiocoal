@@ -151,7 +151,7 @@ export const AI_CRAWLERS = [
 ] as const;
 
 export interface RobotsInput {
-  /** Only the production deployment may be indexed; previews and local builds are closed. */
+  /** Whether crawlers may index this build (ALLOW_INDEXING=1); every other build is closed. */
   production: boolean;
   /** Absolute URL of the sitemap index. */
   sitemap: string;

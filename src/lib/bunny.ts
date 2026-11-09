@@ -7,7 +7,7 @@
  * They're full-size JPEGs at the video's resolution (Bunny doesn't resize on request).
  *
  * The library uses referrer protection: requests need a Referer from an allowed site
- * (the production domain, Vercel previews, localhost). Browsers send it by themselves.
+ * (the production domain, Cloudflare previews, localhost). Browsers send it by themselves.
  */
 
 /** "…/<video id>/playlist.m3u8" → "…/<video id>", or null when it isn't a playlist URL. */
