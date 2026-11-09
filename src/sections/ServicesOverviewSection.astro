@@ -13,12 +13,13 @@
  * interactive-secondary-hover) with its chevron drawn inline in currentColor. The box transitions
  * only its background: the chevron inherits the row's already-transitioning color, and a second
  * color transition on the box would make it lag behind the text.
- * On devices with a cursor, hovering one row dims the other rows to fg-tertiary
- * (hover: variants only match @media (hover: hover), so touch screens never dim).
- * On touch screens (hover: none) the row under the middle of the viewport is the active one:
- * a script marks it data-active (indicator in its hover colour) and the other rows data-dimmed
- * (fg-tertiary) as the page scrolls. Rows above
- * the first or below the last keep the first or last row active.
+ * Scroll highlight (all devices): the row under the middle of the viewport is the active one.
+ * A script marks it data-active (indicator in its hover colour) and the other rows data-dimmed
+ * (fg-tertiary) as the page scrolls. Rows above the first or below the last keep the first or
+ * last row active. Without JS every row stays fg-primary.
+ * Hover (devices with a cursor) wins while the pointer is over the list: the hovered row is
+ * fg-primary with its indicator in the hover colour, the other rows dim, and the scroll state is
+ * ignored (not-group-hover/list). hover: variants only match @media (hover: hover).
  */
 import Media from "@/components/Media.astro";
 import { SERVICES } from "@/lib/services";
@@ -65,7 +66,7 @@ const LABELS: Record<ServiceValue, string> = {
       class="group/list animate-enter-stagger divide-y divide-border-subtle"
     >
       {SERVICES.map((service) => (
-        <li class="group relative grid-cols-layout data-dimmed:text-fg-tertiary items-center gap-y-2 rounded-sm py-4 text-fg-primary transition-colors duration-300 ease-in-out group-hover/list:[&:not(:hover)]:text-fg-tertiary has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-interactive-focus-ring has-[a:focus-visible]:ring-offset-2 has-[a:focus-visible]:ring-offset-bg-primary">
+        <li class="group relative grid-cols-layout not-group-hover/list:data-dimmed:text-fg-tertiary items-center gap-y-2 rounded-sm py-4 text-fg-primary transition-colors duration-300 ease-in-out group-hover/list:[&:not(:hover)]:text-fg-tertiary has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-interactive-focus-ring has-[a:focus-visible]:ring-offset-2 has-[a:focus-visible]:ring-offset-bg-primary">
           <div class="hidden self-start pr-6 md:col-span-3 md:block xl:col-span-2">
             <Media
               video={showreels[service.value]}
@@ -85,7 +86,7 @@ const LABELS: Record<ServiceValue, string> = {
               {service.description}
             </span>
             <span class="flex md:col-start-12 md:justify-self-end">
-              <span class="flex size-6 items-center justify-center rounded-xs bg-interactive-secondary transition-[background-color] duration-300 ease-in-out group-hover:bg-interactive-secondary-hover group-has-[a:focus-visible]:bg-interactive-secondary-hover group-data-active:bg-interactive-secondary-hover">
+              <span class="flex size-6 items-center justify-center rounded-xs bg-interactive-secondary transition-[background-color] duration-300 ease-in-out group-hover:bg-interactive-secondary-hover group-has-[a:focus-visible]:bg-interactive-secondary-hover not-group-hover/list:group-data-active:bg-interactive-secondary-hover">
                 <svg
                   viewBox="0 0 24 24"
                   fill="none"
@@ -106,39 +107,37 @@ const LABELS: Record<ServiceValue, string> = {
 </section>
 
 <script>
-  // Touch screens: highlight the row under the middle of the viewport, dim the rest.
-  if (matchMedia("(hover: none)").matches) {
-    for (const list of document.querySelectorAll<HTMLElement>('[data-slot="services-overview"]')) {
-      const rows = [...list.children] as HTMLElement[];
-      let frame = 0;
+  // Highlight the row under the middle of the viewport, dim the rest.
+  for (const list of document.querySelectorAll<HTMLElement>('[data-slot="services-overview"]')) {
+    const rows = [...list.children] as HTMLElement[];
+    let frame = 0;
 
-      const update = () => {
-        frame = 0;
-        const middle = innerHeight / 2;
-        let active = 0;
-        rows.forEach((row, index) => {
-          if (row.getBoundingClientRect().top <= middle) active = index;
-        });
-        rows.forEach((row, index) => {
-          row.toggleAttribute("data-active", index === active);
-          row.toggleAttribute("data-dimmed", index !== active);
-        });
-      };
-      const schedule = () => {
-        frame ||= requestAnimationFrame(update);
-      };
+    const update = () => {
+      frame = 0;
+      const middle = innerHeight / 2;
+      let active = 0;
+      rows.forEach((row, index) => {
+        if (row.getBoundingClientRect().top <= middle) active = index;
+      });
+      rows.forEach((row, index) => {
+        row.toggleAttribute("data-active", index === active);
+        row.toggleAttribute("data-dimmed", index !== active);
+      });
+    };
+    const schedule = () => {
+      frame ||= requestAnimationFrame(update);
+    };
 
-      // Track scrolling only while the list is on screen.
-      new IntersectionObserver(([entry]) => {
-        if (entry?.isIntersecting) {
-          addEventListener("scroll", schedule, { passive: true });
-          addEventListener("resize", schedule);
-          schedule();
-        } else {
-          removeEventListener("scroll", schedule);
-          removeEventListener("resize", schedule);
-        }
-      }).observe(list);
-    }
+    // Track scrolling only while the list is on screen.
+    new IntersectionObserver(([entry]) => {
+      if (entry?.isIntersecting) {
+        addEventListener("scroll", schedule, { passive: true });
+        addEventListener("resize", schedule);
+        schedule();
+      } else {
+        removeEventListener("scroll", schedule);
+        removeEventListener("resize", schedule);
+      }
+    }).observe(list);
   }
 </script>
