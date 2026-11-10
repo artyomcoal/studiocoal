@@ -123,8 +123,14 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
     <!-- The nav items and a page's bar (the article bar on journal articles and work items, the
          section bar on Services) share one grid cell; this box masks them, so neither shows
          outside it while they slide (items up and out, the bar up from below).
-         data-mode="article" on the nav switches them (script below). -->
-    <div class="grid min-w-0 overflow-hidden">
+         data-mode="article" on the nav switches them (script below).
+         On Services the box (and so the whole nav) resizes to hug whichever layer shows: the
+         script sets its width in px and it slides with the swap (width can't transition to
+         or from auto, hence the script). -->
+    <div
+      data-nav-cell
+      class="grid min-w-0 overflow-hidden transition-[width] duration-(--motion-duration-nav-pill) ease-(--motion-ease-nav-pill) motion-reduce:transition-none"
+    >
       <ul
         data-nav-list
         class="relative isolate col-start-1 row-start-1 flex min-w-0 items-center gap-0.5 overflow-x-auto transition-transform duration-(--motion-duration-nav-pill) ease-(--motion-ease-nav-pill) [scrollbar-width:none] group-data-[mode=article]/nav:-translate-y-full motion-reduce:transition-none"
@@ -215,7 +221,7 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
           data-nav-bar
           data-nav-sections
           inert
-          class="relative isolate col-start-1 row-start-1 flex h-8 w-0 min-w-full translate-y-full items-center gap-2 px-2 transition-transform duration-(--motion-duration-nav-pill) ease-(--motion-ease-nav-pill) group-data-[mode=article]/nav:translate-y-0 motion-reduce:transition-none"
+          class="relative isolate col-start-1 row-start-1 flex h-8 w-0 min-w-full translate-y-full items-center gap-2 pl-2 transition-transform duration-(--motion-duration-nav-pill) ease-(--motion-ease-nav-pill) group-data-[mode=article]/nav:translate-y-0 motion-reduce:transition-none"
         >
           {/* The section on screen gets this pill (z-0, under the links' z-10), sliding as the
               reader scrolls from one section to the next. Same look and motion as the nav pill;
@@ -258,14 +264,55 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
       // A scroll started by a section link: the swap and the section pill ignore it until it ends.
       let programmatic = false;
       let article = false;
-      const set = (on) => {
+      const raw = getComputedStyle(document.documentElement)
+        .getPropertyValue("--motion-duration-nav-pill")
+        .trim(); // the minified CSS writes 400ms as ".4s"
+      const duration = (parseFloat(raw) || 0.4) * (raw.endsWith("ms") ? 1 : 1000);
+      // Section bar (Services): the nav hugs whichever layer shows. The shared cell's width goes
+      // from its current width to the other layer's own (max-content) width, in px, and slides
+      // with the swap (same duration and easing). Back on the nav items, the inline width is
+      // dropped once the slide is over, so the cell is auto again (and follows resizes, fonts).
+      // Too wide for the screen? The cell is a shrinkable flex item: it stops at the edge.
+      const cell = nav.querySelector("[data-nav-cell]");
+      const hug = bar.hasAttribute("data-nav-sections") && cell;
+      const natural = (el) => {
+        const { width, minWidth } = el.style;
+        el.style.width = "max-content";
+        el.style.minWidth = "0";
+        const w = el.getBoundingClientRect().width;
+        el.style.width = width;
+        el.style.minWidth = minWidth;
+        return w;
+      };
+      let settle = 0;
+      const fit = (instant = false) => {
+        if (!hug) return;
+        clearTimeout(settle);
+        const to = natural(article ? bar : list);
+        const from = cell.getBoundingClientRect().width;
+        if (instant || reduceMotion.matches || Math.abs(from - to) < 0.5) {
+          cell.style.width = article ? `${to}px` : "";
+          return;
+        }
+        cell.style.width = `${from}px`; // from auto (or mid-slide) to px: start where it is
+        void cell.offsetWidth;
+        cell.style.width = `${to}px`;
+        if (!article) settle = setTimeout(() => (cell.style.width = ""), duration);
+      };
+      const set = (on, instant = false) => {
         if (on === article) return;
         article = on;
         if (on) nav.dataset.mode = "article";
         else delete nav.dataset.mode;
         list.inert = on;
         bar.inert = !on;
+        fit(instant);
       };
+      if (hug) {
+        // Re-measured in the final font and after a resize (instantly: no slide).
+        document.fonts?.ready.then(() => article && fit(true));
+        addEventListener("resize", () => article && fit(true));
+      }
       // An arrow click marks the next page (and remembers this title): it opens in article mode,
       // and its title swaps in (the previous one slides up and out, this one rises from below).
       const current = bar.querySelector("[data-nav-title-current]");
@@ -350,10 +397,6 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
         if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
         event.preventDefault();
         set(false);
-        const raw = getComputedStyle(document.documentElement)
-          .getPropertyValue("--motion-duration-nav-pill")
-          .trim(); // the minified CSS writes 400ms as ".4s"
-        const duration = (parseFloat(raw) || 0.4) * (raw.endsWith("ms") ? 1 : 1000);
         clearTimeout(leaving);
         leaving = setTimeout(() => location.assign(home.href), duration * 0.75);
       });
@@ -488,7 +531,7 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
         if (!event.persisted) return;
         clearTimeout(leaving);
         programmatic = false;
-        set(false);
+        set(false, true);
       });
     })();
   </script>}
