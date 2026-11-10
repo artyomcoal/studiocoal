@@ -17,12 +17,10 @@
  * Hover (devices with a cursor): the hovered row stays fg-primary with its indicator in the hover
  * colour; the other rows dim to fg-secondary, chevron included (currentColor). hover: variants
  * only match @media (hover: hover).
- * Touch (@media (hover: none)), via the script below:
- *   - Scroll highlight: while a row crosses the middle of the viewport it is data-active
- *     (indicator in its hover colour) and the others are data-dimmed (fg-secondary). When the
- *     list is wholly above or below the middle, no row is highlighted and all are fg-primary.
- *   - Tap: the touched row becomes active and the others dim, same as hover. It holds until the
- *     page scrolls again; if the touch turns into a scroll (pointercancel) it is dropped.
+ * Touch (@media (hover: none)), via the script below: no scroll highlight. A tap makes the touched
+ *   row data-active (indicator in its hover colour) and the others data-dimmed (fg-secondary),
+ *   same as hover. It clears when the page scrolls, when the touch turns into a scroll
+ *   (pointercancel), or on return from the service page (bfcache).
  * Without JS every row stays fg-primary.
  */
 import Media from "@/components/Media.astro";
@@ -111,10 +109,10 @@ const LABELS: Record<ServiceValue, string> = {
 </section>
 
 <script>
-  // Touch devices only (cursor devices use CSS hover): highlight the row under the middle of the
-  // viewport, or the tapped row, and dim the rest.
-  // Scroll distance (CSS px) after a tap before the scroll highlight takes over again, so the last
-  // scroll event of a stopped fling doesn't undo the tap.
+  // Touch devices only (cursor devices use CSS hover): the tapped row stays fg-primary and the
+  // others dim until the page scrolls.
+  // Scroll distance (CSS px) after a tap before the highlight clears, so the last scroll event of a
+  // stopped fling doesn't undo the tap.
   const TAP_RELEASE_DISTANCE = 8;
 
   const lists = matchMedia("(hover: none)").matches
@@ -123,9 +121,6 @@ const LABELS: Record<ServiceValue, string> = {
 
   for (const list of lists) {
     const rows = [...list.children] as HTMLElement[];
-    let frame = 0;
-    // Row held by a tap, and the scroll position when it was tapped.
-    let tapped: HTMLElement | null = null;
     let tappedAt = 0;
 
     // null: no row is highlighted and every row is fg-primary.
@@ -135,54 +130,27 @@ const LABELS: Record<ServiceValue, string> = {
         row.toggleAttribute("data-dimmed", active !== null && row !== active);
       }
     };
-
-    const update = () => {
-      frame = 0;
-      if (tapped) {
-        if (Math.abs(scrollY - tappedAt) < TAP_RELEASE_DISTANCE) return;
-        tapped = null;
-      }
-      const middle = innerHeight / 2;
-      const active = rows.find((row) => {
-        const { top, bottom } = row.getBoundingClientRect();
-        return top <= middle && bottom > middle;
-      });
-      highlight(active ?? null);
+    const release = () => {
+      removeEventListener("scroll", onScroll);
+      highlight(null);
     };
-    const schedule = () => {
-      frame ||= requestAnimationFrame(update);
+    const onScroll = () => {
+      if (Math.abs(scrollY - tappedAt) >= TAP_RELEASE_DISTANCE) release();
     };
 
     list.addEventListener("pointerdown", (event) => {
       if (event.pointerType === "mouse") return;
       const row = rows.find((r) => r.contains(event.target as Node));
       if (!row) return;
-      tapped = row;
       tappedAt = scrollY;
       highlight(row);
+      addEventListener("scroll", onScroll, { passive: true });
     });
-    // The touch became a scroll: drop the tap and follow the scroll position.
-    list.addEventListener("pointercancel", () => {
-      tapped = null;
-      schedule();
-    });
-    // Back from the service page (bfcache): start from the scroll position again.
+    // The touch became a scroll.
+    list.addEventListener("pointercancel", release);
+    // Back from the service page (bfcache).
     addEventListener("pageshow", (event) => {
-      if (!event.persisted) return;
-      tapped = null;
-      schedule();
+      if (event.persisted) release();
     });
-
-    // Track scrolling only while the list is on screen.
-    new IntersectionObserver(([entry]) => {
-      if (entry?.isIntersecting) {
-        addEventListener("scroll", schedule, { passive: true });
-        addEventListener("resize", schedule);
-        schedule();
-      } else {
-        removeEventListener("scroll", schedule);
-        removeEventListener("resize", schedule);
-      }
-    }).observe(list);
   }
 </script>
