@@ -773,10 +773,12 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
     <!-- Mobile: hides on scroll down (slides down off-screen) once the page has scrolled half the
          viewport, and comes back on scroll up (script below). The slide clears the button, the
          16px bottom gap (p-4) and the iOS home-indicator inset: arbitrary calc, no token for that
-         sum. md+ keeps it in place (top right). -->
+         sum. md+ keeps it in place (top right). It also gives way while a page's section progress
+         indicator shows (Work Single: <html data-section-progress>, SectionProgressIndicator),
+         which takes this bottom-centre slot. -->
     <div
       data-cta
-      class="pointer-events-auto mb-[env(safe-area-inset-bottom)] transition-transform duration-(--motion-duration-nav-pill) ease-(--motion-ease-nav-pill) view-transition-header-action data-hidden:translate-y-[calc(100%_+_var(--spacing)*4_+_env(safe-area-inset-bottom))] motion-reduce:transition-none md:mb-0 md:data-hidden:translate-y-0"
+      class="pointer-events-auto mb-[env(safe-area-inset-bottom)] transition-transform duration-(--motion-duration-nav-pill) ease-(--motion-ease-nav-pill) view-transition-header-action data-hidden:translate-y-[calc(100%_+_var(--spacing)*4_+_env(safe-area-inset-bottom))] in-data-section-progress:translate-y-[calc(100%_+_var(--spacing)*4_+_env(safe-area-inset-bottom))] motion-reduce:transition-none md:mb-0 md:data-hidden:translate-y-0 md:in-data-section-progress:translate-y-0"
     >
       <!-- The "Get in touch" button is the dialog's trigger, rendered by the modal. -->
       <GetInTouchModal />

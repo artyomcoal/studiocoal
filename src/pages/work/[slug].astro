@@ -1,11 +1,13 @@
 ---
 /**
  * Work Single page: project hero, details (intro, tags, challenge / solution / outcome,
- * results), project content visuals and recent work.
+ * results), project content visuals and recent work. A section progress indicator (Overview =
+ * hero + details, Visuals = content) sits at the bottom of the viewport (Figma 53734:5778).
  * Figma: Work Single / breakpoint=xl|md|base (frames 5044:18541, 53350:12638, 53350:12880)
  */
 import { sanityClient } from "sanity:client";
 import Media from "@/components/Media.astro";
+import SectionProgressIndicator from "@/components/SectionProgressIndicator.astro";
 import PageLayout from "@/layouts/PageLayout.astro";
 import { resolveBunnyThumbnail } from "@/lib/bunny";
 import { ASPECT } from "@/lib/media";
@@ -115,12 +117,23 @@ const jsonLd = [
     )}
   </Fragment>
 
-  <Media media={work.heroMedia} aspect="hero" sizes={heroSizes} priority class="md:rounded-none" />
+  <Media
+    id="overview"
+    media={work.heroMedia}
+    aspect="hero"
+    sizes={heroSizes}
+    priority
+    class="md:rounded-none"
+  />
 
   <WorkDetailsSection work={work} />
 
   {work.content?.length ? (
-    <section aria-label="Project visuals" class="flex flex-col gap-2 px-container pb-section">
+    <section
+      id="visuals"
+      aria-label="Project visuals"
+      class="flex scroll-mt-24 flex-col gap-2 px-container pb-section"
+    >
       {work.content.map((block) =>
         block._type === "mediaPair" && "left" in block ? (
           <div class="flex gap-2">
@@ -135,4 +148,16 @@ const jsonLd = [
   ) : null}
 
   <FeaturedWorkSection works={recentWork} />
+
+  {/* Overview (hero + details) and Visuals progress, fixed to the bottom of the viewport.
+      Only with visuals: one section alone needs no indicator. */}
+  {work.content?.length ? (
+    <SectionProgressIndicator
+      label="Project sections"
+      items={[
+        { label: "Overview", href: "#overview" },
+        { label: "Visuals", href: "#visuals" },
+      ]}
+    />
+  ) : null}
 </PageLayout>
