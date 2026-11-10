@@ -1,0 +1,85 @@
+---
+/**
+ * Carousel Pagination
+ * Dot indicator for a SwipeTrack carousel (`carousel`): one dot per slide, the current one
+ * stretched into a pill. Tied to the track's position, not to discrete steps: while you drag,
+ * and while the track glides on its easing, the current pill shrinks back into a dot as the next
+ * dot grows into the pill and darkens.
+ * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=53741-5844
+ *
+ * - Pass the track's `id` as `for` and the number of items as `count`.
+ * - Decorative for assistive tech (aria-hidden): the track itself is focusable and moves with
+ *   the arrow keys, and the dots follow it. Pointer users can tap a dot to glide to that slide.
+ */
+import { cn } from "@/lib/utils";
+
+interface Props {
+  /** `id` of the SwipeTrack this indicator follows. */
+  for: string;
+  /** Number of items in the track: one dot each. */
+  count: number;
+  class?: string;
+}
+
+const { for: target, count, class: className } = Astro.props;
+---
+
+<div
+  data-slot="carousel-pagination"
+  data-for={target}
+  aria-hidden="true"
+  class={cn("flex justify-center", className)}
+>
+  <div class="flex items-center gap-1 rounded-full bg-bg-secondary p-2">
+    {Array.from({ length: count }, (_, i) => (
+      <span
+        data-slot="carousel-pagination-item"
+        style={`--active: ${i === 0 ? 1 : 0}`}
+        class="carousel-pagination-item h-2 shrink-0 cursor-pointer rounded-full"
+      />
+    ))}
+  </div>
+</div>
+
+<style>
+  /* --active runs 0 → 1 as this dot's slide comes to the centre (set by the script).
+   * Width 8 → 24px (spacing 2 → 6) and colour bg-tertiary → interactive-primary follow it. */
+  .carousel-pagination-item {
+    --dot-rest: var(--bg-tertiary);
+    width: calc(var(--spacing) * (2 + 4 * var(--active)));
+    background-color: color-mix(
+      in srgb,
+      var(--interactive-primary) calc(var(--active) * 100%),
+      var(--dot-rest)
+    );
+  }
+  @media (hover: hover) {
+    .carousel-pagination-item:hover {
+      --dot-rest: var(--bg-elevated);
+    }
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-slot=carousel-pagination]").forEach((root) => {
+    const track = document.getElementById(root.dataset.for ?? "");
+    if (!track) return;
+    const dots = [...root.querySelectorAll<HTMLElement>("[data-slot=carousel-pagination-item]")];
+
+    // The track reports a fractional slide index every frame of a drag or glide, so the pill
+    // morphs with the same easing as the slides.
+    track.addEventListener("carousel:position", (event) => {
+      const { position } = (event as CustomEvent<{ position: number }>).detail;
+      dots.forEach((dot, i) => {
+        const active = Math.max(0, 1 - Math.abs(position - i));
+        dot.style.setProperty("--active", active.toFixed(3));
+      });
+    });
+
+    dots.forEach((dot, i) =>
+      dot.addEventListener("click", () =>
+        track.dispatchEvent(new CustomEvent("carousel:go", { detail: i })),
+      ),
+    );
+  });
+</script>
