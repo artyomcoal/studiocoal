@@ -61,6 +61,8 @@ const journalCard = /* groq */ `{
   publishedAt,
   category,
   excerpt,
+  // Published on another website: the card links there (new tab) instead of /journal/<slug>.
+  "externalUrl": select(external == true => externalUrl),
   coverImage${image}
 }`;
 
@@ -104,7 +106,7 @@ export const LLMS_QUERY = defineQuery(
       "slug": slug.current,
       "description": coalesce(seo.description, summary, excerpt)
     },
-    "journal": *[_type == "journal" && defined(slug.current) && seo.noIndex != true] | order(publishedAt desc){
+    "journal": *[_type == "journal" && defined(slug.current) && external != true && seo.noIndex != true] | order(publishedAt desc){
       title,
       "slug": slug.current,
       "description": coalesce(seo.description, excerpt)
@@ -217,8 +219,9 @@ export const ALL_JOURNAL_QUERY = defineQuery(
   `*[_type == "journal" && defined(slug.current)] | order(publishedAt desc) ${journalCard}`,
 );
 
+/** Article pages to build. Posts published on another website (external) have none. */
 export const JOURNAL_SLUGS_QUERY = defineQuery(
-  `*[_type == "journal" && defined(slug.current)].slug.current`,
+  `*[_type == "journal" && defined(slug.current) && external != true].slug.current`,
 );
 
 export const JOURNAL_QUERY = defineQuery(
@@ -234,9 +237,10 @@ export const JOURNAL_QUERY = defineQuery(
     coverImage${image},
     body[]{ ..., _type == "imageWithAlt" => ${image} },
     // Article pager / navbar arrows: the next newer and the next older post. Posts with the same
-    // publishedAt are ordered by _id, so every post has a defined neighbour either way.
-    "previous": *[_type == "journal" && defined(slug.current) && (publishedAt > ^.publishedAt || (publishedAt == ^.publishedAt && _id > ^._id))] | order(publishedAt asc, _id asc)[0]{ title, "slug": slug.current },
-    "next": *[_type == "journal" && defined(slug.current) && (publishedAt < ^.publishedAt || (publishedAt == ^.publishedAt && _id < ^._id))] | order(publishedAt desc, _id desc)[0]{ title, "slug": slug.current }
+    // publishedAt are ordered by _id, so every post has a defined neighbour either way. Posts on
+    // another website (external) have no page here and are skipped.
+    "previous": *[_type == "journal" && defined(slug.current) && external != true && (publishedAt > ^.publishedAt || (publishedAt == ^.publishedAt && _id > ^._id))] | order(publishedAt asc, _id asc)[0]{ title, "slug": slug.current },
+    "next": *[_type == "journal" && defined(slug.current) && external != true && (publishedAt < ^.publishedAt || (publishedAt == ^.publishedAt && _id < ^._id))] | order(publishedAt desc, _id desc)[0]{ title, "slug": slug.current }
   }`,
 );
 
@@ -260,11 +264,12 @@ export const SITEMAP_QUERY = defineQuery(
 
 /**
  * Redirects (astro.config.mjs): old project / post slugs, and Site settings › Redirects.
- * Projects without a page yet (comingSoon) have nothing to redirect to.
+ * Projects without a page yet (comingSoon) and posts on another website (external) have
+ * nothing to redirect to.
  */
 export const REDIRECTS_QUERY = defineQuery(
   `{
-    "content": *[_type in ["work", "journal"] && defined(slug.current) && !(_type == "work" && comingSoon == true)]{
+    "content": *[_type in ["work", "journal"] && defined(slug.current) && !(_type == "work" && comingSoon == true) && !(_type == "journal" && external == true)]{
       _type,
       "slug": slug.current,
       previousSlugs
@@ -276,10 +281,11 @@ export const REDIRECTS_QUERY = defineQuery(
 /**
  * Social share images (src/pages/og/[type]/[slug].png.ts): each project and post with the
  * visual its image is built on. Pages that set SEO › Social image don't need one, and
- * projects without a page yet (comingSoon) don't get one.
+ * projects without a page yet (comingSoon) and posts on another website (external) don't get
+ * one.
  */
 export const SOCIAL_IMAGES_QUERY = defineQuery(
-  `*[_type in ["work", "journal"] && defined(slug.current) && !(_type == "work" && comingSoon == true) && !defined(seo.image.asset)]{
+  `*[_type in ["work", "journal"] && defined(slug.current) && !(_type == "work" && comingSoon == true) && !(_type == "journal" && external == true) && !defined(seo.image.asset)]{
     _type,
     "slug": slug.current,
     title,
