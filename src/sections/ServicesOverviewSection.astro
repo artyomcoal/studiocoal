@@ -13,13 +13,17 @@
  * interactive-secondary-hover) with its chevron drawn inline in currentColor. The box transitions
  * only its background: the chevron inherits the row's already-transitioning color, and a second
  * color transition on the box would make it lag behind the text.
- * Scroll highlight (all devices): the row under the middle of the viewport is the active one.
- * A script marks it data-active (indicator in its hover colour) and the other rows data-dimmed
- * (fg-tertiary) as the page scrolls. Rows above the first or below the last keep the first or
- * last row active. Without JS every row stays fg-primary.
- * Hover (devices with a cursor) wins while the pointer is over the list: the hovered row is
- * fg-primary with its indicator in the hover colour, the other rows dim, and the scroll state is
- * ignored (not-group-hover/list). hover: variants only match @media (hover: hover).
+ * Default: every row is fg-primary.
+ * Hover (devices with a cursor): the hovered row stays fg-primary with its indicator in the hover
+ * colour; the other rows dim to fg-secondary, chevron included (currentColor). hover: variants
+ * only match @media (hover: hover).
+ * Touch (@media (hover: none)), via the script below:
+ *   - Scroll highlight: while a row crosses the middle of the viewport it is data-active
+ *     (indicator in its hover colour) and the others are data-dimmed (fg-secondary). When the
+ *     list is wholly above or below the middle, no row is highlighted and all are fg-primary.
+ *   - Tap: the touched row becomes active and the others dim, same as hover. It holds until the
+ *     page scrolls again; if the touch turns into a scroll (pointercancel) it is dropped.
+ * Without JS every row stays fg-primary.
  */
 import Media from "@/components/Media.astro";
 import { SERVICES } from "@/lib/services";
@@ -66,7 +70,7 @@ const LABELS: Record<ServiceValue, string> = {
       class="group/list animate-enter-stagger divide-y divide-border-subtle"
     >
       {SERVICES.map((service) => (
-        <li class="group relative grid-cols-layout not-group-hover/list:data-dimmed:text-fg-tertiary items-center gap-y-2 rounded-sm py-4 text-fg-primary transition-colors duration-300 ease-in-out group-hover/list:[&:not(:hover)]:text-fg-tertiary has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-interactive-focus-ring has-[a:focus-visible]:ring-offset-2 has-[a:focus-visible]:ring-offset-bg-primary">
+        <li class="group relative grid-cols-layout not-group-hover/list:data-dimmed:text-fg-secondary items-center gap-y-2 rounded-sm py-4 text-fg-primary transition-colors duration-300 ease-in-out group-hover/list:[&:not(:hover)]:text-fg-secondary has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-interactive-focus-ring has-[a:focus-visible]:ring-offset-2 has-[a:focus-visible]:ring-offset-bg-primary">
           <div class="hidden self-start pr-6 md:col-span-3 md:block xl:col-span-2">
             <Media
               video={showreels[service.value]}
@@ -107,26 +111,67 @@ const LABELS: Record<ServiceValue, string> = {
 </section>
 
 <script>
-  // Highlight the row under the middle of the viewport, dim the rest.
-  for (const list of document.querySelectorAll<HTMLElement>('[data-slot="services-overview"]')) {
+  // Touch devices only (cursor devices use CSS hover): highlight the row under the middle of the
+  // viewport, or the tapped row, and dim the rest.
+  // Scroll distance (CSS px) after a tap before the scroll highlight takes over again, so the last
+  // scroll event of a stopped fling doesn't undo the tap.
+  const TAP_RELEASE_DISTANCE = 8;
+
+  const lists = matchMedia("(hover: none)").matches
+    ? document.querySelectorAll<HTMLElement>('[data-slot="services-overview"]')
+    : [];
+
+  for (const list of lists) {
     const rows = [...list.children] as HTMLElement[];
     let frame = 0;
+    // Row held by a tap, and the scroll position when it was tapped.
+    let tapped: HTMLElement | null = null;
+    let tappedAt = 0;
+
+    // null: no row is highlighted and every row is fg-primary.
+    const highlight = (active: HTMLElement | null) => {
+      for (const row of rows) {
+        row.toggleAttribute("data-active", row === active);
+        row.toggleAttribute("data-dimmed", active !== null && row !== active);
+      }
+    };
 
     const update = () => {
       frame = 0;
+      if (tapped) {
+        if (Math.abs(scrollY - tappedAt) < TAP_RELEASE_DISTANCE) return;
+        tapped = null;
+      }
       const middle = innerHeight / 2;
-      let active = 0;
-      rows.forEach((row, index) => {
-        if (row.getBoundingClientRect().top <= middle) active = index;
+      const active = rows.find((row) => {
+        const { top, bottom } = row.getBoundingClientRect();
+        return top <= middle && bottom > middle;
       });
-      rows.forEach((row, index) => {
-        row.toggleAttribute("data-active", index === active);
-        row.toggleAttribute("data-dimmed", index !== active);
-      });
+      highlight(active ?? null);
     };
     const schedule = () => {
       frame ||= requestAnimationFrame(update);
     };
+
+    list.addEventListener("pointerdown", (event) => {
+      if (event.pointerType === "mouse") return;
+      const row = rows.find((r) => r.contains(event.target as Node));
+      if (!row) return;
+      tapped = row;
+      tappedAt = scrollY;
+      highlight(row);
+    });
+    // The touch became a scroll: drop the tap and follow the scroll position.
+    list.addEventListener("pointercancel", () => {
+      tapped = null;
+      schedule();
+    });
+    // Back from the service page (bfcache): start from the scroll position again.
+    addEventListener("pageshow", (event) => {
+      if (!event.persisted) return;
+      tapped = null;
+      schedule();
+    });
 
     // Track scrolling only while the list is on screen.
     new IntersectionObserver(([entry]) => {
