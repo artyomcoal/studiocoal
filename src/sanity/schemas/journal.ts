@@ -13,6 +13,11 @@ export const journal = defineType({
   fieldsets: [
     { name: "post", title: "Post", options: { columns: 2 } },
     {
+      name: "externalLink",
+      title: "External article",
+      description: "For a post published on another website, e.g. a guest article or an interview.",
+    },
+    {
       name: "listing",
       title: "Listing",
       description: "Article cards on the home page and the Journal.",
@@ -49,6 +54,32 @@ export const journal = defineType({
       description: "Shown as a tag on article cards, e.g. News, Insight, Process.",
     }),
     defineField({
+      name: "external",
+      title: "Published on another website",
+      description:
+        "Article cards open the link below in a new tab instead of a page on this site. No article page is built, so the body and SEO settings aren't used.",
+      type: "boolean",
+      group: "content",
+      fieldset: "externalLink",
+      initialValue: false,
+    }),
+    defineField({
+      name: "externalUrl",
+      title: "Article link",
+      type: "url",
+      group: "content",
+      fieldset: "externalLink",
+      hidden: ({ document }) => document?.external !== true,
+      validation: (rule) => [
+        rule.uri({ scheme: ["https", "http"] }),
+        rule.custom((value, context) =>
+          context.document?.external === true && !value
+            ? 'Add the link, or turn off "Published on another website".'
+            : true,
+        ),
+      ],
+    }),
+    defineField({
       name: "excerpt",
       title: "Excerpt",
       type: "text",
@@ -82,6 +113,8 @@ export const journal = defineType({
       type: "richText",
       group: "content",
       fieldset: "article",
+      // External posts have no article page.
+      hidden: ({ document }) => document?.external === true,
     }),
     defineField({
       name: "featured",
@@ -102,5 +135,18 @@ export const journal = defineType({
       by: [{ field: "publishedAt", direction: "desc" }],
     },
   ],
-  preview: { select: { title: "title", subtitle: "publishedAt", media: "coverImage" } },
+  preview: {
+    select: {
+      title: "title",
+      publishedAt: "publishedAt",
+      external: "external",
+      media: "coverImage",
+    },
+    // List rows read "Date · External" for posts that live on another website.
+    prepare: ({ title, publishedAt, external, media }) => ({
+      title,
+      subtitle: [publishedAt, external && "External"].filter(Boolean).join(" · "),
+      media,
+    }),
+  },
 });

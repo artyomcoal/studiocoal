@@ -5,7 +5,9 @@
  * Used by the Featured Articles section and the Journal archive.
  * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=5005-8529
  *
- * The whole card is clickable (stretched title link).
+ * The whole card is clickable (stretched title link). A post published on another website
+ * (`externalUrl`, Journal › "Published on another website") links there in a new tab instead of
+ * its page on this site; screen readers hear "(opens in a new tab)".
  */
 import Media from "@/components/Media.astro";
 import { formatDate } from "@/lib/format";
@@ -45,9 +47,21 @@ const cover: MediaData | null = post.coverImage
   <Media media={cover} aspect="portrait" sizes={sizes} />
   <div class="flex flex-col gap-1">
     <Heading class="text-headline-xs">
-      <a href={`/journal/${post.slug}`} class="outline-none after:absolute after:inset-0">
-        {post.title}
-      </a>
+      {post.externalUrl ? (
+        <a
+          href={post.externalUrl}
+          target="_blank"
+          rel="noopener"
+          class="outline-none after:absolute after:inset-0"
+        >
+          {post.title}
+          <span class="sr-only">(opens in a new tab)</span>
+        </a>
+      ) : (
+        <a href={`/journal/${post.slug}`} class="outline-none after:absolute after:inset-0">
+          {post.title}
+        </a>
+      )}
     </Heading>
     {post.excerpt && <p class="text-body-sm">{post.excerpt}</p>}
   </div>

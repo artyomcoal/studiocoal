@@ -253,6 +253,8 @@ export type Journal = {
   slug: Slug;
   publishedAt: string;
   category?: string;
+  external?: boolean;
+  externalUrl?: string;
   excerpt?: string;
   coverImage?: ImageWithAlt;
   body?: RichText;
@@ -748,7 +750,7 @@ export type PAGES_QUERY_RESULT = Array<{
 
 // Source: src/sanity/queries.ts
 // Variable: LLMS_QUERY
-// Query: {    "work": *[_type == "work" && defined(slug.current) && comingSoon != true && seo.noIndex != true] | order(year desc, _createdAt desc){      title,      "slug": slug.current,      "description": coalesce(seo.description, summary, excerpt)    },    "journal": *[_type == "journal" && defined(slug.current) && seo.noIndex != true] | order(publishedAt desc){      title,      "slug": slug.current,      "description": coalesce(seo.description, excerpt)    }  }
+// Query: {    "work": *[_type == "work" && defined(slug.current) && comingSoon != true && seo.noIndex != true] | order(year desc, _createdAt desc){      title,      "slug": slug.current,      "description": coalesce(seo.description, summary, excerpt)    },    "journal": *[_type == "journal" && defined(slug.current) && external != true && seo.noIndex != true] | order(publishedAt desc){      title,      "slug": slug.current,      "description": coalesce(seo.description, excerpt)    }  }
 export type LLMS_QUERY_RESULT = {
   work: Array<{
     title: string;
@@ -1891,7 +1893,7 @@ export type WORK_QUERY_RESULT = {
 
 // Source: src/sanity/queries.ts
 // Variable: FEATURED_JOURNAL_QUERY
-// Query: *[_type == "journal" && defined(slug.current)] | order(coalesce(featured, false) desc, publishedAt desc) [0...$limit] {  _id,  title,  "slug": slug.current,  publishedAt,  category,  excerpt,  coverImage{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }}}
+// Query: *[_type == "journal" && defined(slug.current)] | order(coalesce(featured, false) desc, publishedAt desc) [0...$limit] {  _id,  title,  "slug": slug.current,  publishedAt,  category,  excerpt,  // Published on another website: the card links there (new tab) instead of /journal/<slug>.  "externalUrl": select(external == true => externalUrl),  coverImage{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }}}
 export type FEATURED_JOURNAL_QUERY_RESULT = Array<{
   _id: string;
   title: string;
@@ -1899,6 +1901,7 @@ export type FEATURED_JOURNAL_QUERY_RESULT = Array<{
   publishedAt: string;
   category: string | null;
   excerpt: string | null;
+  externalUrl: string | null;
   coverImage: {
     _type: "imageWithAlt";
     asset?: SanityImageAssetReference;
@@ -1918,7 +1921,7 @@ export type FEATURED_JOURNAL_QUERY_RESULT = Array<{
 
 // Source: src/sanity/queries.ts
 // Variable: ALL_JOURNAL_QUERY
-// Query: *[_type == "journal" && defined(slug.current)] | order(publishedAt desc) {  _id,  title,  "slug": slug.current,  publishedAt,  category,  excerpt,  coverImage{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }}}
+// Query: *[_type == "journal" && defined(slug.current)] | order(publishedAt desc) {  _id,  title,  "slug": slug.current,  publishedAt,  category,  excerpt,  // Published on another website: the card links there (new tab) instead of /journal/<slug>.  "externalUrl": select(external == true => externalUrl),  coverImage{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }}}
 export type ALL_JOURNAL_QUERY_RESULT = Array<{
   _id: string;
   title: string;
@@ -1926,6 +1929,7 @@ export type ALL_JOURNAL_QUERY_RESULT = Array<{
   publishedAt: string;
   category: string | null;
   excerpt: string | null;
+  externalUrl: string | null;
   coverImage: {
     _type: "imageWithAlt";
     asset?: SanityImageAssetReference;
@@ -1945,12 +1949,12 @@ export type ALL_JOURNAL_QUERY_RESULT = Array<{
 
 // Source: src/sanity/queries.ts
 // Variable: JOURNAL_SLUGS_QUERY
-// Query: *[_type == "journal" && defined(slug.current)].slug.current
+// Query: *[_type == "journal" && defined(slug.current) && external != true].slug.current
 export type JOURNAL_SLUGS_QUERY_RESULT = Array<string>;
 
 // Source: src/sanity/queries.ts
 // Variable: JOURNAL_QUERY
-// Query: *[_type == "journal" && slug.current == $slug][0]{    _id,    _updatedAt,    title,    "slug": slug.current,    publishedAt,    category,    excerpt,    seo,    coverImage{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }},    body[]{ ..., _type == "imageWithAlt" => {  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} },    // Article pager / navbar arrows: the next newer and the next older post. Posts with the same    // publishedAt are ordered by _id, so every post has a defined neighbour either way.    "previous": *[_type == "journal" && defined(slug.current) && (publishedAt > ^.publishedAt || (publishedAt == ^.publishedAt && _id > ^._id))] | order(publishedAt asc, _id asc)[0]{ title, "slug": slug.current },    "next": *[_type == "journal" && defined(slug.current) && (publishedAt < ^.publishedAt || (publishedAt == ^.publishedAt && _id < ^._id))] | order(publishedAt desc, _id desc)[0]{ title, "slug": slug.current }  }
+// Query: *[_type == "journal" && slug.current == $slug][0]{    _id,    _updatedAt,    title,    "slug": slug.current,    publishedAt,    category,    excerpt,    seo,    coverImage{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }},    body[]{ ..., _type == "imageWithAlt" => {  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }} },    // Article pager / navbar arrows: the next newer and the next older post. Posts with the same    // publishedAt are ordered by _id, so every post has a defined neighbour either way. Posts on    // another website (external) have no page here and are skipped.    "previous": *[_type == "journal" && defined(slug.current) && external != true && (publishedAt > ^.publishedAt || (publishedAt == ^.publishedAt && _id > ^._id))] | order(publishedAt asc, _id asc)[0]{ title, "slug": slug.current },    "next": *[_type == "journal" && defined(slug.current) && external != true && (publishedAt < ^.publishedAt || (publishedAt == ^.publishedAt && _id < ^._id))] | order(publishedAt desc, _id desc)[0]{ title, "slug": slug.current }  }
 export type JOURNAL_QUERY_RESULT = {
   _id: string;
   _updatedAt: string;
@@ -2023,7 +2027,7 @@ export type JOURNAL_QUERY_RESULT = {
 
 // Source: src/sanity/queries.ts
 // Variable: RECENT_JOURNAL_QUERY
-// Query: *[_type == "journal" && defined(slug.current) && slug.current != $slug] | order(publishedAt desc) [0...$limit] {  _id,  title,  "slug": slug.current,  publishedAt,  category,  excerpt,  coverImage{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }}}
+// Query: *[_type == "journal" && defined(slug.current) && slug.current != $slug] | order(publishedAt desc) [0...$limit] {  _id,  title,  "slug": slug.current,  publishedAt,  category,  excerpt,  // Published on another website: the card links there (new tab) instead of /journal/<slug>.  "externalUrl": select(external == true => externalUrl),  coverImage{  ...,  "lqip": asset->metadata.lqip,  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }}}
 export type RECENT_JOURNAL_QUERY_RESULT = Array<{
   _id: string;
   title: string;
@@ -2031,6 +2035,7 @@ export type RECENT_JOURNAL_QUERY_RESULT = Array<{
   publishedAt: string;
   category: string | null;
   excerpt: string | null;
+  externalUrl: string | null;
   coverImage: {
     _type: "imageWithAlt";
     asset?: SanityImageAssetReference;
@@ -2068,7 +2073,7 @@ export type SITEMAP_QUERY_RESULT = Array<
 
 // Source: src/sanity/queries.ts
 // Variable: REDIRECTS_QUERY
-// Query: {    "content": *[_type in ["work", "journal"] && defined(slug.current) && !(_type == "work" && comingSoon == true)]{      _type,      "slug": slug.current,      previousSlugs    },    "manual": *[_type == "siteSettings" && _id == "siteSettings"][0].redirects[]{ from, to, permanent }  }
+// Query: {    "content": *[_type in ["work", "journal"] && defined(slug.current) && !(_type == "work" && comingSoon == true) && !(_type == "journal" && external == true)]{      _type,      "slug": slug.current,      previousSlugs    },    "manual": *[_type == "siteSettings" && _id == "siteSettings"][0].redirects[]{ from, to, permanent }  }
 export type REDIRECTS_QUERY_RESULT = {
   content: Array<
     | {
@@ -2091,7 +2096,7 @@ export type REDIRECTS_QUERY_RESULT = {
 
 // Source: src/sanity/queries.ts
 // Variable: SOCIAL_IMAGES_QUERY
-// Query: *[_type in ["work", "journal"] && defined(slug.current) && !(_type == "work" && comingSoon == true) && !defined(seo.image.asset)]{    _type,    "slug": slug.current,    title,    "visual": select(      _type == "work" => coalesce(        select(listingMedia.kind == "video" => listingMedia.video.poster, listingMedia.image),        select(heroMedia.kind == "video" => heroMedia.video.poster, heroMedia.image)      ),      coverImage    ){ asset, crop, hotspot },    // A video visual without a poster: the card uses Bunny's thumbnail instead.    "videoPlaylist": select(      _type == "work" => coalesce(        select(listingMedia.kind == "video" => listingMedia.video.playlistUrl),        select(heroMedia.kind == "video" => heroMedia.video.playlistUrl)      )    )  }
+// Query: *[_type in ["work", "journal"] && defined(slug.current) && !(_type == "work" && comingSoon == true) && !(_type == "journal" && external == true) && !defined(seo.image.asset)]{    _type,    "slug": slug.current,    title,    "visual": select(      _type == "work" => coalesce(        select(listingMedia.kind == "video" => listingMedia.video.poster, listingMedia.image),        select(heroMedia.kind == "video" => heroMedia.video.poster, heroMedia.image)      ),      coverImage    ){ asset, crop, hotspot },    // A video visual without a poster: the card uses Bunny's thumbnail instead.    "videoPlaylist": select(      _type == "work" => coalesce(        select(listingMedia.kind == "video" => listingMedia.video.playlistUrl),        select(heroMedia.kind == "video" => heroMedia.video.playlistUrl)      )    )  }
 export type SOCIAL_IMAGES_QUERY_RESULT = Array<
   | {
       _type: "journal";
@@ -2211,6 +2216,8 @@ export type BUNNY_CONTENT_QUERY_RESULT = Array<
       slug: Slug;
       publishedAt: string;
       category?: string;
+      external?: boolean;
+      externalUrl?: string;
       excerpt?: string;
       coverImage?: ImageWithAlt;
       body?: RichText;
@@ -2373,7 +2380,7 @@ declare global {
     '*[_type == "siteSettings" && _id == "siteSettings"][0]': SITE_SETTINGS_QUERY_RESULT;
     '*[_type == "page" && _id == $id][0]{ seo, aiSummary }': PAGE_QUERY_RESULT;
     '*[_type == "page"]{\n    _id,\n    "noIndex": seo.noIndex == true,\n    "description": seo.description,\n    aiSummary\n  }': PAGES_QUERY_RESULT;
-    '{\n    "work": *[_type == "work" && defined(slug.current) && comingSoon != true && seo.noIndex != true] | order(year desc, _createdAt desc){\n      title,\n      "slug": slug.current,\n      "description": coalesce(seo.description, summary, excerpt)\n    },\n    "journal": *[_type == "journal" && defined(slug.current) && seo.noIndex != true] | order(publishedAt desc){\n      title,\n      "slug": slug.current,\n      "description": coalesce(seo.description, excerpt)\n    }\n  }': LLMS_QUERY_RESULT;
+    '{\n    "work": *[_type == "work" && defined(slug.current) && comingSoon != true && seo.noIndex != true] | order(year desc, _createdAt desc){\n      title,\n      "slug": slug.current,\n      "description": coalesce(seo.description, summary, excerpt)\n    },\n    "journal": *[_type == "journal" && defined(slug.current) && external != true && seo.noIndex != true] | order(publishedAt desc){\n      title,\n      "slug": slug.current,\n      "description": coalesce(seo.description, excerpt)\n    }\n  }': LLMS_QUERY_RESULT;
     '*[_type == "work" && defined(slug.current)] | order(coalesce(featured, false) desc, year desc, _createdAt desc) [0...$limit] {\n  _id,\n  title,\n  "slug": slug.current,\n  client,\n  year,\n  services,\n  // Short description for the card; the long one is the fallback (cut to two lines).\n  summary,\n  excerpt,\n  // No project page yet: the card doesn\'t link and shows the "Coming soon" label on its visual.\n  "comingSoon": comingSoon == true,\n  listingMedia{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n}\n}': FEATURED_WORK_QUERY_RESULT;
     '*[_type == "work" && defined(slug.current) && slug.current != $slug] | order(year desc, _createdAt desc) [0...$limit] {\n  _id,\n  title,\n  "slug": slug.current,\n  client,\n  year,\n  services,\n  // Short description for the card; the long one is the fallback (cut to two lines).\n  summary,\n  excerpt,\n  // No project page yet: the card doesn\'t link and shows the "Coming soon" label on its visual.\n  "comingSoon": comingSoon == true,\n  listingMedia{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n}\n}': RECENT_WORK_QUERY_RESULT;
     '*[_type == "work" && defined(slug.current)] | order(year desc, _createdAt desc) {\n  _id,\n  title,\n  "slug": slug.current,\n  services,\n  excerpt,\n  // No project page yet: the row doesn\'t link and shows the "Coming soon" label on its first visual.\n  "comingSoon": comingSoon == true,\n  archiveMedia[]{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n}\n}': WORK_ARCHIVE_QUERY_RESULT;
@@ -2382,14 +2389,14 @@ declare global {
     '*[_type == "deliverable" && defined(title) && defined(description)]{ title, description }': SERVICE_DESCRIPTIONS_QUERY_RESULT;
     '*[_type == "work" && defined(slug.current) && comingSoon != true].slug.current': WORK_SLUGS_QUERY_RESULT;
     '*[_type == "work" && slug.current == $slug][0]{\n    _id,\n    _updatedAt,\n    title,\n    "slug": slug.current,\n    client,\n    year,\n    services,\n    summary,\n    excerpt,\n    seo,\n    industry,\n    // Services delivered: titles from the shared Services list.\n    "deliverables": deliverables[defined(@->title)]->title,\n    challenge,\n    solution,\n    outcome,\n    results[]{ _key, value, label },\n    websiteUrl,\n    listingMedia{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n},\n    heroMedia{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n},\n    content[]{\n      _key,\n      _type,\n      _type == "mediaFullWidth" => { "media": media{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n} },\n      _type == "mediaPair" => { "left": left{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n}, "right": right{\n  kind,\n  kind == "image" => { "image": image{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n  kind == "video" => {\n    "video": video{ playlistUrl, alt, caption, playback, poster{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} }\n  }\n} }\n    },\n    // Navbar arrows: the projects either side in the archive order (year desc, _createdAt desc).\n    // "previous" comes before (newer), "next" after (older); ties fall back to _id. Projects\n    // without a page yet (comingSoon) are skipped.\n    "previous": *[_type == "work" && defined(slug.current) && comingSoon != true && (\n      coalesce(year, 0) > coalesce(^.year, 0) ||\n      (coalesce(year, 0) == coalesce(^.year, 0) && (_createdAt > ^._createdAt ||\n        (_createdAt == ^._createdAt && _id > ^._id)))\n    )] | order(coalesce(year, 0) asc, _createdAt asc, _id asc)[0]{ title, "slug": slug.current },\n    "next": *[_type == "work" && defined(slug.current) && comingSoon != true && (\n      coalesce(year, 0) < coalesce(^.year, 0) ||\n      (coalesce(year, 0) == coalesce(^.year, 0) && (_createdAt < ^._createdAt ||\n        (_createdAt == ^._createdAt && _id < ^._id)))\n    )] | order(coalesce(year, 0) desc, _createdAt desc, _id desc)[0]{ title, "slug": slug.current }\n  }': WORK_QUERY_RESULT;
-    '*[_type == "journal" && defined(slug.current)] | order(coalesce(featured, false) desc, publishedAt desc) [0...$limit] {\n  _id,\n  title,\n  "slug": slug.current,\n  publishedAt,\n  category,\n  excerpt,\n  coverImage{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n}\n}': FEATURED_JOURNAL_QUERY_RESULT;
-    '*[_type == "journal" && defined(slug.current)] | order(publishedAt desc) {\n  _id,\n  title,\n  "slug": slug.current,\n  publishedAt,\n  category,\n  excerpt,\n  coverImage{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n}\n}': ALL_JOURNAL_QUERY_RESULT;
-    '*[_type == "journal" && defined(slug.current)].slug.current': JOURNAL_SLUGS_QUERY_RESULT;
-    '*[_type == "journal" && slug.current == $slug][0]{\n    _id,\n    _updatedAt,\n    title,\n    "slug": slug.current,\n    publishedAt,\n    category,\n    excerpt,\n    seo,\n    coverImage{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n},\n    body[]{ ..., _type == "imageWithAlt" => {\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n    // Article pager / navbar arrows: the next newer and the next older post. Posts with the same\n    // publishedAt are ordered by _id, so every post has a defined neighbour either way.\n    "previous": *[_type == "journal" && defined(slug.current) && (publishedAt > ^.publishedAt || (publishedAt == ^.publishedAt && _id > ^._id))] | order(publishedAt asc, _id asc)[0]{ title, "slug": slug.current },\n    "next": *[_type == "journal" && defined(slug.current) && (publishedAt < ^.publishedAt || (publishedAt == ^.publishedAt && _id < ^._id))] | order(publishedAt desc, _id desc)[0]{ title, "slug": slug.current }\n  }': JOURNAL_QUERY_RESULT;
-    '*[_type == "journal" && defined(slug.current) && slug.current != $slug] | order(publishedAt desc) [0...$limit] {\n  _id,\n  title,\n  "slug": slug.current,\n  publishedAt,\n  category,\n  excerpt,\n  coverImage{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n}\n}': RECENT_JOURNAL_QUERY_RESULT;
+    '*[_type == "journal" && defined(slug.current)] | order(coalesce(featured, false) desc, publishedAt desc) [0...$limit] {\n  _id,\n  title,\n  "slug": slug.current,\n  publishedAt,\n  category,\n  excerpt,\n  // Published on another website: the card links there (new tab) instead of /journal/<slug>.\n  "externalUrl": select(external == true => externalUrl),\n  coverImage{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n}\n}': FEATURED_JOURNAL_QUERY_RESULT;
+    '*[_type == "journal" && defined(slug.current)] | order(publishedAt desc) {\n  _id,\n  title,\n  "slug": slug.current,\n  publishedAt,\n  category,\n  excerpt,\n  // Published on another website: the card links there (new tab) instead of /journal/<slug>.\n  "externalUrl": select(external == true => externalUrl),\n  coverImage{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n}\n}': ALL_JOURNAL_QUERY_RESULT;
+    '*[_type == "journal" && defined(slug.current) && external != true].slug.current': JOURNAL_SLUGS_QUERY_RESULT;
+    '*[_type == "journal" && slug.current == $slug][0]{\n    _id,\n    _updatedAt,\n    title,\n    "slug": slug.current,\n    publishedAt,\n    category,\n    excerpt,\n    seo,\n    coverImage{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n},\n    body[]{ ..., _type == "imageWithAlt" => {\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n} },\n    // Article pager / navbar arrows: the next newer and the next older post. Posts with the same\n    // publishedAt are ordered by _id, so every post has a defined neighbour either way. Posts on\n    // another website (external) have no page here and are skipped.\n    "previous": *[_type == "journal" && defined(slug.current) && external != true && (publishedAt > ^.publishedAt || (publishedAt == ^.publishedAt && _id > ^._id))] | order(publishedAt asc, _id asc)[0]{ title, "slug": slug.current },\n    "next": *[_type == "journal" && defined(slug.current) && external != true && (publishedAt < ^.publishedAt || (publishedAt == ^.publishedAt && _id < ^._id))] | order(publishedAt desc, _id desc)[0]{ title, "slug": slug.current }\n  }': JOURNAL_QUERY_RESULT;
+    '*[_type == "journal" && defined(slug.current) && slug.current != $slug] | order(publishedAt desc) [0...$limit] {\n  _id,\n  title,\n  "slug": slug.current,\n  publishedAt,\n  category,\n  excerpt,\n  // Published on another website: the card links there (new tab) instead of /journal/<slug>.\n  "externalUrl": select(external == true => externalUrl),\n  coverImage{\n  ...,\n  "lqip": asset->metadata.lqip,\n  "dimensions": asset->metadata.dimensions{ width, height, aspectRatio }\n}\n}': RECENT_JOURNAL_QUERY_RESULT;
     '*[_type in ["work", "journal"] && defined(slug.current)]{\n    _type,\n    "slug": slug.current,\n    _updatedAt,\n    "noIndex": seo.noIndex == true\n  }': SITEMAP_QUERY_RESULT;
-    '{\n    "content": *[_type in ["work", "journal"] && defined(slug.current) && !(_type == "work" && comingSoon == true)]{\n      _type,\n      "slug": slug.current,\n      previousSlugs\n    },\n    "manual": *[_type == "siteSettings" && _id == "siteSettings"][0].redirects[]{ from, to, permanent }\n  }': REDIRECTS_QUERY_RESULT;
-    '*[_type in ["work", "journal"] && defined(slug.current) && !(_type == "work" && comingSoon == true) && !defined(seo.image.asset)]{\n    _type,\n    "slug": slug.current,\n    title,\n    "visual": select(\n      _type == "work" => coalesce(\n        select(listingMedia.kind == "video" => listingMedia.video.poster, listingMedia.image),\n        select(heroMedia.kind == "video" => heroMedia.video.poster, heroMedia.image)\n      ),\n      coverImage\n    ){ asset, crop, hotspot },\n    // A video visual without a poster: the card uses Bunny\'s thumbnail instead.\n    "videoPlaylist": select(\n      _type == "work" => coalesce(\n        select(listingMedia.kind == "video" => listingMedia.video.playlistUrl),\n        select(heroMedia.kind == "video" => heroMedia.video.playlistUrl)\n      )\n    )\n  }': SOCIAL_IMAGES_QUERY_RESULT;
+    '{\n    "content": *[_type in ["work", "journal"] && defined(slug.current) && !(_type == "work" && comingSoon == true) && !(_type == "journal" && external == true)]{\n      _type,\n      "slug": slug.current,\n      previousSlugs\n    },\n    "manual": *[_type == "siteSettings" && _id == "siteSettings"][0].redirects[]{ from, to, permanent }\n  }': REDIRECTS_QUERY_RESULT;
+    '*[_type in ["work", "journal"] && defined(slug.current) && !(_type == "work" && comingSoon == true) && !(_type == "journal" && external == true) && !defined(seo.image.asset)]{\n    _type,\n    "slug": slug.current,\n    title,\n    "visual": select(\n      _type == "work" => coalesce(\n        select(listingMedia.kind == "video" => listingMedia.video.poster, listingMedia.image),\n        select(heroMedia.kind == "video" => heroMedia.video.poster, heroMedia.image)\n      ),\n      coverImage\n    ){ asset, crop, hotspot },\n    // A video visual without a poster: the card uses Bunny\'s thumbnail instead.\n    "videoPlaylist": select(\n      _type == "work" => coalesce(\n        select(listingMedia.kind == "video" => listingMedia.video.playlistUrl),\n        select(heroMedia.kind == "video" => heroMedia.video.playlistUrl)\n      )\n    )\n  }': SOCIAL_IMAGES_QUERY_RESULT;
     '{\n    "docs": *[_type == "work" && (_id in path("*") || _id in path("drafts.*"))]{\n      _id,\n      _createdAt,\n      _updatedAt,\n      title,\n      "slug": slug.current,\n      client,\n      year,\n      services,\n      featured,\n      "noIndex": seo.noIndex == true,\n      "thumbnail": select(\n        listingMedia.kind == "video" => listingMedia.video.poster,\n        listingMedia.image\n      ){ asset, crop, hotspot },\n      // A video without a poster: the table shows Bunny\'s thumbnail.\n      "thumbnailVideo": select(listingMedia.kind == "video" => listingMedia.video.playlistUrl)\n    },\n    "home": *[_type == "work" && _id in path("*") && defined(slug.current)]\n      | order(coalesce(featured, false) desc, year desc, _createdAt desc) [0...6]._id\n  }': WORK_TABLE_QUERY_RESULT;
     '{\n    "docs": *[_type == "journal" && (_id in path("*") || _id in path("drafts.*"))]{\n      _id,\n      _createdAt,\n      _updatedAt,\n      title,\n      "slug": slug.current,\n      category,\n      publishedAt,\n      featured,\n      "noIndex": seo.noIndex == true,\n      "thumbnail": coverImage{ asset, crop, hotspot }\n    },\n    "home": *[_type == "journal" && _id in path("*") && defined(slug.current)]\n      | order(coalesce(featured, false) desc, publishedAt desc) [0...4]._id\n  }': JOURNAL_TABLE_QUERY_RESULT;
     '*[!(_id in path("drafts.**")) && !(_type match "sanity.*") && !(_type match "system.*")]': BUNNY_CONTENT_QUERY_RESULT;
