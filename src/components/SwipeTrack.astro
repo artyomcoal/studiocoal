@@ -15,8 +15,9 @@
  *
  * `carousel`: the script takes over from native scrolling (below `until`) so each move can use
  * our own easing. A drag, swipe, flick, horizontal trackpad swipe, arrow key, focused link or
- * pagination dot glides the target slide to the centre over --motion-duration-carousel /
- * --motion-ease-carousel (instant under reduced motion). Items move with `translate`, the track
+ * pagination dot glides the target slide into place over --motion-duration-carousel /
+ * --motion-ease-carousel (instant under reduced motion): the first and last slides sit on the
+ * container padding, the ones in between in the centre. Items move with `translate`, the track
  * clips them. Without JS it stays a native swipe row. It reports its position as a fractional
  * slide index on every frame (`carousel:position`) and moves to a slide on `carousel:go`.
  */
@@ -145,10 +146,20 @@ const flatFrom = cva("", {
       emit(index);
     };
 
-    // offsetLeft ignores `translate`, so this is safe mid-glide.
+    // offsetLeft ignores `translate`, so this is safe mid-glide. The first slide keeps its
+    // natural spot on the container padding (translate 0) and the last one mirrors it on the
+    // right; the ones in between centre, never past either end.
     const measure = () => {
       const centre = track.clientWidth / 2;
-      targets = items.map((item) => centre - (item.offsetLeft + item.offsetWidth / 2));
+      const last = items[items.length - 1]!;
+      const padEnd = parseFloat(getComputedStyle(track).paddingRight) || 0;
+      const end = Math.min(0, track.clientWidth - padEnd - (last.offsetLeft + last.offsetWidth));
+      targets = items.map((item, i) => {
+        if (i === 0) return 0;
+        if (i === items.length - 1) return end;
+        const centred = centre - (item.offsetLeft + item.offsetWidth / 2);
+        return Math.min(0, Math.max(end, centred));
+      });
     };
 
     const sync = () => {

@@ -4,7 +4,7 @@
  * Eyebrow, optional section header, 4 BlogListCards and an "All articles" button.
  * xl: 4 columns. md and base: a swipe carousel with a CarouselPagination under it (cards about
  * half the track wide on md, nearly full width on base). Each move glides the target card to the
- * centre on the carousel easing token.
+ * centre (first and last on the container padding) on the carousel easing token.
  * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=53474-7992
  * Renders nothing when there are no posts.
  */
@@ -61,8 +61,7 @@ const trackId = `featured-articles-track-${Math.random().toString(36).slice(2, 8
         >
           {posts.map((post) => (
             // Slide width: the track's content box (viewport minus container padding) on base,
-            // half of it on md, less spacing-4 so the neighbours peek in on both
-            // sides once the carousel centres a card. No token covers a
+            // half of it on md, less spacing-4 so the neighbours peek in. No token covers a
             // share of the track, hence the arbitrary values.
             <li class="w-[calc(100%-var(--spacing)*4)] md:w-[calc(50%-var(--spacing)*4)] xl:w-auto">
               <BlogListCard
