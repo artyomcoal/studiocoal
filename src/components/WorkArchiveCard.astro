@@ -16,7 +16,11 @@
  * out of the tab order and hidden from assistive tech, so the title stays the single tab stop
  * and announcement. A tap opens the project; a swipe on the base track still scrolls it, and
  * the video pause button (z-10) stays above the overlay.
+ *
+ * A project whose case study isn't ready (`comingSoon`) has no links at all: a "Coming soon"
+ * label sits in the top-left corner of the first visual instead.
  */
+import ComingSoonLabel from "@/components/ComingSoonLabel.astro";
 import Media from "@/components/Media.astro";
 import SwipeTrack from "@/components/SwipeTrack.astro";
 import { serviceTitle } from "@/lib/services";
@@ -48,9 +52,16 @@ const visuals = Array.from({ length: 3 }, (_, i) => work.archiveMedia?.[i] ?? nu
 >
   <div class="relative flex flex-col gap-2 md:static md:col-span-6 md:pr-6 xl:col-span-1">
     <Heading class="text-headline-md text-pretty">
-      <a href={`/work/${work.slug}`} class="outline-none after:absolute after:inset-0">
-        {work.title}
-      </a>
+      {work.comingSoon ? (
+        <>
+          {work.title}
+          <span class="sr-only">(case study coming soon)</span>
+        </>
+      ) : (
+        <a href={`/work/${work.slug}`} class="outline-none after:absolute after:inset-0">
+          {work.title}
+        </a>
+      )}
     </Heading>
     {work.excerpt && <p class="max-w-96 text-body-sm">{work.excerpt}</p>}
     {work.services?.length ? (
@@ -68,7 +79,7 @@ const visuals = Array.from({ length: 3 }, (_, i) => work.archiveMedia?.[i] ?? nu
     label={`${work.title} visuals`}
     class="md:col-span-full md:grid md:grid-cols-3 xl:col-span-3"
   >
-    {visuals.map((media) => (
+    {visuals.map((media, index) => (
       <li class="relative w-64 md:w-auto">
         <Media
           media={media}
@@ -76,16 +87,22 @@ const visuals = Array.from({ length: 3 }, (_, i) => work.archiveMedia?.[i] ?? nu
           sizes="(min-width: 64rem) 24vw, (min-width: 48rem) 32vw, 256px"
           priority={priority}
         />
-        {/* eslint-disable-next-line astro/jsx-a11y/anchor-has-content -- a pointer-only overlay
-              (aria-hidden, tabindex -1); the title link is the accessible one. Wrapping Media
-              instead would nest its video pause button inside the link. */}
-        <a
-          href={`/work/${work.slug}`}
-          tabindex="-1"
-          aria-hidden="true"
-          draggable="false"
-          class="absolute inset-0 rounded-sm"
-        />
+        {work.comingSoon ? (
+          index === 0 && <ComingSoonLabel />
+        ) : (
+          <>
+            {/* eslint-disable-next-line astro/jsx-a11y/anchor-has-content -- a pointer-only
+                  overlay (aria-hidden, tabindex -1); the title link is the accessible one.
+                  Wrapping Media instead would nest its video pause button inside the link. */}
+            <a
+              href={`/work/${work.slug}`}
+              tabindex="-1"
+              aria-hidden="true"
+              draggable="false"
+              class="absolute inset-0 rounded-sm"
+            />
+          </>
+        )}
       </li>
     ))}
   </SwipeTrack>

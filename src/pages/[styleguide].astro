@@ -224,6 +224,7 @@ const demoWork = {
   _id: "demo",
   title: "Modal",
   slug: "modal",
+  comingSoon: false,
   services: ["brand", "web", "digital-products"],
   excerpt:
     "Developer-first platform changing the computing paradigm with a fully serverless cloud infrastructure for AI, ML, and data applications.",
@@ -800,7 +801,8 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
       <h2 class="text-headline-lg">WorkListCard</h2>
       <p class="text-body-sm text-fg-secondary">
         Card / Work Featured. The whole card is the link. Shows the short description; without one,
-        the long description cut to two lines.
+        the long description cut to two lines. The last card is a project whose case study is coming
+        soon: no link, and a "Coming soon" label in the top-left corner of its visual.
       </p>
       <div class="grid gap-x-2 gap-y-12 md:grid-cols-2 xl:grid-cols-3">
         <WorkListCard work={demoListWork} />
@@ -816,6 +818,14 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
         <WorkListCard
           work={{ ...demoListWork, _id: "demo-bare", services: null, summary: null, excerpt: null }}
         />
+        <WorkListCard
+          work={{
+            ...demoListWorkVideo,
+            _id: "demo-coming-soon",
+            title: "Case study coming soon",
+            comingSoon: true,
+          }}
+        />
       </div>
     </section>
 
@@ -827,6 +837,15 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
         the project; only the title is a tab stop.
       </p>
       <WorkArchiveCard work={demoArchiveWork} as="h3" />
+      <p class="text-body-sm text-fg-secondary">
+        Case study coming soon (Work › "Case study coming soon"): no links, and a "Coming soon"
+        label (ComingSoonLabel, Figma 53752:5183) 16px in from the top-left corner of the first
+        visual.
+      </p>
+      <WorkArchiveCard
+        work={{ ...demoArchiveWork, _id: "demo-archive-coming-soon", comingSoon: true }}
+        as="h3"
+      />
     </section>
 
     <section class="flex flex-col gap-6">

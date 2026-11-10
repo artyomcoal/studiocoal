@@ -37,6 +37,8 @@ const workCard = /* groq */ `{
   // Short description for the card; the long one is the fallback (cut to two lines).
   summary,
   excerpt,
+  // No project page yet: the card doesn't link and shows the "Coming soon" label on its visual.
+  "comingSoon": comingSoon == true,
   listingMedia${media}
 }`;
 
@@ -47,6 +49,8 @@ const workArchiveCard = /* groq */ `{
   "slug": slug.current,
   services,
   excerpt,
+  // No project page yet: the row doesn't link and shows the "Coming soon" label on its first visual.
+  "comingSoon": comingSoon == true,
   archiveMedia[]${media}
 }`;
 
@@ -95,7 +99,7 @@ export const PAGES_QUERY = defineQuery(
 /** /llms.txt: every project and post that search engines may list, newest first. */
 export const LLMS_QUERY = defineQuery(
   `{
-    "work": *[_type == "work" && defined(slug.current) && seo.noIndex != true] | order(year desc, _createdAt desc){
+    "work": *[_type == "work" && defined(slug.current) && comingSoon != true && seo.noIndex != true] | order(year desc, _createdAt desc){
       title,
       "slug": slug.current,
       "description": coalesce(seo.description, summary, excerpt)
@@ -155,8 +159,9 @@ export const SERVICE_DESCRIPTIONS_QUERY = defineQuery(
   `*[_type == "deliverable" && defined(title) && defined(description)]{ title, description }`,
 );
 
+/** Project pages to build. "Case study coming soon" projects have none yet. */
 export const WORK_SLUGS_QUERY = defineQuery(
-  `*[_type == "work" && defined(slug.current)].slug.current`,
+  `*[_type == "work" && defined(slug.current) && comingSoon != true].slug.current`,
 );
 
 export const WORK_QUERY = defineQuery(
@@ -188,13 +193,14 @@ export const WORK_QUERY = defineQuery(
       _type == "mediaPair" => { "left": left${media}, "right": right${media} }
     },
     // Navbar arrows: the projects either side in the archive order (year desc, _createdAt desc).
-    // "previous" comes before (newer), "next" after (older); ties fall back to _id.
-    "previous": *[_type == "work" && defined(slug.current) && (
+    // "previous" comes before (newer), "next" after (older); ties fall back to _id. Projects
+    // without a page yet (comingSoon) are skipped.
+    "previous": *[_type == "work" && defined(slug.current) && comingSoon != true && (
       coalesce(year, 0) > coalesce(^.year, 0) ||
       (coalesce(year, 0) == coalesce(^.year, 0) && (_createdAt > ^._createdAt ||
         (_createdAt == ^._createdAt && _id > ^._id)))
     )] | order(coalesce(year, 0) asc, _createdAt asc, _id asc)[0]{ title, "slug": slug.current },
-    "next": *[_type == "work" && defined(slug.current) && (
+    "next": *[_type == "work" && defined(slug.current) && comingSoon != true && (
       coalesce(year, 0) < coalesce(^.year, 0) ||
       (coalesce(year, 0) == coalesce(^.year, 0) && (_createdAt < ^._createdAt ||
         (_createdAt == ^._createdAt && _id < ^._id)))
@@ -252,10 +258,13 @@ export const SITEMAP_QUERY = defineQuery(
   }`,
 );
 
-/** Redirects (astro.config.mjs): old project / post slugs, and Site settings › Redirects. */
+/**
+ * Redirects (astro.config.mjs): old project / post slugs, and Site settings › Redirects.
+ * Projects without a page yet (comingSoon) have nothing to redirect to.
+ */
 export const REDIRECTS_QUERY = defineQuery(
   `{
-    "content": *[_type in ["work", "journal"] && defined(slug.current)]{
+    "content": *[_type in ["work", "journal"] && defined(slug.current) && !(_type == "work" && comingSoon == true)]{
       _type,
       "slug": slug.current,
       previousSlugs
@@ -266,10 +275,11 @@ export const REDIRECTS_QUERY = defineQuery(
 
 /**
  * Social share images (src/pages/og/[type]/[slug].png.ts): each project and post with the
- * visual its image is built on. Pages that set SEO › Social image don't need one.
+ * visual its image is built on. Pages that set SEO › Social image don't need one, and
+ * projects without a page yet (comingSoon) don't get one.
  */
 export const SOCIAL_IMAGES_QUERY = defineQuery(
-  `*[_type in ["work", "journal"] && defined(slug.current) && !defined(seo.image.asset)]{
+  `*[_type in ["work", "journal"] && defined(slug.current) && !(_type == "work" && comingSoon == true) && !defined(seo.image.asset)]{
     _type,
     "slug": slug.current,
     title,

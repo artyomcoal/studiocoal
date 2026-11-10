@@ -1,0 +1,30 @@
+---
+/**
+ * Coming Soon Label
+ * Marks the visual of a project whose case study isn't ready yet (Work › "Case study coming
+ * soon"). Pinned to the top-left corner of the visual, 16px in from both edges; the parent must
+ * be positioned. Figma "Button" (Coming soon), node 53752:5183.
+ * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=53752-5183
+ *
+ * Primitive palette only, no theme tokens: it sits on imagery, so it looks the same in light and
+ * dark (as VideoControl). Box neutral-600 at 50% with background blur md, label neutral-50 in
+ * Body XS. Decorative (aria-hidden): cards say "coming soon" to screen readers in their title.
+ */
+import { cn } from "@/lib/utils";
+
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<span
+  aria-hidden="true"
+  class={cn(
+    "pointer-events-none absolute top-4 left-4 z-10 rounded-xs bg-neutral-600/50 px-2 py-1 text-body-xs whitespace-nowrap text-neutral-50 backdrop-blur-md",
+    className,
+  )}
+>
+  Coming soon
+</span>
