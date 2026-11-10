@@ -13,16 +13,18 @@
  * Focus keeps the FocusState ring.
  */
 import { cva } from "class-variance-authority";
+import type { HTMLAttributes } from "astro/types";
 import { cn } from "@/lib/utils";
 
-interface Props {
+/** Other anchor attributes (data-*, aria-current="location" for in-page section links) pass through. */
+interface Props extends Omit<HTMLAttributes<"a">, "href" | "class"> {
   href: string;
   /** Current page (or a page inside this section). */
   active?: boolean;
   class?: string;
 }
 
-const { href, active = false, class: className } = Astro.props;
+const { href, active = false, class: className, ...rest } = Astro.props;
 
 const navItemVariants = cva(
   [
@@ -54,6 +56,7 @@ const navItemVariants = cva(
   href={href}
   aria-current={active ? "page" : undefined}
   data-slot="nav-item"
+  {...rest}
   class={cn(navItemVariants({ active }), className)}
 >
   <slot />

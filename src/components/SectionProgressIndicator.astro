@@ -1,0 +1,157 @@
+---
+/**
+ * Section Progress Indicator
+ * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=53734-5756
+ *
+ * A frosted pill fixed to the bottom centre of the viewport, 16px from the bottom edge, with one
+ * in-page link per page section (Work Single: Overview, Visuals). Each link has its own progress
+ * fill (interactive-secondary-active) that grows left to right with how much of its section has
+ * been scrolled into view. The section on screen is current: fg-primary text and
+ * aria-current="location"; the others are fg-secondary. A finished section keeps its full fill.
+ *
+ * Section ranges: each section runs from its link target's top to the next target's top; the
+ * last one ends at its target's bottom. Progress is the share of that range above the bottom of
+ * the viewport, so a section is current from the moment the previous one is finished. Once the
+ * last section is finished the pill slides down out of view (and back on scroll up).
+ *
+ * While the pill shows, `data-section-progress` is set on <html>: on base the Navbar's "Get in
+ * touch" button (same bottom-centre slot) slides away, and comes back when the pill hides.
+ *
+ * The script is inline, right after the markup, so the first paint already has the fills, the
+ * current item and the Navbar button state (nothing to animate in on load).
+ * `preview` renders fixed values in place (no script, not fixed), for /styleguide.
+ */
+import NavItem from "@/components/NavItem.astro";
+import { cn } from "@/lib/utils";
+
+interface Props {
+  /** One link per section, in page order. Each href points at the element where it starts. */
+  items: { label: string; href: `#${string}` }[];
+  /** Accessible name of the nav. */
+  label?: string;
+  /** Styleguide: fixed progress (0–1) per item and the current item, rendered in place. */
+  preview?: { progress: number[]; current: number };
+  class?: string;
+}
+
+const { items, label = "Page sections", preview, class: className } = Astro.props;
+---
+
+<div
+  data-section-progress-root
+  data-static={preview ? "" : undefined}
+  class={cn(
+    preview
+      ? "flex"
+      : [
+          // Covers the dynamic viewport and pins the pill to its bottom centre, 16px up (as the
+          // Navbar's mobile Get in touch wrapper). Under the header (z-50).
+          "pointer-events-none fixed inset-x-0 top-0 z-40 flex h-dvh items-end justify-center p-4",
+        ],
+    className,
+  )}
+>
+  <!-- Slides down off-screen when hidden: the pill, the 16px gap (p-4) and the iOS
+       home-indicator inset. Arbitrary calc and env(): no token for a device inset (same as the
+       Navbar's Get in touch button). -->
+  <nav
+    aria-label={label}
+    data-section-progress-nav
+    class={cn(
+      "flex w-70 max-w-full items-center rounded-sm bg-bg-translucent p-1 backdrop-blur-md",
+      !preview &&
+        "pointer-events-auto mb-[env(safe-area-inset-bottom)] transition-transform duration-(--motion-duration-nav-pill) ease-(--motion-ease-nav-pill) data-hidden:translate-y-[calc(100%_+_var(--spacing)*4_+_env(safe-area-inset-bottom))] motion-reduce:transition-none",
+    )}
+  >
+    {items.map((item, index) => {
+      const progress = Math.min(1, Math.max(0, preview?.progress[index] ?? 0));
+      const current = (preview?.current ?? 0) === index;
+      return (
+        <NavItem
+          href={item.href}
+          class="isolate flex-1 justify-center data-current:text-fg-primary"
+          data-current={current ? "" : undefined}
+          aria-current={current ? "location" : undefined}
+        >
+          {/* The progress fill, under the label (-z-10 in the item's own stacking context).
+              Its width is --progress, set by the script. */}
+          <span
+            aria-hidden="true"
+            data-progress-fill
+            class="pointer-events-none absolute inset-y-0 left-0 -z-10 w-(--progress) rounded-xs bg-interactive-secondary-active"
+            style={`--progress: ${progress * 100}%`}
+          ></span>
+          {item.label}
+        </NavItem>
+      );
+    })}
+  </nav>
+</div>
+
+{!preview && <script is:inline>
+  (() => {
+    const root = document.currentScript?.previousElementSibling;
+    const nav = root?.querySelector("[data-section-progress-nav]");
+    if (!root || !nav || root.hasAttribute("data-static")) return;
+    const links = [...nav.querySelectorAll('a[href^="#"]')];
+    const targets = links.map((link) =>
+      document.getElementById(decodeURIComponent(link.hash.slice(1))),
+    );
+    if (!links.length || targets.some((target) => !target)) return;
+    const fills = links.map((link) => link.querySelector("[data-progress-fill]"));
+    const html = document.documentElement;
+
+    const update = () => {
+      const bottom = innerHeight;
+      const tops = targets.map((target) => target.getBoundingClientRect().top);
+      const end = targets[targets.length - 1].getBoundingClientRect().bottom;
+      let current = 0;
+      targets.forEach((_, index) => {
+        const start = tops[index];
+        const stop = index < targets.length - 1 ? tops[index + 1] : end;
+        const share = Math.min(1, Math.max(0, (bottom - start) / Math.max(1, stop - start)));
+        fills[index]?.style.setProperty("--progress", `${share * 100}%`);
+        if (start < bottom) current = index;
+      });
+      links.forEach((link, index) => {
+        const isCurrent = index === current;
+        link.toggleAttribute("data-current", isCurrent);
+        if (isCurrent) link.setAttribute("aria-current", "location");
+        else link.removeAttribute("aria-current");
+      });
+      // Hidden once the last section is finished (its bottom is on screen).
+      const hidden = end <= bottom && !nav.contains(document.activeElement);
+      nav.toggleAttribute("data-hidden", hidden);
+      nav.inert = hidden;
+      html.toggleAttribute("data-section-progress", !hidden);
+    };
+
+    let frame = 0;
+    const schedule = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(update);
+    };
+    addEventListener("scroll", schedule, { passive: true });
+    addEventListener("resize", schedule, { passive: true });
+    addEventListener("pageshow", schedule);
+    // Images and videos settling change the section heights.
+    if ("ResizeObserver" in window) {
+      const observer = new ResizeObserver(schedule);
+      targets.forEach((target) => observer.observe(target));
+      observer.observe(document.body);
+    }
+
+    // In-page links: smooth scroll (instant under reduced motion), hash kept in the URL.
+    nav.addEventListener("click", (event) => {
+      const link = event.target.closest('a[href^="#"]');
+      const target = link && targets[links.indexOf(link)];
+      if (!target) return;
+      event.preventDefault();
+      const smooth = !matchMedia("(prefers-reduced-motion: reduce)").matches;
+      target.scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "start" });
+      history.replaceState(history.state, "", link.hash);
+    });
+
+    update();
+  })();
+</script>}

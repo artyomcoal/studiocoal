@@ -47,10 +47,20 @@ interface Props {
   sizes: string;
   /** LCP visual: load eagerly with high fetch priority. */
   priority?: boolean;
+  /** Anchor id (e.g. an in-page link target). */
+  id?: string;
   class?: string;
 }
 
-const { media, video: codeVideo, aspect, sizes, priority = false, class: className } = Astro.props;
+const {
+  media,
+  video: codeVideo,
+  aspect,
+  sizes,
+  priority = false,
+  id,
+  class: className,
+} = Astro.props;
 
 const resolved = resolveMedia(media);
 // Base crop. A hero adds a 16:9 <source> from md.
@@ -108,6 +118,7 @@ const playerPoster =
 ---
 
 <div
+  id={id}
   data-slot="media"
   data-playback={video?.playback}
   data-paused={video?.playback === "player" ? "" : undefined}

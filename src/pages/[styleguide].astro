@@ -10,6 +10,7 @@ import Media from "@/components/Media.astro";
 import RichText from "@/components/RichText.astro";
 import ArticleToc from "@/components/ArticleToc.astro";
 import NavItem from "@/components/NavItem.astro";
+import SectionProgressIndicator from "@/components/SectionProgressIndicator.astro";
 import VideoControl from "@/components/VideoControl.astro";
 import BlogListCard from "@/components/BlogListCard.astro";
 import WorkArchiveCard from "@/components/WorkArchiveCard.astro";
@@ -845,6 +846,32 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
         headings.
       </p>
       <ArticleToc headings={demoOutline} class="max-w-60" />
+    </section>
+
+    <section class="flex flex-col gap-6">
+      <h2 class="text-headline-lg">SectionProgressIndicator</h2>
+      <p class="text-body-sm text-fg-secondary">
+        Work Single: fixed to the bottom centre of the viewport (16px up). Each link fills with how
+        much of its section has been scrolled into view; the section on screen is current
+        (fg-primary). Finished sections stay full. Replaces the mobile Get in touch button while it
+        shows. Static states below.
+      </p>
+      <div class="flex flex-col gap-4">
+        <SectionProgressIndicator
+          preview={{ progress: [0.35, 0], current: 0 }}
+          items={[
+            { label: "Overview", href: "#overview" },
+            { label: "Visuals", href: "#visuals" },
+          ]}
+        />
+        <SectionProgressIndicator
+          preview={{ progress: [1, 0.6], current: 1 }}
+          items={[
+            { label: "Overview", href: "#overview" },
+            { label: "Visuals", href: "#visuals" },
+          ]}
+        />
+      </div>
     </section>
 
     <section class="flex flex-col gap-6">
