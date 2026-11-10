@@ -2,11 +2,14 @@
 /**
  * Featured Articles Section
  * Eyebrow, optional section header, 4 BlogListCards and an "All articles" button.
- * xl: 4 columns. md: 2 × 2. base: a swipe track of fixed-width cards.
+ * xl: 4 columns. md and base: a swipe carousel with a CarouselPagination under it (cards about
+ * half the track wide on md, nearly full width on base). Each move glides the target card to the
+ * centre on the carousel easing token.
  * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=53474-7992
  * Renders nothing when there are no posts.
  */
 import BlogListCard from "@/components/BlogListCard.astro";
+import CarouselPagination from "@/components/CarouselPagination.astro";
 import SwipeTrack from "@/components/SwipeTrack.astro";
 import { cn } from "@/lib/utils";
 import type { FEATURED_JOURNAL_QUERY_RESULT } from "@/sanity/types";
@@ -27,6 +30,9 @@ const {
   title = "Notes on what we're making, learning and thinking about.",
   class: className,
 } = Astro.props;
+
+// Unique per page: the section can appear more than once (styleguide).
+const trackId = `featured-articles-track-${Math.random().toString(36).slice(2, 8)}`;
 ---
 
 {posts.length > 0 && (
@@ -47,18 +53,26 @@ const {
       )}
       <div class="flex flex-col">
         <SwipeTrack
+          id={trackId}
           label={heading}
-          class="animate-enter-stagger md:grid md:grid-cols-2 md:gap-y-12 xl:grid-cols-4"
+          until="xl"
+          carousel
+          class="animate-enter-stagger xl:grid xl:grid-cols-4"
         >
           {posts.map((post) => (
-            <li class="w-74 md:w-auto">
+            // Slide width: the track's content box (viewport minus container padding) on base,
+            // half of it on md, less spacing-4 so the neighbours peek in on both
+            // sides once the carousel centres a card. No token covers a
+            // share of the track, hence the arbitrary values.
+            <li class="w-[calc(100%-var(--spacing)*4)] md:w-[calc(50%-var(--spacing)*4)] xl:w-auto">
               <BlogListCard
                 post={post}
-                sizes="(min-width: 64rem) 24vw, (min-width: 48rem) 49vw, 296px"
+                sizes="(min-width: 64rem) 24vw, (min-width: 48rem) 47vw, 92vw"
               />
             </li>
           ))}
         </SwipeTrack>
+        <CarouselPagination for={trackId} count={posts.length} class="pt-6 xl:hidden" />
         <div class="flex justify-center pt-12 md:pt-16 xl:pt-20">
           <Button as="a" href="/journal" variant="secondary">
             All articles

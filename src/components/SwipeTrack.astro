@@ -3,35 +3,64 @@
  * Swipe Track
  * Horizontal swipe row for mobile: fixed-width items scroll edge to edge, snap per item,
  * hide the scrollbar and keep native momentum scrolling. Callers pass <li> children with a
- * fixed width and turn the track into a grid from md (`md:grid md:overflow-visible …`).
- * Used by the Work Archive visuals and the Featured Articles list.
+ * fixed width and turn the track into a grid where it stops swiping (`md:grid …`, or `xl:grid …`
+ * with `until="xl"`). Used by the Work Archive visuals and the Featured Articles carousel (which
+ * pairs it with a CarouselPagination through `id`).
  * Figma (behaviour spec): https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=53355-3844
  *
  * - The track bleeds into the container padding (-mx / px with the container token), so items
  *   scroll edge to edge, and scroll-padding keeps snapped items aligned with the text.
  * - It is focusable so keyboard users can scroll it (axe scrollable-region-focusable); the
- *   script drops it from the tab order whenever it doesn't scroll (md and up).
+ *   script drops it from the tab order whenever it doesn't scroll.
+ *
+ * `carousel`: the script takes over from native scrolling (below `until`) so each move can use
+ * our own easing. A drag, swipe, flick, horizontal trackpad swipe, arrow key, focused link or
+ * pagination dot glides the target slide to the centre over --motion-duration-carousel /
+ * --motion-ease-carousel (instant under reduced motion). Items move with `translate`, the track
+ * clips them. Without JS it stays a native swipe row. It reports its position as a fractional
+ * slide index on every frame (`carousel:position`) and moves to a slide on `carousel:go`.
  */
+import { cva } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 interface Props {
   /** Accessible name of the list, e.g. "Modal visuals". */
   label: string;
+  /** Breakpoint where the track stops swiping and lays out flat. Default `md`. */
+  until?: "md" | "xl";
+  /** Centre-snapping carousel with eased moves (see the header comment). */
+  carousel?: boolean;
+  /** Lets a CarouselPagination find the track (`for`). */
+  id?: string;
   class?: string;
 }
 
-const { label, class: className } = Astro.props;
+const { label, until = "md", carousel = false, id, class: className } = Astro.props;
+
+const flatFrom = cva("", {
+  variants: {
+    until: {
+      md: "md:mx-0 md:snap-none md:overflow-visible md:px-0",
+      xl: "xl:mx-0 xl:snap-none xl:overflow-visible xl:px-0",
+    },
+  },
+});
 ---
 
 {/* eslint-disable astro/jsx-a11y/no-noninteractive-tabindex -- see the header comment */}
 <ul
   data-slot="swipe-track"
+  data-carousel={carousel ? "off" : undefined}
+  data-until={carousel ? until : undefined}
+  id={id}
   tabindex="0"
   aria-label={label}
   class={cn(
     "-mx-(--container-padding-x) flex snap-x snap-mandatory scroll-px-(--container-padding-x) gap-2 overflow-x-auto overscroll-x-contain px-container scrollbar-none outline-none focus-visible:ring-2 focus-visible:ring-interactive-focus-ring focus-visible:ring-inset motion-safe:scroll-smooth",
     "*:shrink-0 *:snap-start *:last:snap-end",
-    "md:mx-0 md:snap-none md:overflow-visible md:px-0",
+    carousel &&
+      "relative data-[carousel=on]:cursor-grab data-[carousel=on]:touch-pan-y data-[carousel=on]:snap-none data-[carousel=on]:overflow-clip data-[carousel=on]:select-none data-[carousel=on]:*:translate-x-(--carousel-x) data-[carousel=on]:*:transition-[translate] data-[carousel=on]:*:duration-(--motion-duration-carousel) data-[carousel=on]:*:ease-(--motion-ease-carousel) data-dragging:cursor-grabbing data-dragging:*:transition-none motion-reduce:*:transition-none",
+    flatFrom({ until }),
     className,
   )}
 >
@@ -44,8 +73,211 @@ const { label, class: className } = Astro.props;
   const observer = new ResizeObserver((entries) => {
     for (const { target } of entries) {
       const track = target as HTMLElement;
-      track.tabIndex = track.scrollWidth > track.clientWidth ? 0 : -1;
+      track.tabIndex =
+        track.dataset.carousel === "on" || track.scrollWidth > track.clientWidth ? 0 : -1;
     }
   });
   tracks.forEach((track) => observer.observe(track));
+
+  // Interaction thresholds (behaviour, not design values).
+  const DRAG_START = 6; // px of horizontal travel before a press becomes a drag
+  const FLICK = 0.3; // px/ms: a faster release moves one slide even if short
+  const EDGE_RESISTANCE = 0.35; // drag past the first / last slide moves this much
+  const WHEEL_STEP = 30; // px of horizontal wheel delta per slide
+  const WHEEL_QUIET = 200; // ms without wheel events before the next step is allowed
+
+  document.querySelectorAll<HTMLElement>("[data-carousel]").forEach((track) => {
+    const items = [...track.children] as HTMLElement[];
+    if (items.length < 2) return;
+    const media = matchMedia(track.dataset.until === "xl" ? "(width < 64rem)" : "(width < 48rem)");
+    let enabled = false;
+    let targets: number[] = []; // translate that centres each item, decreasing
+    let x = 0; // current translate target
+    let index = 0;
+    let frame = 0;
+
+    const setX = (value: number) => {
+      x = value;
+      track.style.setProperty("--carousel-x", `${value}px`);
+    };
+    // Where the items are on screen right now (mid-transition included).
+    const visualX = () => parseFloat(getComputedStyle(items[0]!).translate) || 0;
+    const clamp = (i: number) => Math.min(Math.max(i, 0), items.length - 1);
+
+    // Fractional slide index for a translate: 1.5 = halfway between slides 2 and 3.
+    const positionOf = (value: number) => {
+      if (value >= targets[0]!) return 0;
+      for (let i = 1; i < targets.length; i++) {
+        const from = targets[i - 1]!;
+        const to = targets[i]!;
+        if (value >= to) return i - 1 + (from - value) / (from - to);
+      }
+      return targets.length - 1;
+    };
+    const emit = (position: number) =>
+      track.dispatchEvent(new CustomEvent("carousel:position", { detail: { position } }));
+
+    // Report the position every frame until the glide settles.
+    const follow = () => {
+      cancelAnimationFrame(frame);
+      const tick = () => {
+        const current = visualX();
+        emit(positionOf(current));
+        if (Math.abs(current - x) > 0.5) frame = requestAnimationFrame(tick);
+        else emit(index);
+      };
+      frame = requestAnimationFrame(tick);
+    };
+
+    const go = (i: number) => {
+      index = clamp(i);
+      delete track.dataset.dragging;
+      setX(targets[index]!);
+      follow();
+    };
+
+    // Jump without a glide (setup, resize).
+    const place = () => {
+      track.dataset.dragging = "";
+      setX(targets[index]!);
+      void track.offsetWidth; // apply before the transition comes back
+      delete track.dataset.dragging;
+      emit(index);
+    };
+
+    // offsetLeft ignores `translate`, so this is safe mid-glide.
+    const measure = () => {
+      const centre = track.clientWidth / 2;
+      targets = items.map((item) => centre - (item.offsetLeft + item.offsetWidth / 2));
+    };
+
+    const sync = () => {
+      enabled = media.matches;
+      track.dataset.carousel = enabled ? "on" : "off";
+      track.tabIndex = enabled || track.scrollWidth > track.clientWidth ? 0 : -1;
+      if (!enabled) {
+        cancelAnimationFrame(frame);
+        track.style.removeProperty("--carousel-x");
+        return;
+      }
+      track.scrollLeft = 0;
+      measure();
+      place();
+    };
+    media.addEventListener("change", sync);
+    new ResizeObserver(() => enabled && (measure(), place())).observe(track);
+    sync();
+
+    // Drag / swipe.
+    let press: { x: number; clientX: number; clientY: number } | null = null;
+    let dragging = false;
+    let samples: [time: number, clientX: number][] = [];
+    let suppressClick = false;
+
+    track.addEventListener("pointerdown", (event) => {
+      if (!enabled || event.button !== 0) return;
+      press = { x: visualX(), clientX: event.clientX, clientY: event.clientY };
+      dragging = false;
+      samples = [[event.timeStamp, event.clientX]];
+    });
+
+    track.addEventListener("pointermove", (event) => {
+      if (!press) return;
+      const dx = event.clientX - press.clientX;
+      if (!dragging) {
+        if (Math.abs(event.clientY - press.clientY) > Math.abs(dx)) {
+          if (Math.abs(event.clientY - press.clientY) > DRAG_START) press = null;
+          return;
+        }
+        if (Math.abs(dx) < DRAG_START) return;
+        dragging = true;
+        cancelAnimationFrame(frame);
+        try {
+          track.setPointerCapture(event.pointerId);
+        } catch {
+          // The pointer is already gone (released between events): nothing to capture.
+        }
+        track.dataset.dragging = "";
+        press = { ...press, x: visualX(), clientX: event.clientX };
+      }
+      const first = targets[0]!;
+      const last = targets[targets.length - 1]!;
+      let next = press.x + (event.clientX - press.clientX);
+      if (next > first) next = first + (next - first) * EDGE_RESISTANCE;
+      if (next < last) next = last + (next - last) * EDGE_RESISTANCE;
+      setX(next);
+      emit(positionOf(next));
+      samples.push([event.timeStamp, event.clientX]);
+      while (samples.length > 2 && event.timeStamp - samples[0]![0] > 100) samples.shift();
+    });
+
+    const release = () => {
+      if (dragging) {
+        const [t0, x0] = samples[0]!;
+        const [t1, x1] = samples[samples.length - 1]!;
+        const velocity = t1 > t0 ? (x1 - x0) / (t1 - t0) : 0;
+        const position = positionOf(x);
+        let target = Math.round(position);
+        if (velocity < -FLICK) target = Math.floor(position) + 1;
+        if (velocity > FLICK) target = Math.ceil(position) - 1;
+        suppressClick = true;
+        setTimeout(() => (suppressClick = false));
+        go(target);
+      }
+      press = null;
+      dragging = false;
+    };
+    track.addEventListener("pointerup", release);
+    track.addEventListener("pointercancel", release);
+    track.addEventListener("dragstart", (event) => enabled && event.preventDefault());
+    // A drag must not open the card it started on.
+    track.addEventListener(
+      "click",
+      (event) => {
+        if (!suppressClick) return;
+        event.preventDefault();
+        event.stopPropagation();
+      },
+      true,
+    );
+
+    // Horizontal trackpad swipe / shift-wheel: one slide per gesture.
+    let wheelSum = 0;
+    let wheelLock = 0;
+    track.addEventListener(
+      "wheel",
+      (event) => {
+        if (!enabled || Math.abs(event.deltaX) <= Math.abs(event.deltaY)) return;
+        event.preventDefault();
+        const now = performance.now();
+        if (now < wheelLock) {
+          wheelLock = now + WHEEL_QUIET; // the gesture's inertia tail
+          return;
+        }
+        wheelSum += event.deltaX;
+        if (Math.abs(wheelSum) < WHEEL_STEP) return;
+        go(index + Math.sign(wheelSum));
+        wheelSum = 0;
+        wheelLock = now + WHEEL_QUIET;
+      },
+      { passive: false },
+    );
+
+    // Keyboard: arrows on the track, and Tab into a card brings it to the centre.
+    track.addEventListener("keydown", (event) => {
+      if (!enabled || (event.key !== "ArrowLeft" && event.key !== "ArrowRight")) return;
+      event.preventDefault();
+      go(index + (event.key === "ArrowRight" ? 1 : -1));
+    });
+    track.addEventListener("focusin", (event) => {
+      // Keyboard focus only: a press on a link focuses it too, and must not move the track.
+      if (!(event.target as Element).matches(":focus-visible")) return;
+      const item = items.findIndex((it) => it.contains(event.target as Node));
+      if (enabled && item !== -1 && item !== index) go(item);
+    });
+
+    track.addEventListener("carousel:go", (event) => {
+      if (enabled) go((event as CustomEvent<number>).detail);
+    });
+  });
 </script>

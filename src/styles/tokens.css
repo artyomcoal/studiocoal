@@ -278,4 +278,10 @@
    * same time. */
   --motion-marquee-speed: 40;
   --motion-marquee-resume: 1500ms;
+
+  /* Carousel (Featured Articles below xl): after a swipe, drag, arrow key or dot tap the track
+   * glides to centre the target slide, and the pagination pill morphs along with it. Same smooth
+   * ease-out as the dialog (owner, 2026-11-10). */
+  --motion-duration-carousel: 600ms;
+  --motion-ease-carousel: cubic-bezier(0.32, 0.72, 0, 1);
 }
