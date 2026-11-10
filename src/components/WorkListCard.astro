@@ -5,8 +5,10 @@
  * Used by the Featured Work sections (home, project pages, services, about).
  * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=5005-6780
  *
- * The whole card is clickable (stretched title link).
+ * The whole card is clickable (stretched title link). A project whose case study isn't ready
+ * (`comingSoon`) has no link: a "Coming soon" label sits in the top-left corner of its visual.
  */
+import ComingSoonLabel from "@/components/ComingSoonLabel.astro";
 import Media from "@/components/Media.astro";
 import { serviceTitle } from "@/lib/services";
 import { cn } from "@/lib/utils";
@@ -42,13 +44,27 @@ const description = work.summary ?? work.excerpt;
     className,
   )}
 >
-  <Media media={work.listingMedia} aspect="portrait" sizes={sizes} priority={priority} />
+  {work.comingSoon ? (
+    <div class="relative">
+      <Media media={work.listingMedia} aspect="portrait" sizes={sizes} priority={priority} />
+      <ComingSoonLabel />
+    </div>
+  ) : (
+    <Media media={work.listingMedia} aspect="portrait" sizes={sizes} priority={priority} />
+  )}
   <div class="flex flex-col gap-3">
     <div class="flex flex-col gap-1 md:pr-6">
       <Heading class="text-headline-sm">
-        <a href={`/work/${work.slug}`} class="outline-none after:absolute after:inset-0">
-          {work.title}
-        </a>
+        {work.comingSoon ? (
+          <>
+            {work.title}
+            <span class="sr-only">(case study coming soon)</span>
+          </>
+        ) : (
+          <a href={`/work/${work.slug}`} class="outline-none after:absolute after:inset-0">
+            {work.title}
+          </a>
+        )}
       </Heading>
       {description && <p class="line-clamp-2 text-body-sm">{description}</p>}
     </div>

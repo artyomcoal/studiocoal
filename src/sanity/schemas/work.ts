@@ -79,6 +79,16 @@ export const work = defineType({
     }),
     slugField("work", "details", "basics"),
     defineField({
+      name: "comingSoon",
+      title: "Case study coming soon",
+      description:
+        'The project is listed on the home page, the Work archive and the Services page, but has no project page yet: its cards don\'t link anywhere and show a "Coming soon" label on the visual. Turn it off once the case study is ready.',
+      type: "boolean",
+      group: "details",
+      fieldset: "basics",
+      initialValue: false,
+    }),
+    defineField({
       name: "summary",
       title: "Short description",
       description:
@@ -357,16 +367,30 @@ export const work = defineType({
       client: "client",
       year: "year",
       featured: "featured",
+      comingSoon: "comingSoon",
       services: "services",
       kind: "listingMedia.kind",
       image: "listingMedia.image",
       poster: "listingMedia.video.poster",
       playlistUrl: "listingMedia.video.playlistUrl",
     },
-    // List rows read "Client · Year · Featured", with the project types underneath.
-    prepare: ({ title, client, year, featured, services, kind, image, poster, playlistUrl }) => ({
+    // List rows read "Client · Year · Featured · Coming soon", with the project types underneath.
+    prepare: ({
+      title,
+      client,
+      year,
+      featured,
+      comingSoon,
+      services,
+      kind,
+      image,
+      poster,
+      playlistUrl,
+    }) => ({
       title: title || "Untitled project",
-      subtitle: [client, year, featured && "Featured"].filter(Boolean).join(" · "),
+      subtitle: [client, year, featured && "Featured", comingSoon && "Coming soon"]
+        .filter(Boolean)
+        .join(" · "),
       description: ((services as string[] | undefined) ?? []).map(serviceTitle).join(", "),
       media: kind === "video" ? videoPreviewMedia(poster, playlistUrl) : image,
     }),
