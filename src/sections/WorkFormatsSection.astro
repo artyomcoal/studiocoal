@@ -2,11 +2,13 @@
 /**
  * Work Formats Section
  * Engagement models with price and tags (fixed budget, time and materials, retainer).
- * Figma: Process / breakpoint=xl (frame 5002:21584), "work formats"
+ * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=5036-17051
  *
- * Cards: 3 of 4 columns at xl, 3 at md, stacked at base.
+ * Cards: 3 of 4 columns at xl, 3 at md, stacked at base. "All work formats include" sidebar:
+ * the 4th column at xl; below the cards elsewhere (half width at md, full at base).
  */
 import { cn } from "@/lib/utils";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/ui/accordion";
 import { Badge } from "@/ui/badge";
 
 interface Props {
@@ -35,6 +37,26 @@ const formats = [
     tags: ["Reserved capacity", "Monthly engagements", "Ongoing partnership", "Dedicated team"],
   },
 ];
+
+/** What every format includes, so it isn't repeated on each card. */
+const included = [
+  {
+    title: "Senior team, start to finish",
+    text: "You work directly with the designers doing the work. No account managers in between.",
+  },
+  {
+    title: "Kick-off and discovery",
+    text: "Every engagement starts by aligning on goals, auditing what exists and agreeing a plan.",
+  },
+  {
+    title: "Full handover",
+    text: "You own the work. Source files, dev-ready specs and design system documentation are yours.",
+  },
+  {
+    title: "Launch support",
+    text: "We stay on after release to answer questions, review the build and fix what comes up.",
+  },
+];
 ---
 
 <section aria-labelledby="work-formats" class={cn("px-container pb-section", className)}>
@@ -45,28 +67,51 @@ const formats = [
         id="work-formats"
         class="col-span-full text-headline-xl text-fg-primary md:col-span-8 xl:col-span-5"
       >
-        Pick the shape that fits the moment, not the other way around.
+        Pick the engagement that fits the moment, not the other way around.
       </h2>
     </div>
-    <ul class="grid animate-enter-stagger gap-2 md:grid-cols-3 xl:grid-cols-4">
-      {formats.map((format) => (
-        <li class="flex flex-col gap-8 rounded-sm bg-bg-secondary p-4 text-fg-primary">
-          <div class="flex flex-col gap-6">
-            <h3 class="text-body-sm text-fg-secondary">{format.name}</h3>
-            <p class="text-headline-md">{format.price}</p>
-            <p class="text-body-sm">{format.text}</p>
-          </div>
-          <ul class="mt-auto flex flex-wrap gap-1" aria-label={`${format.name} includes`}>
-            {format.tags.map((tag) => (
-              <li>
-                <Badge variant="tertiary" size="default">
-                  {tag}
-                </Badge>
-              </li>
+    <div class="grid gap-12 xl:grid-cols-4 xl:gap-2">
+      <ul class="grid animate-enter-stagger gap-2 md:grid-cols-3 xl:col-span-3">
+        {formats.map((format) => (
+          <li class="flex flex-col gap-8 rounded-sm bg-bg-secondary p-4 text-fg-primary">
+            <div class="flex flex-col gap-6">
+              <h3 class="text-body-sm text-fg-secondary">{format.name}</h3>
+              <p class="text-headline-md">{format.price}</p>
+              <p class="text-body-sm">{format.text}</p>
+            </div>
+            <ul class="mt-auto flex flex-wrap gap-1" aria-label={`${format.name} includes`}>
+              {format.tags.map((tag) => (
+                <li>
+                  <Badge variant="tertiary" size="default">
+                    {tag}
+                  </Badge>
+                </li>
+              ))}
+            </ul>
+          </li>
+        ))}
+      </ul>
+      <aside
+        aria-labelledby="work-formats-included"
+        class="flex animate-enter flex-col gap-6 md:w-1/2 xl:w-auto xl:pl-4"
+      >
+        <h3 id="work-formats-included" class="text-headline-md text-balance text-fg-primary">
+          All work formats include:
+        </h3>
+        <div class="flex flex-col gap-4">
+          <Accordion class="border-b border-border-subtle">
+            {included.map((item, i) => (
+              <AccordionItem value={`included-${i}`}>
+                <AccordionTrigger size="sm">{item.title}</AccordionTrigger>
+                <AccordionContent class="pb-3">{item.text}</AccordionContent>
+              </AccordionItem>
             ))}
-          </ul>
-        </li>
-      ))}
-    </ul>
+          </Accordion>
+          <p class="text-body-xs text-pretty text-fg-primary">
+            Prices exclude VAT. Larger or multi-team engagements are quoted individually.
+          </p>
+        </div>
+      </aside>
+    </div>
   </div>
 </section>
