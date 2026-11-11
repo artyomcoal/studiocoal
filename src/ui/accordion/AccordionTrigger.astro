@@ -9,9 +9,10 @@ interface Props extends HTMLAttributes<"button"> {
   asChild?: boolean;
   /**
    * Trigger text style. Figma uses Headline XS (Services, Work Single) and
-   * Headline MD (About: 18px base/md, 20px xl).
+   * Headline MD (About: 18px base/md, 20px xl). body is the compact Body MD row with 16px vertical
+   * padding (Process › Work formats sidebar).
    */
-  size?: "xs" | "md";
+  size?: "body" | "xs" | "md";
   /**
    * What the accordion sits on: the page (default) or a filled bg-secondary panel (filled). On a
    * filled panel the icon box uses the interactive-secondary palette one step darker.
@@ -30,7 +31,7 @@ const {
 
 // Studio Coal: restyled to Figma "AccordionItem" (node 672:1702). Changes from upstream:
 // - text from headline styles via `size`, interactive-primary color, hover/expanded/focus use -hover
-// - 20px vertical padding (py-5), Figma focus ring, plus icon in a 24px box instead of chevrons.
+// - 20px vertical padding (py-5; 16px for size body), Figma focus ring, plus icon in a 24px box instead of chevrons.
 //   Box fill (owner, 2026-11-06): interactive-secondary at rest, -hover on hover / keyboard focus,
 //   -active on press and while the item is open. `surface="filled"` (accordions on a bg-secondary
 //   panel) shifts that one step darker: -hover at rest, -active on hover and while open.
@@ -64,7 +65,7 @@ const iconVariants = cva(
 
 const triggerVariants = cva(
   [
-    "group/accordion-trigger relative flex flex-1 cursor-pointer items-center justify-between gap-4 py-5 text-left",
+    "group/accordion-trigger relative flex flex-1 cursor-pointer items-center justify-between gap-4 text-left",
     "text-interactive-primary transition-colors duration-150 ease-out outline-none",
     "hover:text-interactive-primary-hover aria-expanded:text-interactive-primary-hover focus-visible:text-interactive-primary-hover",
     "focus-visible:ring-2 focus-visible:ring-interactive-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg-primary",
@@ -73,8 +74,9 @@ const triggerVariants = cva(
   {
     variants: {
       size: {
-        xs: "text-headline-xs",
-        md: "text-headline-md",
+        body: "py-4 text-body-md",
+        xs: "py-5 text-headline-xs",
+        md: "py-5 text-headline-md",
       },
     },
     defaultVariants: { size: "xs" },

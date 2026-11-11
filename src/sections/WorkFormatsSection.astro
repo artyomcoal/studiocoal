@@ -2,12 +2,21 @@
 /**
  * Work Formats Section
  * Engagement models with price and tags (fixed budget, time and materials, retainer).
- * Figma: Process / breakpoint=xl (frame 5002:21584), "work formats"
+ * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=5036-17051
  *
- * Cards: 3 of 4 columns at xl, 3 at md, stacked at base.
+ * One grid for the cards and the "All work formats include" sidebar: 2 columns at md (the
+ * sidebar takes the 4th cell), stacked at base; there the cards' <ul> is display: contents so its
+ * items sit in that grid (role="list" keeps its list semantics in Safari). At xl the <ul> is a
+ * 3-column grid of its own, top-aligned, so the cards keep their height next to the taller
+ * sidebar, as in Figma.
+ *
+ * The Copy buttons reuse the Get in touch modal's markup: its script (in the Navbar, on every
+ * page) binds every [data-copy-email] button, so this section ships no JS of its own.
  */
 import { cn } from "@/lib/utils";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/ui/accordion";
 import { Badge } from "@/ui/badge";
+import { Button } from "@/ui/button";
 
 interface Props {
   class?: string;
@@ -35,6 +44,32 @@ const formats = [
     tags: ["Reserved capacity", "Monthly engagements", "Ongoing partnership", "Dedicated team"],
   },
 ];
+
+/** What every format includes, so it isn't repeated on each card. */
+const included = [
+  {
+    title: "Senior people only",
+    text: "The designers you meet on the first call are the ones doing the work, from first sketch to final file. No hand-offs to juniors, no account managers in between.",
+  },
+  {
+    title: "A proper kick-off",
+    text: "Every project starts the same way, whatever the format. We agree goals, review what already exists and set a plan, so we’re aligned before any design starts.",
+  },
+  {
+    title: "Everything is yours",
+    text: "You own the full IP and every source file. Websites we build come with the code and the CMS. Product work comes ready for your engineers to pick up.",
+  },
+  {
+    title: "Support after launch",
+    text: "We watch how the work performs once it’s live, act on what we learn and make sure your team is confident running it on their own.",
+  },
+];
+
+// Same addresses as the Get in touch modal (partner@ per the owner; Figma says business@).
+const contacts = [
+  { label: "General enquiries", email: "hello@studiocoal.com" },
+  { label: "New business", email: "partner@studiocoal.com" },
+];
 ---
 
 <section aria-labelledby="work-formats" class={cn("px-container pb-section", className)}>
@@ -45,28 +80,87 @@ const formats = [
         id="work-formats"
         class="col-span-full text-headline-xl text-fg-primary md:col-span-8 xl:col-span-5"
       >
-        Pick the shape that fits the moment, not the other way around.
+        Pick the engagement that fits the moment, not the other way around.
       </h2>
     </div>
-    <ul class="grid animate-enter-stagger gap-2 md:grid-cols-3 xl:grid-cols-4">
-      {formats.map((format) => (
-        <li class="flex flex-col gap-8 rounded-sm bg-bg-secondary p-4 text-fg-primary">
-          <div class="flex flex-col gap-6">
-            <h3 class="text-body-sm text-fg-secondary">{format.name}</h3>
-            <p class="text-headline-md">{format.price}</p>
-            <p class="text-body-sm">{format.text}</p>
-          </div>
-          <ul class="mt-auto flex flex-wrap gap-1" aria-label={`${format.name} includes`}>
-            {format.tags.map((tag) => (
-              <li>
-                <Badge variant="tertiary" size="default">
-                  {tag}
-                </Badge>
-              </li>
+    <div class="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+      {/* eslint-disable-next-line astro/jsx-a11y/no-redundant-roles -- display: contents drops the implicit list role in Safari */}
+      <ul
+        role="list"
+        class="contents animate-enter-stagger xl:col-span-3 xl:grid xl:grid-cols-3 xl:gap-2 xl:self-start"
+      >
+        {formats.map((format, i) => (
+          <li
+            class={cn(
+              "flex flex-col gap-8 rounded-sm bg-bg-secondary p-4 text-fg-primary",
+              // md: the 3rd card shares a row with the taller sidebar; keep its own height.
+              i === formats.length - 1 && "md:self-start xl:self-auto",
+            )}
+          >
+            <div class="flex flex-col gap-6">
+              <h3 class="text-body-sm text-fg-secondary">{format.name}</h3>
+              <p class="text-headline-md">{format.price}</p>
+              <p class="text-body-sm">{format.text}</p>
+            </div>
+            <ul class="mt-auto flex flex-wrap gap-1" aria-label={`${format.name} includes`}>
+              {format.tags.map((tag) => (
+                <li>
+                  <Badge variant="tertiary" size="default">
+                    {tag}
+                  </Badge>
+                </li>
+              ))}
+            </ul>
+          </li>
+        ))}
+      </ul>
+      <aside
+        aria-labelledby="work-formats-included"
+        class="mt-10 flex animate-enter flex-col gap-6 md:mt-0 md:pt-4 md:pl-4 xl:pt-0"
+      >
+        <h3 id="work-formats-included" class="text-headline-md text-balance text-fg-primary">
+          All work formats include:
+        </h3>
+        <div class="flex flex-col gap-6">
+          <Accordion class="border-b border-border-subtle">
+            {included.map((item, i) => (
+              <AccordionItem value={`included-${i}`}>
+                <AccordionTrigger size="body">{item.title}</AccordionTrigger>
+                <AccordionContent class="pb-4">{item.text}</AccordionContent>
+              </AccordionItem>
             ))}
-          </ul>
-        </li>
-      ))}
-    </ul>
+          </Accordion>
+          <div class="flex flex-col gap-4">
+            {contacts.map(({ label, email }) => (
+              <div class="flex flex-col">
+                <p class="text-body-sm text-fg-secondary">{label}</p>
+                <div class="flex items-center justify-between gap-2">
+                  <a
+                    href={`mailto:${email}`}
+                    class="text-body-md text-fg-primary underline-offset-2 hover:underline"
+                  >
+                    {email}
+                  </a>
+                  <Button
+                    type="button"
+                    variant="tertiary"
+                    size="sm"
+                    data-copy-email={email}
+                    aria-label={`Copy ${email}`}
+                  >
+                    <span aria-live="polite">Copy</span>
+                  </Button>
+                </div>
+              </div>
+            ))}
+            <hr class="border-border-subtle" />
+            <p class="text-body-xs text-pretty text-fg-primary">
+              Not sure which fits? We’ll help you choose on the first call. Prices exclude VAT;
+              larger engagements are quoted individually.
+            </p>
+          </div>
+        </div>
+      </aside>
+    </div>
   </div>
 </section>
