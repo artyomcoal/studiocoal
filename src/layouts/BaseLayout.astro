@@ -177,57 +177,94 @@ const structuredData = serializeJsonLd(
          paint. `nav-entered` hides the sections; `nav-ready` fades them in once
          1. the page transition (if any) has finished, so the old page's fade-out and the new
             page's fade-in never overlap, and
-         2. the fonts and the images on screen are decoded, so nothing pops in mid-fade.
-         A 1s cap keeps a slow image from holding the page back. -->
+         2. the fonts and the images on screen are decoded, so nothing pops in mid-fade (at most
+            1s: a slow image doesn't hold the page back; the transition is never cut short).
+         Two signals for "in-site": a running View Transition (`pagereveal`; only same-origin, and
+         the only one on Back / Forward, whose `document.referrer` is empty, and on a back/forward
+         cache restore, where this script doesn't run again but its listener does, so the entrance
+         replays), and a same-origin referrer (browsers without cross-document transitions, and a
+         skipped transition). -->
     <script is:inline>
-      try {
+      (() => {
         const root = document.documentElement;
-        const nav = performance.getEntriesByType("navigation")[0];
-        if (
-          nav?.type !== "reload" &&
-          !matchMedia("(prefers-reduced-motion: reduce)").matches &&
-          document.referrer &&
-          new URL(document.referrer).origin === location.origin
-        ) {
+        if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+        const pageReady = new Promise((resolve) => {
+          addEventListener(
+            "DOMContentLoaded",
+            () => {
+              const onScreen = [...document.querySelectorAll("main img")].filter(
+                (img) => img.getBoundingClientRect().top < innerHeight,
+              );
+              Promise.all([
+                document.fonts.ready,
+                ...onScreen.map((img) => img.decode().catch(() => {})),
+              ]).then(resolve);
+            },
+            { once: true },
+          );
+        });
+        let inSite = false;
+        try {
+          const nav = performance.getEntriesByType("navigation")[0];
+          inSite =
+            nav?.type !== "reload" &&
+            !!document.referrer &&
+            new URL(document.referrer).origin === location.origin;
+        } catch {
+          /* Malformed referrer: not in-site. */
+        }
+        const enter = (transitionDone) => {
+          root.classList.remove("nav-ready"); // a restored page replays its entrance
           root.classList.add("nav-entered");
-          const transitionDone = new Promise((resolve) => {
-            if (!("onpagereveal" in window)) return resolve();
-            addEventListener(
-              "pagereveal",
-              (event) =>
-                event.viewTransition
-                  ? event.viewTransition.finished.then(resolve, resolve)
-                  : resolve(),
-              { once: true },
-            );
-          });
-          const pageReady = new Promise((resolve) => {
-            addEventListener(
-              "DOMContentLoaded",
-              () => {
-                const onScreen = [...document.querySelectorAll("main img")].filter(
-                  (img) => img.getBoundingClientRect().top < innerHeight,
-                );
-                Promise.all([
-                  document.fonts.ready,
-                  ...onScreen.map((img) => img.decode().catch(() => {})),
-                ]).then(resolve);
-              },
-              { once: true },
-            );
-          });
-          // The cap only limits the wait for fonts and images, never the transition: when the
-          // new page rendered late (slow response, uncached stylesheet), a cap on both added
-          // nav-ready while the old page was still fading out, and the sections jumped in under
-          // it. `finished` always settles (also when the transition is skipped), so this can't hang.
           const cap = new Promise((resolve) => setTimeout(resolve, 1000));
           Promise.all([transitionDone, Promise.race([pageReady, cap])]).then(() =>
             root.classList.add("nav-ready"),
           );
+        };
+        if ("onpagereveal" in window) {
+          // Fires right before a page's first frame (and again on a back/forward cache restore),
+          // so the sections are hidden in that frame. `finished` always settles.
+          let transition = null;
+          let revealed = false;
+          addEventListener("pagereveal", (event) => {
+            transition = event.viewTransition;
+            if (transition) enter(transition.finished.catch(() => {}));
+            else if (inSite && !revealed) enter(Promise.resolve());
+            revealed = true;
+          });
+          // While a transition runs, every click lands on <html> (the transition overlay always
+          // hit-tests as the root, whatever its pointer-events), so a quick click on the next nav
+          // item during the old page's fade-out did nothing. A press now ends the fade-out at
+          // once, and its click goes to the link or button under the pointer.
+          let forward = false;
+          addEventListener(
+            "pointerdown",
+            () => {
+              if (!transition || !root.matches(":active-view-transition")) return;
+              transition.skipTransition();
+              forward = true;
+            },
+            true,
+          );
+          addEventListener(
+            "click",
+            (event) => {
+              if (!forward) return;
+              forward = false;
+              if (event.target !== root) return;
+              const target = document
+                .elementFromPoint(event.clientX, event.clientY)
+                ?.closest("a[href], button, summary, label, [role=button]");
+              if (!target) return;
+              event.stopPropagation();
+              target.dispatchEvent(new MouseEvent("click", event));
+            },
+            true,
+          );
+          return;
         }
-      } catch {
-        /* Malformed referrer: no entrance. */
-      }
+        if (inSite) enter(Promise.resolve());
+      })();
     </script>
     <title>{seo.title}</title>
     <meta name="description" content={seo.description} />

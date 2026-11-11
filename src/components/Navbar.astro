@@ -690,6 +690,7 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
           .getPropertyValue("--motion-ease-nav-pill")
           .trim() || "ease-out";
       let navigation = 0;
+      let leaving = false; // location.assign() was called: a navigation is under way
       const carryOver = () => {
         let saved = null;
         try {
@@ -737,12 +738,16 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
         item.dataset.entering = "";
         if (active) active.dataset.leaving = "";
         moveTo(item);
-        const left = slide && target === item ? duration - (Date.now() - slide.t) : 0;
+        // Once a navigation from this page has started, the next page can replace this one at
+        // any moment, taking a pending timer with it: a quick second click was lost. So a click
+        // after that navigates at once, without waiting for the slide.
+        const left = !leaving && slide && target === item ? duration - (Date.now() - slide.t) : 0;
         clearTimeout(navigation);
         navigation = setTimeout(
           () => {
             if (slide && target === item)
               sessionStorage.setItem("navPill", JSON.stringify({ to: item.pathname, ...slide }));
+            leaving = true;
             location.assign(item.href);
           },
           Math.max(0, Math.min(left, headStart)),
@@ -753,6 +758,7 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
         if (!event.persisted) return;
         live = false;
         target = null;
+        leaving = false;
         clearTimeout(navigation);
         carried?.cancel();
         carried = null;
