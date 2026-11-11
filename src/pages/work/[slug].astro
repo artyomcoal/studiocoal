@@ -153,6 +153,7 @@ const jsonLd = [
       Only with visuals: one section alone needs no indicator. */}
   {work.content?.length ? (
     <SectionProgressIndicator
+      slot="fixed"
       label="Project sections"
       items={[
         { label: "Overview", href: "#overview" },
