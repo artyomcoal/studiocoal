@@ -2,7 +2,7 @@
 /**
  * About Why Section
  * "Studio" (formerly "Our why"): a Headline XL header in columns 1–5, then the team list in
- * columns 1–5 and the studio text, a divider and a client highlight in columns 7–12 at xl.
+ * columns 1–3 and the studio text, a divider and a client highlight in columns 7–12 at xl.
  * Stacked below xl (header, team, text). Only the xl frame is designed; md and base follow the
  * stacking used across the site. Team avatars are bg-tertiary placeholders until photos exist.
  * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=5044-17678
@@ -19,8 +19,8 @@ const { class: className } = Astro.props;
 const team = [
   { name: "Artyom Zolotov", role: "Design Director" },
   { name: "Val Daznel", role: "Creative Director" },
-  { name: "Niclas Ernst", role: "Senior Designer" },
-  { name: "Niclas Ernst", role: "Senior Designer" },
+  { name: "Kristaps Matisons", role: "Senior Designer" },
+  { name: "Arthur Poleino", role: "Senior Designer" },
 ];
 ---
 
@@ -32,24 +32,24 @@ const team = [
         id="studio"
         class="col-span-full text-headline-xl text-balance text-fg-primary xl:col-span-5"
       >
-        Our interdisciplinary senior team are hands-on, from day one to launch
+        Our senior, cross-discipline team is hands-on from day one to launch.
       </h2>
     </div>
     <div class="grid-cols-layout gap-y-12">
-      <ul class="col-span-full flex animate-enter-stagger flex-col gap-gutter xl:col-span-5">
+      <ul class="col-span-full flex animate-enter-stagger flex-col gap-gutter xl:col-span-3">
         {team.map((member) => (
-          <li class="flex items-center gap-4 rounded-sm bg-bg-secondary p-4">
+          <li class="flex items-center gap-3 rounded-sm bg-bg-secondary p-3">
             <span aria-hidden="true" class="size-8 shrink-0 rounded-xs bg-bg-tertiary" />
             <p class="flex flex-wrap items-center gap-x-3 text-body-md">
               <span class="text-interactive-primary">{member.name}</span>
-              <span class="text-fg-tertiary">{member.role}</span>
+              <span class="text-fg-secondary">{member.role}</span>
             </p>
           </li>
         ))}
-        <li class="flex items-center gap-4 rounded-sm bg-bg-secondary p-4">
+        <li class="flex items-center gap-3 rounded-sm bg-bg-secondary p-3">
           <span
             aria-hidden="true"
-            class="flex size-8 shrink-0 items-center justify-center rounded-xs border-2 border-bg-primary bg-bg-tertiary text-body-xs text-fg-secondary"
+            class="flex size-8 shrink-0 items-center justify-center rounded-xs bg-bg-tertiary text-body-xs text-fg-secondary"
           >
             10+
           </span>
@@ -67,27 +67,23 @@ const team = [
               and the product have to say the same thing, so the same people make all three.
             </p>
             <p>
-              Staying small keeps us honest. Whoever you meet on the first call is still doing the
-              work in week six. When a project needs something we don’t do every day, like motion,
-              3D or deeper engineering, we bring in specialists we’ve worked with for years.
+              We’re a studio of four, and staying small keeps us honest. Whoever you meet on the
+              first call is still doing the work in week six. When a project needs something we
+              don’t do every day, like motion, 3D or deeper engineering, we bring in specialists
+              we’ve worked with for years.
             </p>
           </div>
-          <div class="flex flex-col gap-5">
-            <p>
-              We’re curious about tools and strict about taste. AI lets us explore further than a
-              studio our size ever could, and we use it gladly. But exploring was never the hard
-              part. Choosing is: knowing what’s right for the company, now, and making it with care.
-            </p>
-            <p>
-              We take on a few projects at a time and do them properly with non negotiable highest
-              standard.
-            </p>
-          </div>
+          <p>
+            We’re curious about tools and strict about taste. AI lets us explore further than a
+            studio our size ever could, and we use it gladly. But exploring was never the hard part.
+            Choosing is: knowing what’s right for this company, now, and making it with care. We
+            take on a few projects at a time, and we don’t lower the bar for any of them.
+          </p>
         </div>
         <hr class="border-border-subtle" />
         <div class="flex flex-col items-start gap-4">
-          <p class="flex items-center gap-2 rounded-xs bg-bg-secondary px-2 py-1 text-label">
-            <span class="text-fg-secondary">Built brand and product from scratch for</span>
+          <p class="flex items-center gap-2 rounded-xs bg-bg-secondary px-2 py-1 text-label text-fg-primary">
+            <span>Built brand and product from scratch for</span>
             <img
               src={obviousLogo.src}
               width={24}
@@ -97,7 +93,7 @@ const team = [
               decoding="async"
               class="size-6 rounded-xs"
             />
-            <span class="text-fg-primary">Obvious</span>
+            <span>Obvious</span>
           </p>
           <p class="max-w-80 text-body-xs">
             Staying small keeps us honest. Whoever you meet on the first call is still doing the
