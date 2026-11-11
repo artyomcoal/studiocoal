@@ -1,6 +1,6 @@
 ---
 /**
- * About page: hero, studio photos, our why, principles, capabilities, clients, services CTA
+ * About page: hero, studio photos, studio (team and approach), capabilities, clients, services CTA
  * and recent work.
  * Figma: About / breakpoint=xl|md|base (frames 5044:17639, 53346:10376, 53347:10697)
  */
@@ -9,7 +9,6 @@ import PageLayout from "@/layouts/PageLayout.astro";
 import type { MediaData } from "@/sanity/media";
 import { ABOUT_MEDIA_QUERY, CLIENTS_QUERY, FEATURED_WORK_QUERY } from "@/sanity/queries";
 import AboutMarqueeSection from "@/sections/AboutMarqueeSection.astro";
-import AboutPrinciplesSection from "@/sections/AboutPrinciplesSection.astro";
 import AboutWhySection from "@/sections/AboutWhySection.astro";
 import CapabilitiesSection from "@/sections/CapabilitiesSection.astro";
 import ClientsSection from "@/sections/ClientsSection.astro";
@@ -36,7 +35,6 @@ const [aboutMedia, clients, recentWork] = await Promise.all([
     )}
   />
   <AboutWhySection />
-  <AboutPrinciplesSection />
   <CapabilitiesSection />
   <ClientsSection clients={clients} />
   <ServicesCtaSection />
