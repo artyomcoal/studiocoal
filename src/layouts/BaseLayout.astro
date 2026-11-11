@@ -216,8 +216,12 @@ const structuredData = serializeJsonLd(
               { once: true },
             );
           });
+          // The cap only limits the wait for fonts and images, never the transition: when the
+          // new page rendered late (slow response, uncached stylesheet), a cap on both added
+          // nav-ready while the old page was still fading out, and the sections jumped in under
+          // it. `finished` always settles (also when the transition is skipped), so this can't hang.
           const cap = new Promise((resolve) => setTimeout(resolve, 1000));
-          Promise.race([Promise.all([transitionDone, pageReady]), cap]).then(() =>
+          Promise.all([transitionDone, Promise.race([pageReady, cap])]).then(() =>
             root.classList.add("nav-ready"),
           );
         }

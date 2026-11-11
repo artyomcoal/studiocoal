@@ -253,26 +253,33 @@ const flatFrom = cva("", {
     );
 
     // Horizontal trackpad swipe / shift-wheel: one slide per gesture.
+    // The listener can't be passive (it stops the browser's own horizontal scroll / history
+    // swipe), and a non-passive wheel listener makes Chrome wait for the main thread before it
+    // scrolls the page over this element. Right after a page load the main thread is busy, so
+    // vertical trackpad swipes over the cards were dropped. So it's only attached while the
+    // carousel is on (below `until`), not on desktop where the track is a plain grid.
     let wheelSum = 0;
     let wheelLock = 0;
-    track.addEventListener(
-      "wheel",
-      (event) => {
-        if (!enabled || Math.abs(event.deltaX) <= Math.abs(event.deltaY)) return;
-        event.preventDefault();
-        const now = performance.now();
-        if (now < wheelLock) {
-          wheelLock = now + WHEEL_QUIET; // the gesture's inertia tail
-          return;
-        }
-        wheelSum += event.deltaX;
-        if (Math.abs(wheelSum) < WHEEL_STEP) return;
-        go(index + Math.sign(wheelSum));
-        wheelSum = 0;
-        wheelLock = now + WHEEL_QUIET;
-      },
-      { passive: false },
-    );
+    const onWheel = (event: WheelEvent) => {
+      if (!enabled || Math.abs(event.deltaX) <= Math.abs(event.deltaY)) return;
+      event.preventDefault();
+      const now = performance.now();
+      if (now < wheelLock) {
+        wheelLock = now + WHEEL_QUIET; // the gesture's inertia tail
+        return;
+      }
+      wheelSum += event.deltaX;
+      if (Math.abs(wheelSum) < WHEEL_STEP) return;
+      go(index + Math.sign(wheelSum));
+      wheelSum = 0;
+      wheelLock = now + WHEEL_QUIET;
+    };
+    const listenWheel = () =>
+      enabled
+        ? track.addEventListener("wheel", onWheel, { passive: false })
+        : track.removeEventListener("wheel", onWheel);
+    media.addEventListener("change", listenWheel);
+    listenWheel();
 
     // Keyboard: arrows on the track, and Tab into a card brings it to the centre.
     track.addEventListener("keydown", (event) => {

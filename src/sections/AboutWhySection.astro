@@ -1,9 +1,13 @@
 ---
 /**
  * About Why Section
- * "Our why": two paragraphs and four figures, in columns 7–12 at xl, full width below.
- * Figma: About / breakpoint=xl (frame 5044:17639), "our why"
+ * "Studio" (formerly "Our why"): a Headline XL header in columns 1–5, then the team list in
+ * columns 1–5 and the studio text, a divider and a client highlight in columns 7–12 at xl.
+ * Stacked below xl (header, team, text). Only the xl frame is designed; md and base follow the
+ * stacking used across the site. Team avatars are bg-tertiary placeholders until photos exist.
+ * Figma: https://www.figma.com/design/xqG6nM7oVW4iev0PrbuqWt/?node-id=5044-17678
  */
+import obviousLogo from "@/assets/client-obvious.png";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -12,53 +16,96 @@ interface Props {
 
 const { class: className } = Astro.props;
 
-const figures = [
-  { label: "Partnerships", value: "25+" },
-  { label: "Our team", value: "4" },
-  { label: "Years building", value: "7+" },
-  { label: "Awards", value: "11" },
+const team = [
+  { name: "Artyom Zolotov", role: "Design Director" },
+  { name: "Val Daznel", role: "Creative Director" },
+  { name: "Niclas Ernst", role: "Senior Designer" },
+  { name: "Niclas Ernst", role: "Senior Designer" },
 ];
 ---
 
-<section aria-labelledby="our-why" class={cn("px-container pb-section", className)}>
-  <h2 id="our-why" class="py-6 text-eyebrow text-fg-primary uppercase">
-    Our why
-  </h2>
-  <div class="grid-cols-layout pt-12">
-    <div class="col-span-full flex flex-col gap-12 text-fg-primary xl:col-span-6 xl:col-start-7">
-      <div class="flex flex-col gap-12 text-body-md md:flex-row *:flex-1">
-        <div class="flex flex-col gap-5">
-          <p>
-            Every company has a few moments that decide how it's seen: the day it comes out of
-            stealth, the round it raises, the product it launches. Too often those moments arrive
-            with a brand that doesn't fit, a site that lists features but doesn't make a case, and a
-            product that shows off its complexity instead of resolving it. We started Studio Coal to
-            help founders meet those moments properly.
+<section aria-labelledby="studio" class={cn("px-container pb-section", className)}>
+  <p class="py-6 text-eyebrow text-fg-primary uppercase">Studio</p>
+  <div class="flex flex-col gap-20 pt-20">
+    <div class="grid-cols-layout">
+      <h2
+        id="studio"
+        class="col-span-full text-headline-xl text-balance text-fg-primary xl:col-span-5"
+      >
+        Our interdisciplinary senior team are hands-on, from day one to launch
+      </h2>
+    </div>
+    <div class="grid-cols-layout gap-y-12">
+      <ul class="col-span-full flex animate-enter-stagger flex-col gap-gutter xl:col-span-5">
+        {team.map((member) => (
+          <li class="flex items-center gap-4 rounded-sm bg-bg-secondary p-4">
+            <span aria-hidden="true" class="size-8 shrink-0 rounded-xs bg-bg-tertiary" />
+            <p class="flex flex-wrap items-center gap-x-3 text-body-md">
+              <span class="text-interactive-primary">{member.name}</span>
+              <span class="text-fg-tertiary">{member.role}</span>
+            </p>
+          </li>
+        ))}
+        <li class="flex items-center gap-4 rounded-sm bg-bg-secondary p-4">
+          <span
+            aria-hidden="true"
+            class="flex size-8 shrink-0 items-center justify-center rounded-xs border-2 border-bg-primary bg-bg-tertiary text-body-xs text-fg-secondary"
+          >
+            10+
+          </span>
+          <p class="text-body-md text-fg-primary">
+            Specialist network<span class="sr-only">: 10+ senior specialists</span>
           </p>
-          <p>
-            We kept it small on purpose. Small means the senior people stay on the work, decisions
-            are quick, and nothing gets lost in a handoff. When a project needs more, we bring in
-            specialists we've worked with for years.
-          </p>
+        </li>
+      </ul>
+      <div class="col-span-full flex flex-col gap-12 text-fg-primary xl:col-span-6 xl:col-start-7">
+        <div class="flex flex-col gap-12 text-body-md md:flex-row *:flex-1">
+          <div class="flex flex-col gap-5">
+            <p>
+              We work with founders at the moments that shape how a company is seen: coming out of
+              stealth, raising a round, launching a product. At those moments the brand, the website
+              and the product have to say the same thing, so the same people make all three.
+            </p>
+            <p>
+              Staying small keeps us honest. Whoever you meet on the first call is still doing the
+              work in week six. When a project needs something we don’t do every day, like motion,
+              3D or deeper engineering, we bring in specialists we’ve worked with for years.
+            </p>
+          </div>
+          <div class="flex flex-col gap-5">
+            <p>
+              We’re curious about tools and strict about taste. AI lets us explore further than a
+              studio our size ever could, and we use it gladly. But exploring was never the hard
+              part. Choosing is: knowing what’s right for the company, now, and making it with care.
+            </p>
+            <p>
+              We take on a few projects at a time and do them properly with non negotiable highest
+              standard.
+            </p>
+          </div>
         </div>
-        <div class="flex flex-col gap-5">
-          <p>
-            We're curious by nature. We try new tools early and use them to explore more than a
-            small team otherwise could. But the more options there are, the more the work comes down
-            to judgment: knowing what's right for this company at this moment, and making it with
-            care.
+        <hr class="border-border-subtle" />
+        <div class="flex flex-col items-start gap-4">
+          <p class="flex items-center gap-2 rounded-xs bg-bg-secondary px-2 py-1 text-label">
+            <span class="text-fg-secondary">Built brand and product from scratch for</span>
+            <img
+              src={obviousLogo.src}
+              width={24}
+              height={24}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              class="size-6 rounded-xs"
+            />
+            <span class="text-fg-primary">Obvious</span>
           </p>
-          <p>We'd rather do fewer things properly. That's the Studio Coal.</p>
+          <p class="max-w-80 text-body-xs">
+            Staying small keeps us honest. Whoever you meet on the first call is still doing the
+            work in week six. When a project needs something we don’t do every day, like motion, 3D
+            or deeper engineering, we bring in specialists we’ve worked with for years.
+          </p>
         </div>
       </div>
-      <dl class="grid animate-enter-stagger grid-cols-2 gap-2 md:grid-cols-4">
-        {figures.map((figure) => (
-          <div class="flex flex-col gap-6 rounded-sm bg-bg-secondary p-4">
-            <dt class="text-body-sm">{figure.label}</dt>
-            <dd class="text-headline-xxl text-fg-tertiary">{figure.value}</dd>
-          </div>
-        ))}
-      </dl>
     </div>
   </div>
 </section>

@@ -8,6 +8,10 @@
  *   during page transitions (src/styles/motion.css).
  * - default slot: the page sections. Each top-level child of <main> plays the staggered
  *   entrance after an in-site navigation, so pass sections directly, not one wrapper.
+ * - "fixed" slot: viewport-fixed overlays (Work Single's section progress pill), rendered after
+ *   <main>, outside the staggered entrance. The entrance animates opacity, which makes each
+ *   section a backdrop root, so a backdrop-blur inside one only blurs the (transparent) section,
+ *   not the page behind it. Give the overlay's blurred element `animate-enter` instead.
  * - Footer: rendered on every page, after <main>. Not animated.
  * - "head" slot: forwarded to BaseLayout's <head> (preloads, page-specific meta).
  */
@@ -31,5 +35,6 @@ const { article, sections, ...props } = Astro.props;
   <main class="animate-enter-stagger">
     <slot />
   </main>
+  <slot name="fixed" />
   <Footer />
 </BaseLayout>

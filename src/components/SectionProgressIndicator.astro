@@ -25,6 +25,10 @@
  * The script is inline, right after the markup, so the first paint already has the fills, the
  * current item and the Navbar button state (nothing to animate in on load).
  * `preview` renders fixed values in place (no script, not fixed), for /styleguide.
+ *
+ * Pages pass it to PageLayout's `fixed` slot, not as a section in <main>: the sections' entrance
+ * animates opacity, which would make the wrapper a backdrop root and stop the pill's blur
+ * (backdrop-blur-md) from seeing the page. The pill fades in itself (animate-enter).
  */
 import NavItem from "@/components/NavItem.astro";
 import { cn } from "@/lib/utils";
@@ -66,7 +70,7 @@ const { items, label = "Page sections", preview, class: className } = Astro.prop
       "flex w-70 max-w-full items-center rounded-sm bg-bg-translucent p-1 backdrop-blur-md",
       !preview &&
         // touch-pan-y: sideways drags reach the script (touch scrubbing), vertical ones scroll.
-        "pointer-events-auto mb-[env(safe-area-inset-bottom)] touch-pan-y select-none transition-transform duration-(--motion-duration-nav-pill) ease-(--motion-ease-nav-pill) data-hidden:translate-y-[calc(100%_+_var(--spacing)*4_+_env(safe-area-inset-bottom))] motion-reduce:transition-none",
+        "animate-enter pointer-events-auto mb-[env(safe-area-inset-bottom)] touch-pan-y select-none transition-transform duration-(--motion-duration-nav-pill) ease-(--motion-ease-nav-pill) data-hidden:translate-y-[calc(100%_+_var(--spacing)*4_+_env(safe-area-inset-bottom))] motion-reduce:transition-none",
     )}
   >
     {items.map((item, index) => {
