@@ -17,6 +17,11 @@
  * While the pill shows, `data-section-progress` is set on <html>: on base the Navbar's "Get in
  * touch" button (same bottom-centre slot) slides away, and comes back when the pill hides.
  *
+ * Touch scrubbing: on a touch screen the pill is also a slider. A sideways drag on it scrolls
+ * the page so the fills follow the finger: the finger's x inside an item is that section's
+ * progress (left edge 0, right edge 1). A tap still follows the link, and a vertical drag
+ * scrolls the page as usual (touch-action: pan-y). While scrubbing the pill never hides.
+ *
  * The script is inline, right after the markup, so the first paint already has the fills, the
  * current item and the Navbar button state (nothing to animate in on load).
  * `preview` renders fixed values in place (no script, not fixed), for /styleguide.
@@ -60,7 +65,8 @@ const { items, label = "Page sections", preview, class: className } = Astro.prop
     class={cn(
       "flex w-70 max-w-full items-center rounded-sm bg-bg-translucent p-1 backdrop-blur-md",
       !preview &&
-        "pointer-events-auto mb-[env(safe-area-inset-bottom)] transition-transform duration-(--motion-duration-nav-pill) ease-(--motion-ease-nav-pill) data-hidden:translate-y-[calc(100%_+_var(--spacing)*4_+_env(safe-area-inset-bottom))] motion-reduce:transition-none",
+        // touch-pan-y: sideways drags reach the script (touch scrubbing), vertical ones scroll.
+        "pointer-events-auto mb-[env(safe-area-inset-bottom)] touch-pan-y select-none transition-transform duration-(--motion-duration-nav-pill) ease-(--motion-ease-nav-pill) data-hidden:translate-y-[calc(100%_+_var(--spacing)*4_+_env(safe-area-inset-bottom))] motion-reduce:transition-none",
     )}
   >
     {items.map((item, index) => {
@@ -120,7 +126,7 @@ const { items, label = "Page sections", preview, class: className } = Astro.prop
         else link.removeAttribute("aria-current");
       });
       // Hidden once the last section is finished (its bottom is on screen).
-      const hidden = end <= bottom && !nav.contains(document.activeElement);
+      const hidden = end <= bottom && !scrub && !nav.contains(document.activeElement);
       nav.toggleAttribute("data-hidden", hidden);
       nav.inert = hidden;
       html.toggleAttribute("data-section-progress", !hidden);
@@ -141,8 +147,80 @@ const { items, label = "Page sections", preview, class: className } = Astro.prop
       observer.observe(document.body);
     }
 
+    // Touch scrubbing. The finger's x picks an item and a share of it (0 at its left edge, 1 at
+    // its right); the page scrolls to where that section's progress equals that share, i.e.
+    // the share of the section above the viewport bottom (the inverse of update()).
+    const SCRUB_THRESHOLD = 6; // px of sideways travel before a touch counts as a drag, not a tap
+    let press = null; // { id, x, y } of the touch that may start a scrub
+    let scrub = null; // { id, x } while scrubbing
+    let suppressClick = false;
+    let scrubFrame = 0;
+
+    const scrollToX = (x) => {
+      const rects = links.map((link) => link.getBoundingClientRect());
+      let index = rects.findIndex((rect) => x < rect.right);
+      if (index < 0) index = rects.length - 1;
+      const rect = rects[index];
+      const share = Math.min(1, Math.max(0, (x - rect.left) / Math.max(1, rect.width)));
+      const y = scrollY;
+      const start = targets[index].getBoundingClientRect().top + y;
+      const stop =
+        index < targets.length - 1
+          ? targets[index + 1].getBoundingClientRect().top + y
+          : targets[index].getBoundingClientRect().bottom + y;
+      const max = document.documentElement.scrollHeight - innerHeight;
+      const top = Math.min(max, Math.max(0, start + share * (stop - start) - innerHeight));
+      scrollTo({ top, behavior: "instant" });
+      // Same frame as the scroll, so the fills stay under the finger.
+      update();
+    };
+
+    nav.addEventListener("pointerdown", (event) => {
+      if (event.pointerType !== "touch" || !event.isPrimary) return;
+      press = { id: event.pointerId, x: event.clientX, y: event.clientY };
+    });
+    nav.addEventListener("pointermove", (event) => {
+      if (scrub && event.pointerId === scrub.id) {
+        scrub.x = event.clientX;
+        cancelAnimationFrame(scrubFrame);
+        scrubFrame = requestAnimationFrame(() => scrub && scrollToX(scrub.x));
+        return;
+      }
+      if (!press || event.pointerId !== press.id) return;
+      const dx = event.clientX - press.x;
+      if (Math.abs(dx) < SCRUB_THRESHOLD || Math.abs(dx) < Math.abs(event.clientY - press.y))
+        return;
+      scrub = { id: press.id, x: event.clientX };
+      press = null;
+      try {
+        nav.setPointerCapture(event.pointerId);
+      } catch {
+        // The pointer is already gone: the next pointerup / pointercancel ends the scrub.
+      }
+      nav.toggleAttribute("data-scrubbing", true);
+      scrollToX(scrub.x);
+    });
+    const endPress = (event) => {
+      if (press && event.pointerId === press.id) press = null;
+      if (!scrub || event.pointerId !== scrub.id) return;
+      cancelAnimationFrame(scrubFrame);
+      scrub = null;
+      // The tap's click (if the browser sends one) must not jump to a section.
+      suppressClick = true;
+      setTimeout(() => (suppressClick = false), 0);
+      nav.removeAttribute("data-scrubbing");
+      schedule();
+    };
+    nav.addEventListener("pointerup", endPress);
+    nav.addEventListener("pointercancel", endPress);
+
     // In-page links: smooth scroll (instant under reduced motion), hash kept in the URL.
     nav.addEventListener("click", (event) => {
+      if (suppressClick) {
+        event.preventDefault();
+        suppressClick = false;
+        return;
+      }
       const link = event.target.closest('a[href^="#"]');
       const target = link && targets[links.indexOf(link)];
       if (!target) return;
