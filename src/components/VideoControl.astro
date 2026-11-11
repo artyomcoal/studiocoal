@@ -4,10 +4,9 @@
  * The site's one play / pause control, on every video (Media renders it for ambient and player
  * videos alike; no browser-default controls). Figma "Play Button" (node 53654:5885).
  *
- * Primitive palette only, no theme tokens: it sits on video, so it looks the same in light and
- * dark. Box neutral-200 at 60% (light-theme bg-translucent), icon neutral-900 at 60%; on hover /
- * press box neutral-300 and icon neutral-900. Background blur md behind Play,
- * sm behind Pause.
+ * Theme tokens, so it follows light / dark: box bg-translucent, icon fg-primary at 65%; on
+ * hover / press box interactive-secondary-active and icon fg-primary. Background blur md behind
+ * Play, sm behind Pause.
  *
  * Must sit inside a `group/media` element: it shows Play while that element has `data-paused`,
  * Pause otherwise. Visibility: hidden until the video (or the card around it) is hovered, the
@@ -29,8 +28,8 @@ const { label, class: className } = Astro.props;
   data-slot="media-toggle"
   aria-label={label}
   class={cn(
-    "group/control absolute right-2 bottom-2 z-10 grid size-6 cursor-pointer place-items-center rounded-xs bg-neutral-200/60 text-neutral-900/60 backdrop-blur-sm *:col-start-1 *:row-start-1",
-    "transition-[opacity,background-color,color] hover:bg-neutral-300 hover:text-neutral-900 active:bg-neutral-300 active:text-neutral-900 group-data-paused/media:backdrop-blur-md",
+    "group/control absolute right-2 bottom-2 z-10 grid size-6 cursor-pointer place-items-center rounded-xs bg-bg-translucent text-fg-primary/65 backdrop-blur-sm *:col-start-1 *:row-start-1",
+    "transition-[opacity,background-color,color] hover:bg-interactive-secondary-active hover:text-fg-primary active:bg-interactive-secondary-active active:text-fg-primary group-data-paused/media:backdrop-blur-md",
     // Revealed by hovering the video, or the card it sits in (cards cover the video with their
     // stretched link, so the video itself never gets the hover): group/card (Work cards), group
     // (Services overview rows).
