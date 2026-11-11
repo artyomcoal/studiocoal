@@ -41,7 +41,7 @@ const steps = [
 <section aria-label="Process stages" class={cn("bg-bg-secondary px-container", className)}>
   <ol class="animate-enter-stagger">
     {steps.map((step) => (
-      <li class="grid-cols-layout gap-y-4 border-b border-border-subtle pt-12 pb-24 text-fg-primary xl:pb-32">
+      <li class="grid-cols-layout gap-y-4 border-b border-border-subtle pt-12 last:border-b-0 pb-24 text-fg-primary xl:pb-32">
         <h2 class="col-span-full text-headline-md md:col-span-4">{step.name}</h2>
         <p class="col-span-full max-w-md text-body-md md:col-span-6 md:col-start-6 md:max-w-none xl:col-span-5 xl:col-start-7">
           {step.text}
