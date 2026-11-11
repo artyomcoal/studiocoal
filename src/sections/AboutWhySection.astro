@@ -38,22 +38,22 @@ const team = [
     <div class="grid-cols-layout gap-y-12">
       <ul class="col-span-full flex animate-enter-stagger flex-col gap-gutter xl:col-span-3">
         {team.map((member) => (
-          <li class="flex items-center gap-3 rounded-sm bg-bg-secondary p-3">
+          <li class="flex items-center gap-3 rounded-sm bg-bg-secondary p-2">
             <span aria-hidden="true" class="size-8 shrink-0 rounded-xs bg-bg-tertiary" />
-            <p class="flex flex-wrap items-center gap-x-3 text-body-md">
+            <p class="flex flex-wrap items-center gap-x-3 text-body-sm">
               <span class="text-interactive-primary">{member.name}</span>
               <span class="text-fg-secondary">{member.role}</span>
             </p>
           </li>
         ))}
-        <li class="flex items-center gap-3 rounded-sm bg-bg-secondary p-3">
+        <li class="flex items-center gap-3 rounded-sm bg-bg-secondary p-2">
           <span
             aria-hidden="true"
             class="flex size-8 shrink-0 items-center justify-center rounded-xs bg-bg-tertiary text-body-xs text-fg-secondary"
           >
             10+
           </span>
-          <p class="text-body-md text-fg-primary">
+          <p class="text-body-sm text-fg-primary">
             Specialist network<span class="sr-only">: 10+ senior specialists</span>
           </p>
         </li>
@@ -83,7 +83,7 @@ const team = [
         <hr class="border-border-subtle" />
         <div class="flex flex-col items-start gap-4">
           <p class="flex items-center gap-2 rounded-xs bg-bg-secondary px-2 py-1 text-label text-fg-primary">
-            <span>Built brand and product from scratch for</span>
+            <span>Brand, product and website for</span>
             <img
               src={obviousLogo.src}
               width={24}
@@ -96,9 +96,8 @@ const team = [
             <span>Obvious</span>
           </p>
           <p class="max-w-80 text-body-xs">
-            Staying small keeps us honest. Whoever you meet on the first call is still doing the
-            work in week six. When a project needs something we don’t do every day, like motion, 3D
-            or deeper engineering, we bring in specialists we’ve worked with for years.
+            Identity, website and product UI, designed together ahead of their Seed A round. One
+            team from first sketch to shipped product, so all three went live the same week.
           </p>
         </div>
       </div>
