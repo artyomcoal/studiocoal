@@ -1,7 +1,8 @@
 import { expect, test } from "./test";
 
 // Page transitions (src/styles/motion.css). The entrance only plays after an in-site
-// navigation, which BaseLayout detects from a same-origin referrer.
+// navigation, which BaseLayout detects from a running View Transition or a same-origin referrer
+// (the one these tests use: headless Chromium doesn't reliably run cross-document transitions).
 const firstSection = "main.animate-enter-stagger > :first-child";
 
 test("direct visit renders without the entrance", async ({ page }) => {
