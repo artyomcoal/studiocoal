@@ -103,7 +103,10 @@
   }
 }
 
-/* Each child enters one stagger step after the previous, capped at the 6th. */
+/* Each child enters one stagger step after the previous, capped at the 6th. Script tags are
+ * skipped when counting: Astro renders a component's <script> next to its first use, so on
+ * pages like Home, About and Work items they sit between the sections and each one cost an
+ * extra stagger step. */
 @utility animate-enter-stagger {
   :where(.nav-entered) & > * {
     opacity: 0;
@@ -111,19 +114,19 @@
   :where(.nav-ready) & > * {
     animation: page-enter var(--motion-duration-enter) var(--motion-ease-enter) both;
   }
-  :where(.nav-ready) & > :nth-child(2) {
+  :where(.nav-ready) & > :nth-child(2 of :not(script)) {
     animation-delay: calc(var(--motion-stagger) * 1);
   }
-  :where(.nav-ready) & > :nth-child(3) {
+  :where(.nav-ready) & > :nth-child(3 of :not(script)) {
     animation-delay: calc(var(--motion-stagger) * 2);
   }
-  :where(.nav-ready) & > :nth-child(4) {
+  :where(.nav-ready) & > :nth-child(4 of :not(script)) {
     animation-delay: calc(var(--motion-stagger) * 3);
   }
-  :where(.nav-ready) & > :nth-child(5) {
+  :where(.nav-ready) & > :nth-child(5 of :not(script)) {
     animation-delay: calc(var(--motion-stagger) * 4);
   }
-  :where(.nav-ready) & > :nth-child(n + 6) {
+  :where(.nav-ready) & > :nth-child(n + 6 of :not(script)) {
     animation-delay: calc(var(--motion-stagger) * 5);
   }
 }
