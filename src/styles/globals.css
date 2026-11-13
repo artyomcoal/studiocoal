@@ -74,9 +74,14 @@
      * dialog's scroll lock never shifts the page and fixed elements stay put. No effect with
      * overlay scrollbars (macOS, iOS, Android). */
     scrollbar-gutter: stable;
+    /* No rubber-band bounce past the top or bottom of the page (macOS trackpad, iOS Safari 16+):
+     * the page stops dead at its edges instead of pulling away and springing back. Set on both
+     * <html> and <body> because browsers differ on which one is the root scroller. */
+    overscroll-behavior: none;
   }
   body {
     @apply bg-background text-body-md text-foreground antialiased;
+    overscroll-behavior: none;
   }
   /* Text selection paints in the inverse colours of the current theme. */
   ::selection {
