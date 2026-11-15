@@ -13,3 +13,10 @@ test("unknown paths get the 404 page, at least 75% of the viewport tall", async 
   expect(section).toBeGreaterThanOrEqual(viewport * 0.75 - 1);
   await expect(page.getByRole("link", { name: "Back to homepage" })).toHaveAttribute("href", "/");
 });
+
+test("the 404 page is noindex and declares no canonical URL", async ({ page }) => {
+  await page.goto("/this-page-does-not-exist");
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "noindex");
+  await expect(page.locator('link[rel="canonical"]')).toHaveCount(0);
+  await expect(page.locator('meta[property="og:url"]')).toHaveCount(0);
+});

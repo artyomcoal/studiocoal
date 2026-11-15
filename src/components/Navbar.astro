@@ -746,7 +746,11 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
         navigation = setTimeout(
           () => {
             if (slide && target === item)
-              sessionStorage.setItem("navPill", JSON.stringify({ to: item.pathname, ...slide }));
+              try {
+                sessionStorage.setItem("navPill", JSON.stringify({ to: item.pathname, ...slide }));
+              } catch {
+                /* Storage blocked: the next page's pill starts in place. Still navigate. */
+              }
             leaving = true;
             location.assign(item.href);
           },

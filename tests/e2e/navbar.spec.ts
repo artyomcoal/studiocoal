@@ -159,6 +159,23 @@ test.describe("navbar", () => {
       await expect(work).not.toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
     });
 
+    test("a nav click still navigates when sessionStorage throws", async ({ page }) => {
+      // Safari with "Block all cookies", some private modes, a full quota: setItem throws. The
+      // pill's carry-over to the next page is lost, but the link must still work.
+      await page.addInitScript(() => {
+        Storage.prototype.setItem = () => {
+          throw new DOMException("Blocked", "SecurityError");
+        };
+      });
+      await page.goto("/work");
+      const journal = page
+        .getByRole("navigation", { name: "Main" })
+        .getByRole("link", { name: "Journal", exact: true });
+      await journal.hover(); // starts the pill slide, so the click takes the storage path
+      await journal.click();
+      await expect(page).toHaveURL(/\/journal$/);
+    });
+
     test("takes over from the current item's background, then follows the pointer", async ({
       page,
     }) => {
