@@ -53,7 +53,7 @@ test.describe("footer", () => {
     await expect.poll(color).toBe(secondary);
   });
 
-  test("shows the success message only after a successful sign-up", async ({ page }) => {
+  test("shows the failure, retries without editing, then shows success", async ({ page }) => {
     const field = page.getByRole("textbox", { name: "Email address" });
     const status = page.locator("[data-newsletter-status]");
 
@@ -63,10 +63,10 @@ test.describe("footer", () => {
     await expect
       .poll(() => field.evaluate((el: HTMLInputElement) => el.validationMessage))
       .not.toBe("");
-    await expect(status).toBeEmpty();
+    await expect(status).toHaveText("Something went wrong. Please try again.");
 
+    // Submit again without editing the email: the failure must not block the retry.
     await mockNewsletter(page, 200);
-    await field.fill("test@example.com");
     await page.getByRole("button", { name: "Submit" }).click();
     await expect(status).toHaveText("Thank you. We’ll see you soon.");
     await expect(field).toHaveValue("");

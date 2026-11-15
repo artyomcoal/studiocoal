@@ -213,16 +213,21 @@ const linkClass = cn(
     const status = form.querySelector<HTMLElement>("[data-newsletter-status]");
     if (!input || !button || !status) continue;
 
-    // A failed request is shown with the native validation bubble. Editing clears it, and the
-    // success message from a previous sign-up.
+    // A failed request is shown with the native validation bubble and in the status line (the
+    // bubble isn't reliably announced by screen readers). Editing clears both, and the success
+    // message from a previous sign-up.
     input.addEventListener("input", () => {
       input.setCustomValidity("");
       status.textContent = "";
     });
+    // Pressing Submit again retries: clear the failure before native validation runs, or the
+    // custom error would block the submit and only show the bubble again.
+    button.addEventListener("click", () => input.setCustomValidity(""));
 
     const fail = () => {
       input.setCustomValidity(FAILURE);
       input.reportValidity();
+      status.textContent = FAILURE;
     };
 
     // Runs only after native validation passed (invalid input never fires submit).
@@ -240,6 +245,8 @@ const linkClass = cn(
           method: "POST",
           headers: { Accept: "application/json" },
           body: new URLSearchParams({ email: input.value.trim() }),
+          // A hung request would otherwise leave the button disabled for good.
+          signal: AbortSignal.timeout(10_000),
         });
         if (!response.ok) throw new Error(`Newsletter: HTTP ${response.status}`);
         form.reset();
