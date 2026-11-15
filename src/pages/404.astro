@@ -7,7 +7,7 @@ import PageLayout from "@/layouts/PageLayout.astro";
 import { Button } from "@/ui/button";
 ---
 
-<PageLayout title="Page not found" noindex>
+<PageLayout title="Page not found" noindex canonical={false}>
   {/* At least 75% of the dynamic viewport, so the footer sits low on this short page. Arbitrary
       value: Tailwind has h-dvh (100%) but no 75% viewport step. A minimum, not a fixed height:
       the headline can still grow past it on small screens. */}

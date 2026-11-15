@@ -38,6 +38,11 @@ interface Props {
   image?: string | null;
   /** Ask search engines not to list the page (SEO › Hide from search engines). */
   noindex?: boolean;
+  /**
+   * false: no canonical link or og:url. For the 404 page, which answers every unknown path, so
+   * its own URL (/404) isn't a real page to point search engines or shares at.
+   */
+  canonical?: false;
   /** Open Graph type: "article" for Journal posts. */
   ogType?: "website" | "article";
   /**
@@ -47,7 +52,16 @@ interface Props {
   jsonLd?: Record<string, unknown>[];
 }
 
-const { page, title, description, image, noindex, ogType = "website", jsonLd = [] } = Astro.props;
+const {
+  page,
+  title,
+  description,
+  image,
+  noindex,
+  canonical = true,
+  ogType = "website",
+  jsonLd = [],
+} = Astro.props;
 
 const info = page ? pageInfo(page) : null;
 const [settings, pageSettings] = await Promise.all([
@@ -268,7 +282,7 @@ const structuredData = serializeJsonLd(
     </script>
     <title>{seo.title}</title>
     <meta name="description" content={seo.description} />
-    <link rel="canonical" href={seo.canonical} />
+    {canonical && <link rel="canonical" href={seo.canonical} />}
     {seo.noindex && <meta name="robots" content="noindex" />}
     <link rel="sitemap" href="/sitemap-index.xml" />
     {settings?.googleSiteVerification && (
@@ -282,7 +296,7 @@ const structuredData = serializeJsonLd(
     <meta property="og:site_name" content={SITE_NAME} />
     <meta property="og:title" content={seo.title} />
     <meta property="og:description" content={seo.description} />
-    <meta property="og:url" content={seo.canonical} />
+    {canonical && <meta property="og:url" content={seo.canonical} />}
     {seo.image && (
       <>
         <meta property="og:image" content={seo.image} />
