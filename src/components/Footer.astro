@@ -72,7 +72,6 @@ const linkClass = cn(
 >
   <div class="flex flex-col gap-12">
     <div class="grid-cols-layout gap-y-12 xl:gap-y-0">
-      <!-- Contacts -->
       <address class="col-span-12 flex flex-col gap-6 not-italic xl:col-span-4">
         {contacts.map(({ label, email }) => (
           <div class="flex flex-col gap-1">
@@ -90,7 +89,6 @@ const linkClass = cn(
         ))}
       </address>
 
-      <!-- Services -->
       <nav
         aria-labelledby="footer-services"
         class="col-span-12 flex flex-col gap-2 md:col-span-4 xl:col-span-2 xl:col-start-7"
@@ -109,7 +107,6 @@ const linkClass = cn(
         </ul>
       </nav>
 
-      <!-- Connect -->
       <nav
         aria-labelledby="footer-connect"
         class="col-span-12 flex flex-col gap-2 md:col-span-4 md:col-start-5 xl:col-span-2 xl:col-start-9"
@@ -129,7 +126,6 @@ const linkClass = cn(
         </ul>
       </nav>
 
-      <!-- Office -->
       <div class="col-span-12 flex flex-col gap-2 md:col-span-4 md:col-start-9 xl:col-span-2 xl:col-start-11">
         <h2 class="text-body-sm text-fg-secondary">Office</h2>
         <address class="text-body-md text-fg-primary not-italic">
@@ -143,7 +139,6 @@ const linkClass = cn(
       </div>
     </div>
 
-    <!-- Newsletter -->
     <div class="grid-cols-layout">
       <section
         aria-labelledby="footer-newsletter"
@@ -177,11 +172,10 @@ const linkClass = cn(
             placeholder="Email address"
             class="pr-20"
           />
-          <!-- Submit sits inside the field: 4px from its top, right and bottom edges (Figma). -->
           <Button type="submit" size="sm" class="absolute top-1 right-1">
             Submit
           </Button>
-          <!-- Absolute so the message takes no space and nothing below it moves (Figma). -->
+          {/* Absolute, so the message never shifts the layout. */}
           <p
             data-newsletter-status
             role="status"

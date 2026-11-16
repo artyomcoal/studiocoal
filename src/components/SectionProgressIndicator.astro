@@ -60,9 +60,7 @@ const { items, label = "Page sections", preview, class: className } = Astro.prop
     className,
   )}
 >
-  <!-- Slides down off-screen when hidden: the pill, the 16px gap (p-4) and the iOS
-       home-indicator inset. Arbitrary calc and env(): no token for a device inset (same as the
-       Navbar's Get in touch button). -->
+  {/* Arbitrary calc/env(): no token for the iOS home-indicator inset (as in Navbar). */}
   <nav
     aria-label={label}
     data-section-progress-nav

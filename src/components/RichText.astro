@@ -66,8 +66,6 @@ const styleOf = (node: (typeof nodes)[number] | undefined) =>
   node?._type === "block" ? ((node as PtBlock).style ?? "normal") : undefined;
 ---
 
-<!-- The first block has no top margin and the last no bottom margin, so the column's own
-     padding sets the space around the body. -->
 <div class={cn("text-pretty text-fg-primary *:first:mt-0 *:last:mb-0", className)}>
   {nodes.map((node, index) => {
     const tight = afterHeading[styleOf(nodes[index - 1]) ?? ""];

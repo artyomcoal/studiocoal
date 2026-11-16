@@ -118,15 +118,9 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
         class="block size-8 rounded-xs"
       />
     </a>
-    <!-- When the links don't fit (narrow phones, wider font rendering on Android/Linux) they
-         scroll sideways inside the pill instead of overflowing it. Scrollbar hidden: no utility. -->
-    <!-- The nav items and a page's bar (the article bar on journal articles and work items, the
-         section bar on Services) share one grid cell; this box masks them, so neither shows
-         outside it while they slide (items up and out, the bar up from below).
-         data-mode="article" on the nav switches them (script below).
-         On Services the box (and so the whole nav) resizes to hug whichever layer shows: the
-         script sets its width in px and it slides with the swap (width can't transition to
-         or from auto, hence the script). -->
+    {/* Nav items and a page's bar (article / section bar) share this masked grid cell and slide
+        past each other; data-mode="article" switches them. The script sets its width in px
+        because width can't transition to or from auto. Links that don't fit scroll sideways. */}
     <div
       data-nav-cell
       class="grid min-w-0 overflow-hidden transition-[width] duration-(--motion-duration-nav-pill) ease-(--motion-ease-nav-pill) motion-reduce:transition-none"
@@ -776,21 +770,14 @@ const isActive = (href: string) => href !== "/" && (path === href || path.starts
     })();
   </script>
 
-  <!-- One button for every breakpoint. On base its wrapper covers the dynamic viewport (h-dvh)
-       and pins it to the bottom centre; from md it sits in the header row. -->
+  {/* Base: pinned bottom centre (h-dvh wrapper). md+: in the header row. */}
   <div class="pointer-events-none fixed inset-x-0 top-0 flex h-dvh items-end justify-center p-4 md:static md:h-auto md:p-0">
-    <!-- Keep clear of the iOS home indicator (no token for a device inset). -->
-    <!-- Mobile: hides on scroll down (slides down off-screen) once the page has scrolled half the
-         viewport, and comes back on scroll up (script below). The slide clears the button, the
-         16px bottom gap (p-4) and the iOS home-indicator inset: arbitrary calc, no token for that
-         sum. md+ keeps it in place (top right). It also gives way while a page's section progress
-         indicator shows (Work Single: <html data-section-progress>, SectionProgressIndicator),
-         which takes this bottom-centre slot. -->
+    {/* Base: slides off-screen on scroll down and while a SectionProgressIndicator holds this
+        slot. Arbitrary calc/env(): no token for the iOS home-indicator inset. */}
     <div
       data-cta
       class="pointer-events-auto mb-[env(safe-area-inset-bottom)] transition-transform duration-(--motion-duration-nav-pill) ease-(--motion-ease-nav-pill) view-transition-header-action data-hidden:translate-y-[calc(100%_+_var(--spacing)*4_+_env(safe-area-inset-bottom))] in-data-section-progress:translate-y-[calc(100%_+_var(--spacing)*4_+_env(safe-area-inset-bottom))] motion-reduce:transition-none md:mb-0 md:data-hidden:translate-y-0 md:in-data-section-progress:translate-y-0"
     >
-      <!-- The "Get in touch" button is the dialog's trigger, rendered by the modal. -->
       <GetInTouchModal />
     </div>
   </div>
