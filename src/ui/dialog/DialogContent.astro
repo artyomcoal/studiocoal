@@ -17,8 +17,7 @@ interface Props extends HTMLAttributes<"div"> {
 const { class: className, overlayClass, ...rest } = Astro.props;
 ---
 
-<!-- The portal itself carries the z-index: `isolate` alone makes it a z-auto stacking context,
-     which traps the overlay's z-index and leaves it under the fixed z-50 Navbar. -->
+{/* z-60 on the portal itself, or `isolate` traps the overlay under the z-50 Navbar. */}
 <div data-slot="dialog-portal" class="relative isolate z-60">
   <div
     data-slot="dialog-overlay"

@@ -700,7 +700,7 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
         Figma "Field" (Footer newsletter). Tab to check the focus ring. Invalid input is reported by
         the browser's native validation bubble: type "hello@" and press Enter.
       </p>
-      <!-- method="dialog" outside a dialog: validates natively, then does nothing. -->
+      {/* method="dialog" outside a dialog: validates natively, then does nothing. */}
       <form method="dialog" class="flex max-w-96 flex-col gap-4">
         <label for="sg-input" class="sr-only">
           Email address
@@ -953,7 +953,7 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
       </div>
     </section>
   </main>
-  <!-- Sections are full width with their own px-container, so they sit outside <main>. -->
+  {/* Sections are full width with their own px-container, so they sit outside <main>. */}
   <div class="flex flex-col">
     <h2 class="px-container pb-6 text-headline-lg">FeaturedWorkSection, columns="3" (3 items)</h2>
     <FeaturedWorkSection works={listWorks(3)} />
@@ -1022,8 +1022,7 @@ const radii = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full"];
     <h2 class="px-container pb-6 text-headline-lg">JournalArchiveSection (with next page)</h2>
     <JournalArchiveSection posts={posts(6)} nextUrl="/journal/2" />
   </div>
-  <!-- Footer (Figma node 53333:8956): the page one, full width. Hover the links, Tab through,
-       and submit the newsletter form (success only after a 2xx from PUBLIC_NEWSLETTER_ENDPOINT). -->
+  {/* Footer (Figma node 53333:8956), full width. */}
   <Footer />
 </BaseLayout>
 

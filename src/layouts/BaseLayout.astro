@@ -136,14 +136,10 @@ const structuredData = serializeJsonLd(
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!-- Both themes, dark first (as in tokens.css). Declared here, before any stylesheet, so the
-         browser's own canvas is already dark (or light, per the OS) on a page's first frame and
-         during page transitions. Without it the canvas defaulted to white until the stylesheet
-         applied, and a transition sometimes flashed a blank white page. -->
+    {/* Before any stylesheet, so the canvas is never white on a first frame or mid-transition. */}
     <meta name="color-scheme" content="dark light" />
-    <!-- Cross-document View Transition opt-in (src/styles/motion.css). Inline and first on
-         purpose: Chrome reads the opt-in as soon as the new page may render, and from the
-         external stylesheet it often wasn't applied yet, so the transition was skipped. -->
+    {/* View Transition opt-in. Must stay inline and early: from the external stylesheet Chrome
+        often read it too late and skipped the transition. */}
     <style is:inline>
       @view-transition {
         navigation: auto;
@@ -154,10 +150,8 @@ const structuredData = serializeJsonLd(
         }
       }
     </style>
-    <!-- Hold the new page's first frame until the navbar is parsed, so the transition always
-         captures it. Without this, a slow response (the dev server) showed the page before the
-         body arrived: the navbar wasn't in the snapshot, so it vanished and popped back in.
-         Chromium only; others ignore it. Pages without a navbar unblock at the end of parsing. -->
+    {/* Hold the first frame until the navbar is parsed, so a slow response can't drop it from
+        the transition snapshot. Chromium only. */}
     <link rel="expect" href="#site-header" blocking="render" />
     {hasIcon ? (
       ICONS.filter((icon) => icon.rel).map((icon) => (
@@ -173,9 +167,7 @@ const structuredData = serializeJsonLd(
     )}
     <link rel="manifest" href="/site.webmanifest" />
     <meta name="generator" content={Astro.generator} />
-    <!-- Graphik is embedded in the stylesheet in builds (src/styles/typography.css), so it needs no
-         preload there; the dev server serves it as a file, so preload it in dev. Geist Mono is
-         self-hosted (public/fonts/) and used above the fold: preload it. -->
+    {/* Graphik is inlined in the stylesheet in builds, so it's only preloaded in dev. */}
     {import.meta.env.DEV && (
       <link rel="preload" href={graphikDevUrl} as="font" type="font/woff2" crossorigin />
     )}
@@ -186,18 +178,13 @@ const structuredData = serializeJsonLd(
       type="font/woff2"
       crossorigin
     />
-    <!-- Entrance animation (src/styles/motion.css), only after an in-site navigation: direct
-         visits, reloads and reduced motion stay static, so LCP isn't delayed. Runs before first
-         paint. `nav-entered` hides the sections; `nav-ready` fades them in once
-         1. the page transition (if any) has finished, so the old page's fade-out and the new
-            page's fade-in never overlap, and
-         2. the fonts and the images on screen are decoded, so nothing pops in mid-fade (at most
-            1s: a slow image doesn't hold the page back; the transition is never cut short).
-         Two signals for "in-site": a running View Transition (`pagereveal`; only same-origin, and
-         the only one on Back / Forward, whose `document.referrer` is empty, and on a back/forward
-         cache restore, where this script doesn't run again but its listener does, so the entrance
-         replays), and a same-origin referrer (browsers without cross-document transitions, and a
-         skipped transition). -->
+    {/* Entrance animation (motion.css), only after an in-site navigation; direct visits stay
+        static for LCP. `nav-entered` hides sections; `nav-ready` fades them in once the view
+        transition has finished AND fonts + on-screen images are decoded (that wait capped at 1s).
+        "In-site" = a view transition on `pagereveal` (also covers Back/Forward and bfcache
+        restores) or a same-origin referrer (browsers without cross-document transitions).
+        The pointerdown/click pair: during a transition every click hits <html>, so a press skips
+        the transition and re-sends the click to the element under the pointer. */}
     <script is:inline>
       (() => {
         const root = document.documentElement;
@@ -225,10 +212,10 @@ const structuredData = serializeJsonLd(
             !!document.referrer &&
             new URL(document.referrer).origin === location.origin;
         } catch {
-          /* Malformed referrer: not in-site. */
+          /* Malformed referrer. */
         }
         const enter = (transitionDone) => {
-          root.classList.remove("nav-ready"); // a restored page replays its entrance
+          root.classList.remove("nav-ready");
           root.classList.add("nav-entered");
           const cap = new Promise((resolve) => setTimeout(resolve, 1000));
           Promise.all([transitionDone, Promise.race([pageReady, cap])]).then(() =>
@@ -236,8 +223,6 @@ const structuredData = serializeJsonLd(
           );
         };
         if ("onpagereveal" in window) {
-          // Fires right before a page's first frame (and again on a back/forward cache restore),
-          // so the sections are hidden in that frame. `finished` always settles.
           let transition = null;
           let revealed = false;
           addEventListener("pagereveal", (event) => {
@@ -246,10 +231,6 @@ const structuredData = serializeJsonLd(
             else if (inSite && !revealed) enter(Promise.resolve());
             revealed = true;
           });
-          // While a transition runs, every click lands on <html> (the transition overlay always
-          // hit-tests as the root, whatever its pointer-events), so a quick click on the next nav
-          // item during the old page's fade-out did nothing. A press now ends the fade-out at
-          // once, and its click goes to the link or button under the pointer.
           let forward = false;
           addEventListener(
             "pointerdown",
@@ -300,7 +281,6 @@ const structuredData = serializeJsonLd(
     {seo.image && (
       <>
         <meta property="og:image" content={seo.image} />
-        <!-- Every share image is cropped or rendered to 1200 × 630. -->
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
       </>
@@ -310,13 +290,12 @@ const structuredData = serializeJsonLd(
     <meta name="twitter:description" content={seo.description} />
     {seo.image && <meta name="twitter:image" content={seo.image} />}
     <script type="application/ld+json" set:html={structuredData} />
-    <!-- Page-specific head tags, e.g. the LCP image preload on project pages. -->
+    {/* Page-specific head tags, e.g. the LCP image preload. */}
     <slot name="head" />
   </head>
   <body>
-    <!-- Start decoding Graphik as soon as the stylesheet is ready (this runs right after it).
-         Otherwise Chromium only starts when it first lays out text, so a page's first frame
-         could still be drawn in the fallback font. -->
+    {/* Start decoding Graphik now; Chromium otherwise waits for first layout and may paint
+        the first frame in the fallback font. */}
     <script is:inline>
       document.fonts.load("500 1em Graphik");
     </script>

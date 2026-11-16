@@ -82,7 +82,7 @@ const {
   but JSX wants an intersection of button+anchor attributes here.
   We deliberately suppress this internal error and rely on Props for caller safety.
 */}
-<!-- @ts-expect-error – union Props + dynamic Tag confuse JSX typing (see comment above) -->
+{/* @ts-expect-error – union Props + dynamic Tag confuse JSX typing (see comment above) */}
 <Tag
   data-slot="button"
   data-variant={variant}
