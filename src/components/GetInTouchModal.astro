@@ -22,7 +22,14 @@ const contacts = [
 ---
 
 <Dialog class="contents">
-  <Button type="button" data-slot="dialog-trigger" data-get-in-touch>
+  <!-- Navbar CTA: Primary in light, Secondary in dark (the dark: classes restate the Button
+       secondary variant's colours, since a cva variant can't switch per theme). -->
+  <Button
+    type="button"
+    data-slot="dialog-trigger"
+    data-get-in-touch
+    class="dark:bg-interactive-secondary dark:text-fg-on-secondary dark:hover:bg-interactive-secondary-hover dark:focus-visible:bg-interactive-secondary-hover dark:active:bg-interactive-secondary-active"
+  >
     Get in touch
   </Button>
 
